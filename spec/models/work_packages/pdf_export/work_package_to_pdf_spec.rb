@@ -249,6 +249,7 @@ RSpec.describe WorkPackage::PDFExport::WorkPackageToPdf do
       "Details",
       "Priority", "Normal",
       *(work_package.sprint.present? ? ["Sprint", work_package.sprint] : ["Sprint"]),
+      "Target versions",
       "Version", work_package.version,
       "Category", work_package.category,
       "Project phase",
