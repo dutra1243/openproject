@@ -60,5 +60,10 @@ TurboPower.initialize(Turbo.StreamActions);
 document.addEventListener('turbo:frame-missing', (event) => {
   const { detail: { response, visit } } = event;
   event.preventDefault();
+  whenDebugging(() => {
+    const frameId = event.target instanceof Element ? event.target.id : undefined;
+    const message = frameId ? `no turbo-frame#${frameId} in` : 'destination frame id missing for';
+    console.error(`${message} response from ${response.url}`);
+  });
   void visit(response.url, {});
 });
