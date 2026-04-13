@@ -24,10 +24,10 @@ whenDebugging(() => {
   TURBO_EVENTS
     .filter((name) => name !== 'turbo:before-stream-render')
     .forEach((name:string) => {
-    document.addEventListener(name, (event) => {
-      debugLog(`[TURBO EVENT ${name}] %O`, event);
+      document.addEventListener(name, (event) => {
+        debugLog(`[TURBO EVENT ${name}] %O`, event);
+      });
     });
-  });
 
   document.addEventListener('turbo:before-stream-render', (event) => {
     const { detail: { newStream:stream } } = event;
