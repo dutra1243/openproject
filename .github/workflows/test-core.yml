@@ -26,7 +26,7 @@ jobs:
     name: Units + Features
     if: github.repository_owner == 'opf'
     runs-on:
-      labels: "runs-on=${{ github.run_id }}/image=ubuntu24-full-x64/family=m8zn+m8+m7+i7+r8/ram=128+256/cpu=24+32"
+      labels: "runs-on=${{ github.run_id }}/image=ubuntu24-full-x64/family=m8azn+m8+m7+i7+r8/ram=128+256/cpu=24+32"
     timeout-minutes: 40
     env:
       DOCKER_BUILDKIT: 1
