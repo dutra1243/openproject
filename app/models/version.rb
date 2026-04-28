@@ -87,7 +87,7 @@ class Version < ApplicationRecord
     systemwide? ||
       user.allowed_in_project?(:view_work_packages, project) ||
       user.allowed_in_project?(:manage_versions, project) ||
-      work_packages.visible(user).exists?
+      work_packages_target_versions.visible(user).exists?
   end
 
   def due_date
@@ -97,7 +97,7 @@ class Version < ApplicationRecord
   # Returns the total estimated time for this version
   # (sum of leaves estimated_hours)
   def estimated_hours
-    @estimated_hours ||= work_packages.leaves.sum(:estimated_hours).to_f
+    @estimated_hours ||= work_packages_target_versions.leaves.sum(:estimated_hours).to_f
   end
 
   # Returns the total reported time for this version
@@ -155,17 +155,17 @@ class Version < ApplicationRecord
 
   # Returns assigned issues count
   def issues_count
-    @issue_count ||= work_packages.count
+    @issues_count ||= work_packages_target_versions.count
   end
 
   # Returns the total amount of open issues for this version.
   def open_issues_count
-    @open_issues_count ||= work_packages.merge(WorkPackage.with_status_open).size
+    @open_issues_count ||= work_packages_target_versions.merge(WorkPackage.with_status_open).size
   end
 
   # Returns the total amount of closed issues for this version.
   def closed_issues_count
-    @closed_issues_count ||= work_packages.merge(WorkPackage.with_status_closed).size
+    @closed_issues_count ||= work_packages_target_versions.merge(WorkPackage.with_status_closed).size
   end
 
   def wiki_page
@@ -214,7 +214,7 @@ class Version < ApplicationRecord
   # Used to weight unestimated issues in progress calculation
   def estimated_average
     if @estimated_average.nil?
-      average = work_packages.average(:estimated_hours).to_f
+      average = work_packages_target_versions.average(:estimated_hours).to_f
       if average.zero?
         average = 1
       end
@@ -229,7 +229,7 @@ class Version < ApplicationRecord
   # Examples:
   # issues_progress(true)   => returns the progress percentage for open issues.
   # issues_progress(false)  => returns the progress percentage for closed issues.
-  def issues_progress(open)
+  def issues_progress(open) # rubocop:disable Metrics/AbcSize
     @issues_progress ||= {}
     @issues_progress[open] ||= begin
       progress = 0
@@ -240,7 +240,7 @@ class Version < ApplicationRecord
           ["COALESCE(#{WorkPackage.table_name}.estimated_hours, ?) * #{ratio}", estimated_average]
         )
 
-        done = work_packages
+        done = work_packages_target_versions
           .where(statuses: { is_closed: !open })
           .includes(:status)
           .sum(sum_sql)
