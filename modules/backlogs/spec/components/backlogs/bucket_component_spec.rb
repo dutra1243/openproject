@@ -119,9 +119,8 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
 
       it "wires the bucket drop-target data on the box" do
         expect(rendered_component).to have_css(".Box") do |box|
-          expect(box["data-generic-drag-and-drop-target"]).to eq("container")
-          expect(box["data-target-id"]).to eq("backlog_bucket:#{backlog_bucket.id}")
-          expect(box["data-target-allowed-drag-type"]).to eq("story")
+          expect(box["data-backlogs-target"]).to eq("list")
+          expect(box["data-backlogs-target-id"]).to eq("backlog_bucket:#{backlog_bucket.id}")
         end
       end
 
@@ -132,16 +131,16 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
         )
       end
 
-      it "wires draggable row data through the shared card" do
-        expect(rendered_component).to have_css(".Box-row#work_package_#{work_package.id}") do |row|
-          expect(row["data-controller"]).to eq("backlogs--story")
-          expect(row["data-draggable-id"]).to eq(work_package.id.to_s)
-          expect(row["data-draggable-type"]).to eq("story")
-          expect(row["data-drop-url"]).to end_with(move_project_backlogs_inbox_path(project, work_package))
-          expect(row["data-backlogs--story-split-url-value"])
+      it "wires draggable data through the shared card" do
+        expect(rendered_component).to have_css(".op-backlogs-story") do |card|
+          expect(card["data-controller"]).to eq("backlogs--story backlogs--item")
+          expect(card["data-backlogs--item-item-id-value"]).to eq(work_package.id.to_s)
+          expect(card["data-drop-url"]).to end_with(move_project_backlogs_inbox_path(project, work_package))
+          expect(card["data-backlogs--story-split-url-value"])
             .to end_with(project_backlogs_backlog_details_path(project, work_package))
-          expect(row["data-backlogs--story-full-url-value"])
+          expect(card["data-backlogs--story-full-url-value"])
             .to end_with(work_package_path(work_package))
+          expect(card["draggable"]).to eq("true")
         end
       end
     end
@@ -170,14 +169,14 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
     end
 
     it "includes all=1 in the split-view URL" do
-      expect(rendered_component).to have_css(".Box-row#work_package_#{work_package.id}") do |row|
-        expect(row["data-backlogs--story-split-url-value"]).to include("all=1")
+      expect(rendered_component).to have_css(".op-backlogs-story") do |card|
+        expect(card["data-backlogs--story-split-url-value"]).to include("all=1")
       end
     end
 
     it "includes all=1 in the drop URL" do
-      expect(rendered_component).to have_css(".Box-row#work_package_#{work_package.id}") do |row|
-        expect(row["data-drop-url"]).to include("all=1")
+      expect(rendered_component).to have_css(".op-backlogs-story") do |card|
+        expect(card["data-drop-url"]).to include("all=1")
       end
     end
 
@@ -231,8 +230,9 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
     it "does not mark work package rows as draggable" do
       expect(rendered_component).to have_css(".Box-row#work_package_#{work_package.id}")
       expect(rendered_component).to have_no_css(".Box-row#work_package_#{work_package.id}.Box-row--draggable")
-      expect(rendered_component).to have_no_css(".Box-row#work_package_#{work_package.id}[data-draggable-id]")
-      expect(rendered_component).to have_no_css(".Box-row#work_package_#{work_package.id}[data-drop-url]")
+      expect(rendered_component).to have_no_css(".op-backlogs-story[data-backlogs--item-item-id-value]")
+      expect(rendered_component).to have_no_css(".op-backlogs-story[data-drop-url]")
+      expect(rendered_component).to have_no_css(".op-backlogs-story[draggable='true']")
     end
   end
 end

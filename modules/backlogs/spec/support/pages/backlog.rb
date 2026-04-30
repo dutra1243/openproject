@@ -657,7 +657,7 @@ module Pages
     end
 
     def draggable_work_package_selector(work_package)
-      "#{work_package_selector(work_package)}[data-draggable-id]"
+      "#{work_package_selector(work_package)} [data-backlogs--item-item-id-value]"
     end
 
     def sprint_complete_modal_selector
