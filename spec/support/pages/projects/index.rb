@@ -238,10 +238,12 @@ module Pages
       end
 
       def set_advanced_filter(name, human_name, human_operator = nil, values = [], send_keys: false)
-        selected_filter = select_filter(name, human_name)
+        select_filter(name, human_name)
 
-        # Detect filter type before apply_operator, which may trigger Turbo stream
-        # updates that make the selected_filter node reference stale (ObsoleteNode)
+        # Re-find after select_filter, as adding the filter triggers DOM updates
+        # that make the returned reference immediately stale (ObsoleteNode)
+        selected_filter = page.find(".advanced-filters--filter[data-filter-name='#{name}']")
+
         is_autocomplete = autocomplete_filter?(selected_filter)
         is_date_or_datetime = date_filter?(selected_filter) || date_time_filter?(selected_filter)
 
@@ -251,8 +253,8 @@ module Pages
 
         return unless values.any?
 
-        # Re-find element as apply_operator may have triggered DOM updates
-        selected_filter = page.find("li[data-filter-name='#{name}']")
+        # Re-find again as apply_operator may have triggered further DOM updates
+        selected_filter = page.find(".advanced-filters--filter[data-filter-name='#{name}']")
 
         within(selected_filter) do
           if boolean_filter?(name)

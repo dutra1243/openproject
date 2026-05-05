@@ -28,8 +28,23 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::TextForm < Filters::Inputs::BaseFilterForm
+  def add_operand(group)
+    field_arguments = {
+      name: :"v-#{@filter.class.key}",
+      label: @filter.human_name,
+      visually_hide_label: true,
+      scope_name_to_model: false,
+      value: @filter.values.first,
+      data: {
+        "filter--filters-form-target": "filterValueContainer simpleValue",
+        "filter-name": @filter.name
+      }
+    }
+    if @filter.type.in? %i[integer float]
+      group.text_field(**field_arguments, type: :number, step: "any")
+    else
+      group.text_field(**field_arguments)
+    end
+  end
 end

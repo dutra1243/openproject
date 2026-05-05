@@ -28,8 +28,22 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::BooleanForm < Filters::Inputs::BaseFilterForm
+  def add_operand(group)
+    group.check_box(
+      label: @filter.human_name,
+      name: "v-#{@filter.class.key}",
+      value: "t",
+      unchecked_value: "f",
+      checked: @filter.values.first == "t"
+    )
+  end
+
+  private
+
+  def filter_row_arguments
+    super.tap do |args|
+      args[:data][:"filter--filters-form-target"] = "filter filterValueContainer"
+    end
+  end
 end

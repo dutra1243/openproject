@@ -4,6 +4,7 @@
     type="text"
     autocomplete="off"
     class="spot-input op-basic-range-datepicker--input"
+    data-filter--filters-form-target="dateRange"
     data-test-selector="op-basic-range-date-picker"
     [ngClass]="inputClassNames"
     [attr.data-value]="value"
@@ -50,6 +51,7 @@
     />
   <input
     type="hidden"
+    data-filter--filters-form-target="dateRange"
     data-test-selector="op-basic-range-date-picker--value"
     [attr.data-value]="stringValue"
     [id]="id"

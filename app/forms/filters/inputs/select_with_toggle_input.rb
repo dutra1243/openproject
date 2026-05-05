@@ -28,8 +28,25 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::SelectWithToggleInput < Primer::Forms::Dsl::SelectInput
+  attr_reader :selected_values, :filter_name
+
+  def initialize(name:, label:, allowed_values:, selected_values:, collapse:, filter_name:, **system_arguments)
+    @selected_values = Array(selected_values)
+    @collapse = collapse
+    @filter_name = filter_name
+    super(name:, label:, **system_arguments) do |select|
+      allowed_values.each { |opt_label, opt_value| select.option(label: opt_label, value: opt_value) }
+    end
+  end
+
+  def collapse? = @collapse
+
+  def to_component
+    Filters::Inputs::SelectWithToggleComponent.new(input: self)
+  end
+
+  def type
+    :select_with_toggle
+  end
 end

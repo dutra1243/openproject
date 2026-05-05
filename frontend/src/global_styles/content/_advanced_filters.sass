@@ -136,6 +136,12 @@ $advanced-filters--grid-gap: 10px
   &.hidden
     display: none !important
 
+.op-filters-form .hidden
+  display: none !important
+
+.op-filters-form .FormControl:has([data-filter--filters-form-target~="filterValueContainer"].hidden)
+  display: none !important
+
 .work-packages-embedded-view--container .advanced-filters--container
   margin: 0 0 1rem 0
 

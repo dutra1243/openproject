@@ -224,7 +224,7 @@ RSpec.describe "Projects lists columns", :js, with_settings: { login_required?: 
         # Filter component is visible
         expect(page).to have_select("add_filter_select")
         # Filter for column is visible and can now be specified by the user
-        expect(page).to have_css(".advanced-filters--filter-name[for='created_at']")
+        expect(page).to have_css(".advanced-filters--filter[data-filter-name='created_at']")
 
         # The correct filter input field has focus
         expect(page.has_focus_on?(".advanced-filters--filter-value input#created_at_value")).to be(true)
@@ -238,7 +238,7 @@ RSpec.describe "Projects lists columns", :js, with_settings: { login_required?: 
         # Filter component is visible
         expect(page).to have_select("add_filter_select")
         # Filter for column is visible. Note that the filter name is different from the column attribute!
-        expect(page).to have_css(".advanced-filters--filter-name[for='project_status_code']")
+        expect(page).to have_css(".advanced-filters--filter[data-filter-name='project_status_code']")
       end
 
       it "does not offer to filter if the column has no associated filter" do

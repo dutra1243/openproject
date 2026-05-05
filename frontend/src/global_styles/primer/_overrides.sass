@@ -38,7 +38,8 @@
   &-input-wrap[invalid='true'] input:not(:focus)
     border-color: var(--control-borderColor-danger)
 
-  &-spacingWrapper > :empty
+  &-spacingWrapper > :empty,
+  &-spacingWrapper:not(:has(> :not([hidden])))
     display: none
 
 .UnderlineNav

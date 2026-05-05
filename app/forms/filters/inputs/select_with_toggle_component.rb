@@ -28,8 +28,13 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::SelectWithToggleComponent < Primer::Forms::Select
+  def button_data
+    {
+      action: "click->filter--filters-form#toggleMultiSelect",
+      "filter--filters-form-filter-name-param": @input.filter_name,
+      "filter-name": @input.filter_name,
+      collapse: @input.collapse?.to_s
+    }
+  end
 end

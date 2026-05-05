@@ -28,8 +28,31 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::AddFilterForm < ApplicationForm
+  def initialize(allowed_filters:, active_filter_names:)
+    super()
+    @allowed_filters = allowed_filters
+    @active_filter_names = active_filter_names
+  end
+
+  form do |form|
+    form.select_list(
+      name: :add_filter_select,
+      label: I18n.t(:label_filter_add),
+      scope_name_to_model: false,
+      prompt: I18n.t(:actionview_instancetag_blank_option),
+      data: {
+        "filter--filters-form-target": "addFilterSelect",
+        action: "change->filter--filters-form#addFilter:prevent"
+      }
+    ) do |select|
+      @allowed_filters.each do |filter|
+        select.option(
+          label: filter.human_name,
+          value: filter.name,
+          disabled: @active_filter_names.include?(filter.name)
+        )
+      end
+    end
+  end
 end

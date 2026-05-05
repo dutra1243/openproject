@@ -1,0 +1,12 @@
+<%= render(FormControl.new(input: @input)) do %>
+  <%= content_tag(:div, **@field_wrap_arguments) do %>
+    <%= builder.select(@input.name, options,
+                       { selected: @input.selected_values }.merge(@input.select_arguments),
+                       **@input.input_arguments) %>
+    <%= render(Primer::Beta::Button.new(scheme: :invisible, type: :button,
+                                        aria: { label: I18n.t(:label_enable_multi_select) },
+                                        data: button_data)) do |btn| %>
+      <% btn.with_leading_visual_icon(icon: @input.collapse? ? :dash : :plus) %>
+    <% end %>
+  <% end %>
+<% end %>

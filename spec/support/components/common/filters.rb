@@ -43,12 +43,12 @@ module Components
         if filter_name == "name_and_identifier"
           expect(page.find_by_id(filter_name).value).not_to be_empty
         elsif value
-          within("li[data-filter-name='#{filter_name}']") do
+          within(".advanced-filters--filter[data-filter-name='#{filter_name}']") do
             expect(page).to have_css(".advanced-filters--filter-value", text: value, visible: :all)
           end
         else
           expect(page)
-            .to have_css("li[data-filter-name='#{filter_name}']")
+            .to have_css(".advanced-filters--filter[data-filter-name='#{filter_name}']")
         end
       end
 
@@ -119,29 +119,28 @@ module Components
 
       def select_filter(name, human_name)
         select human_name, from: "add_filter_select"
-        page.find("li[data-filter-name='#{name}']")
+        page.find(".advanced-filters--filter[data-filter-name='#{name}']")
       end
 
       def remove_filter(name)
         if name == "name_and_identifier"
           page.find_by_id("name_and_identifier").find(:xpath, "following-sibling::button").click
         else
-          page.find("li[data-filter-name='#{name}'] .filter_rem").click
+          page.find(".advanced-filters--filter[data-filter-name='#{name}'] .advanced-filters--remove-filter").click
         end
       end
 
       def set_toggle_filter(values)
         should_active = values.first == "yes"
-        is_active = page.has_selector? '[data-test-selector="spot-switch-handle"][data-qa-active]'
+        checkbox = page.find('input[type="checkbox"]')
+        is_active = checkbox.checked?
 
-        if should_active != is_active
-          page.find('[data-test-selector="spot-switch-handle"]').click
-        end
+        checkbox.click if should_active != is_active
 
         if should_active
-          expect(page).to have_css('[data-test-selector="spot-switch-handle"][data-qa-active]')
+          expect(page).to have_field(type: :checkbox, checked: true)
         else
-          expect(page).to have_css('[data-test-selector="spot-switch-handle"]:not([data-qa-active])')
+          expect(page).to have_field(type: :checkbox, checked: false)
         end
       end
 

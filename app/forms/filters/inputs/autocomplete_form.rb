@@ -28,8 +28,25 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.config.to_prepare do
-  Primer::Forms::Dsl::FormObject.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::InputGroup.include(Primer::OpenProject::Forms::Dsl::InputMethods)
-  Primer::Forms::Dsl::MultiInput.include(Primer::OpenProject::Forms::Dsl::InputMethods)
+class Filters::Inputs::AutocompleteForm < Filters::Inputs::BaseFilterForm
+  def add_operand(group)
+    group.autocompleter(
+      name: "v-#{@filter.class.key}",
+      label: @filter.human_name,
+      visually_hide_label: true,
+      required: true,
+      include_blank: false,
+      wrapper_data_attributes: {
+        "filter--filters-form-target": "filterValueContainer",
+        "filter-name": @filter.name,
+        "filter-autocomplete": "true"
+      },
+      autocomplete_options: @additional_attributes[:autocomplete_options].merge(
+        multiple: true,
+        multipleAsSeparateInputs: false,
+        inputName: "value",
+        inputValue: @filter.values
+      )
+    )
+  end
 end
