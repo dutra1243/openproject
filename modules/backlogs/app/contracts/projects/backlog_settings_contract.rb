@@ -41,6 +41,7 @@ module Projects
     validate :validate_global_sprint_sharer_uniqueness
     validates :sprint_sharing, presence: true
     validates :sprint_sharing, inclusion: { in: Project::SPRINT_SHARING_MODES }, allow_blank: true
+    validate :validate_sprint_sharing_in_ee_token
 
     def validate_model? = false
 
@@ -63,6 +64,20 @@ module Projects
           errors.add :sprint_sharing, :share_all_projects_already_taken_anonymous
         end
       end
+    end
+
+    def validate_sprint_sharing_in_ee_token
+      if !model.not_sharing_sprints? &&
+         !EnterpriseToken.allows_to?(:sprint_sharing) &&
+         sprint_sharing_changed?
+        errors.add :sprint_sharing,
+                   :enterprise_plan_required,
+                   plan_name: I18n.t("ee.upsell.plan_name", plan: OpenProject::Token.lowest_plan_for(:sprint_sharing))
+      end
+    end
+
+    def sprint_sharing_changed?
+      model.settings_change&.any? { it.key?("sprint_sharing") }
     end
   end
 end

@@ -3,11 +3,11 @@
 require "spec_helper"
 require "contracts/shared/model_contract_shared_context"
 
-RSpec.describe Projects::BacklogSettingsContract, type: :model do
+RSpec.describe Projects::BacklogSettingsContract, type: :model, with_ee: %i[sprint_sharing] do
   include_context "ModelContract shared context"
 
   let(:current_user) { build_stubbed(:user) }
-  let(:project) { create(:project) }
+  let(:project) { build_stubbed(:project) }
   let(:permissions) { %i(share_sprint) }
 
   subject(:contract) { described_class.new(project, current_user) }
@@ -35,7 +35,7 @@ RSpec.describe Projects::BacklogSettingsContract, type: :model do
 
     # This spec of explicitly setting sprint_sharing to empty is required because the
     # simple presence validation spec is not sufficient to catch certain corner cases.
-    # For example, when the sprint_sharing getter is overriden to provide a default value,
+    # For example, when the sprint_sharing getter is overridden to provide a default value,
     # and the user submits an empty value, the contract should be invalid.
     context "when sprint_sharing is empty" do
       before { project.sprint_sharing = "" }
@@ -54,6 +54,62 @@ RSpec.describe Projects::BacklogSettingsContract, type: :model do
         let(:permissions) { [] }
 
         it_behaves_like "contract user is unauthorized"
+      end
+    end
+
+    context "when the `sprint_sharing` is not part of the current EE token", with_ee: [] do
+      context "when sprint sharing is set to 'no_sharing'" do
+        before { project.sprint_sharing = Project::NO_SHARING }
+
+        it_behaves_like "contract is valid"
+      end
+
+      context "when sprint sharing is set to 'share_all_projects'" do
+        before { project.sprint_sharing = Project::SHARE_ALL_PROJECTS }
+
+        it_behaves_like "contract is invalid",
+                        sprint_sharing: { error: :enterprise_plan_required, plan_name: "corporate enterprise plan" }
+      end
+
+      context "when sprint sharing is set to 'share_subprojects'" do
+        before { project.sprint_sharing = Project::SHARE_SUBPROJECTS }
+
+        it_behaves_like "contract is invalid",
+                        sprint_sharing: { error: :enterprise_plan_required, plan_name: "corporate enterprise plan" }
+      end
+
+      context "when sprint sharing is set to 'receive_shared'" do
+        before { project.sprint_sharing = Project::RECEIVE_SHARED }
+
+        it_behaves_like "contract is invalid",
+                        sprint_sharing: { error: :enterprise_plan_required, plan_name: "corporate enterprise plan" }
+      end
+
+      context "when sprint sharing remains on 'share_all_projects'" do
+        before do
+          project.sprint_sharing = Project::SHARE_ALL_PROJECTS
+          project.clear_changes_information
+        end
+
+        it_behaves_like "contract is valid"
+      end
+
+      context "when sprint sharing remains on 'share_subprojects'" do
+        before do
+          project.sprint_sharing = Project::SHARE_SUBPROJECTS
+          project.clear_changes_information
+        end
+
+        it_behaves_like "contract is valid"
+      end
+
+      context "when sprint sharing remains on 'receive_shared'" do
+        before do
+          project.sprint_sharing = Project::RECEIVE_SHARED
+          project.clear_changes_information
+        end
+
+        it_behaves_like "contract is valid"
       end
     end
 
