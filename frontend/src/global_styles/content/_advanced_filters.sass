@@ -142,6 +142,34 @@ $advanced-filters--grid-gap: 10px
 .op-filters-form .FormControl:has([data-filter--filters-form-target~="filterValueContainer"].hidden)
   display: none !important
 
+.op-filters-form
+  padding-top: $advanced-filters--close-icon-size
+  position: relative
+
+  .advanced-filters--close
+    position: absolute
+    top: 0
+    right: 0
+
+  .FormControl-horizontalGroup.advanced-filters--filter
+    align-items: flex-end
+    justify-content: space-between
+
+    > .FormControl:first-child
+      flex: 0 0 $advanced-filters--operator-size
+
+    > .FormControl.advanced-filters--filter-value
+      flex: 1 1 auto
+      min-width: 0
+
+  .advanced-filters--filter-value .FormControl-select-wrap
+    display: flex
+    align-items: center
+    gap: var(--base-size-4)
+
+    .FormControl-select
+      flex: 1 1 auto
+
 .work-packages-embedded-view--container .advanced-filters--container
   margin: 0 0 1rem 0
 

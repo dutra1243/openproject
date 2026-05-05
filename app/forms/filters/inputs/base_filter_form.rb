@@ -95,16 +95,18 @@ class Filters::Inputs::BaseFilterForm < ApplicationForm
   end
 
   def add_delete_button(group)
-    group.button(
-      name: :remove_filter,
-      label: I18n.t("button_delete"),
-      scheme: :danger,
-      data: {
-        action: "click->filter--filters-form#removeFilter",
-        "filter--filters-form-filter-name-param": @filter.name
-      }
-    ) do |button|
-      button.with_leading_visual_icon(icon: :trash)
+    filter_name = @filter.name
+    group.html_content do
+      render(Primer::Beta::IconButton.new(
+               icon: :trash,
+               scheme: :invisible,
+               classes: "advanced-filters--remove-filter",
+               aria: { label: I18n.t("button_delete") },
+               data: {
+                 action: "click->filter--filters-form#removeFilter",
+                 "filter--filters-form-filter-name-param": filter_name
+               }
+             ))
     end
   end
 end
