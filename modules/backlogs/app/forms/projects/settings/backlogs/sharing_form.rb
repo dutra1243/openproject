@@ -36,7 +36,10 @@ module Projects
           # TODO: Remove this hidden field, once the `radio_button_group` supports rendering
           # the hidden empty field.
           # The purpose of the hidden field is to ensure we submit the `sprint_sharing` field
-          # even if no radio button is chosen. Otherwise, the submitted form will not include
+          # even if:
+          #   * no radio button is chosen.
+          #   * the selected option is disabled because of a missing EE token.
+          # Otherwise, the submitted form will not include
           # the field at all and the save request will return success when in fact no setting
           # is saved.
           # Ideally the hidden field should automatically be rendered by the `radio_button_group`
@@ -47,16 +50,33 @@ module Projects
             name: :sprint_sharing,
             label: I18n.t("projects.settings.backlog_sharing.sprint_sharing")
           ) do |group|
-            Project::SPRINT_SHARING_MODES.each do |option|
-              group.radio_button(
-                label: sharing_option_text(option, :label),
-                value: option,
-                checked: checked?(option),
-                disabled: disabled?(option),
-                caption: caption_for(option),
-                data: { "show-when-value-selected-target": "cause" }
-              )
-            end
+            group.radio_button(
+              label: sharing_option_label(Project::NO_SHARING),
+              value: Project::NO_SHARING,
+              caption: sharing_option_caption(Project::NO_SHARING),
+              data: { "show-when-value-selected-target": "cause" }
+            )
+            group.radio_button(
+              label: sharing_option_label(Project::SHARE_ALL_PROJECTS),
+              value: Project::SHARE_ALL_PROJECTS,
+              disabled: only_fallback_allowed || share_all_projects_disabled?,
+              caption: shared_all_projects_caption,
+              data: { "show-when-value-selected-target": "cause" }
+            )
+            group.radio_button(
+              label: sharing_option_label(Project::SHARE_SUBPROJECTS),
+              value: Project::SHARE_SUBPROJECTS,
+              disabled: only_fallback_allowed,
+              caption: sharing_option_caption(Project::SHARE_SUBPROJECTS),
+              data: { "show-when-value-selected-target": "cause" }
+            )
+            group.radio_button(
+              label: sharing_option_label(Project::RECEIVE_SHARED),
+              value: Project::RECEIVE_SHARED,
+              disabled: only_fallback_allowed,
+              caption: sharing_option_caption(Project::RECEIVE_SHARED),
+              data: { "show-when-value-selected-target": "cause" }
+            )
           end
 
           sharing_form.html_content { banner_for(Project::SHARE_SUBPROJECTS, type: :info) }
@@ -78,26 +98,16 @@ module Projects
 
         attr_reader :only_fallback_allowed
 
-        def checked?(option)
-          option == model.sprint_sharing
+        def sharing_option_caption(option)
+          sharing_option_text(option, :caption)
         end
 
-        def disabled?(option)
-          (only_fallback_allowed && option != Projects::SprintSharing::NO_SHARING) ||
-            (option == Project::SHARE_ALL_PROJECTS && share_all_projects_disabled?)
+        def sharing_option_label(option)
+          sharing_option_text(option, :label)
         end
 
         def sharing_option_text(option, key, **)
           I18n.t("projects.settings.backlog_sharing.options.#{option}.#{key}", **)
-        end
-
-        def caption_for(option)
-          case option
-          when Project::SHARE_ALL_PROJECTS
-            shared_all_projects_caption
-          else
-            sharing_option_text(option, :caption)
-          end
         end
 
         def share_all_projects_disabled?
@@ -124,8 +134,8 @@ module Projects
         end
 
         def shared_all_projects_caption
-          if !disabled?(Project::SHARE_ALL_PROJECTS)
-            sharing_option_text(Project::SHARE_ALL_PROJECTS, :caption)
+          if !only_fallback_allowed && !share_all_projects_disabled?
+            sharing_option_caption(Project::SHARE_ALL_PROJECTS)
           elsif User.current.allowed_in_project?(:view_project, global_sprint_sharer)
             sharing_option_text(Project::SHARE_ALL_PROJECTS, :disabled_caption, name: global_sprint_sharer.name)
           else
