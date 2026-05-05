@@ -41,7 +41,7 @@ module Projects
           # is saved.
           # Ideally the hidden field should automatically be rendered by the `radio_button_group`
           # helper, similar to how the `collection_radio_buttons` rails helper does.
-          sharing_form.hidden(name: :sprint_sharing, value: "")
+          sharing_form.hidden(name: :sprint_sharing, value: model.sprint_sharing)
 
           sharing_form.radio_button_group(
             name: :sprint_sharing,
@@ -69,14 +69,22 @@ module Projects
           )
         end
 
+        def initialize(only_fallback_allowed: false)
+          super()
+          @only_fallback_allowed = only_fallback_allowed
+        end
+
         private
+
+        attr_reader :only_fallback_allowed
 
         def checked?(option)
           option == model.sprint_sharing
         end
 
         def disabled?(option)
-          option == Project::SHARE_ALL_PROJECTS && share_all_projects_disabled?
+          (only_fallback_allowed && option != Projects::SprintSharing::NO_SHARING) ||
+            (option == Project::SHARE_ALL_PROJECTS && share_all_projects_disabled?)
         end
 
         def sharing_option_text(option, key, **)
@@ -84,12 +92,9 @@ module Projects
         end
 
         def caption_for(option)
-          if disabled?(option)
-            if User.current.allowed_in_project?(:view_project, global_sprint_sharer)
-              sharing_option_text(option, :disabled_caption, name: global_sprint_sharer.name)
-            else
-              sharing_option_text(option, :disabled_caption_anonymous)
-            end
+          case option
+          when Project::SHARE_ALL_PROJECTS
+            shared_all_projects_caption
           else
             sharing_option_text(option, :caption)
           end
@@ -115,6 +120,16 @@ module Projects
             render(Primer::Alpha::Banner.new(**banner_arguments)) do
               sharing_option_text(option, type)
             end
+          end
+        end
+
+        def shared_all_projects_caption
+          if !disabled?(Project::SHARE_ALL_PROJECTS)
+            sharing_option_text(Project::SHARE_ALL_PROJECTS, :caption)
+          elsif User.current.allowed_in_project?(:view_project, global_sprint_sharer)
+            sharing_option_text(Project::SHARE_ALL_PROJECTS, :disabled_caption, name: global_sprint_sharer.name)
+          else
+            sharing_option_text(Project::SHARE_ALL_PROJECTS, :disabled_caption_anonymous)
           end
         end
       end
