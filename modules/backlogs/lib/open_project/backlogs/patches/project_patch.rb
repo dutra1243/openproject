@@ -34,6 +34,9 @@ module OpenProject::Backlogs::Patches::ProjectPatch
 
   included do
     has_and_belongs_to_many :done_statuses, join_table: :done_statuses_for_project, class_name: "::Status"
+    has_and_belongs_to_many :excluded_work_package_types,
+                            join_table: :excluded_work_package_types_for_project,
+                            class_name: "::Type"
     has_many :sprints, dependent: :destroy
     has_many :backlog_buckets, dependent: :destroy
   end

@@ -74,7 +74,7 @@ module Projects
           }
         ) do |list|
           available_types.each do |label, value|
-            active = false # TODO: persist and check here
+            active = value.in?(model.excluded_work_package_type_ids)
 
             list.option(
               label:,

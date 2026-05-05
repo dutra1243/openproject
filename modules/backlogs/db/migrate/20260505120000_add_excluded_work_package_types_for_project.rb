@@ -28,41 +28,16 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::BacklogsController < Projects::SettingsController
-  menu_item :settings_backlogs
+class AddExcludedWorkPackageTypesForProject < ActiveRecord::Migration[8.0]
+  def change
+    create_table :excluded_work_package_types_for_project, id: false do |t|
+      t.bigint :project_id, null: false
+      t.bigint :type_id, null: false
+    end
 
-  def show; end
-
-  def update
-    @project.update!(params.expect(project: { done_status_ids: [], excluded_work_package_type_ids: [] }))
-
-    flash[:notice] = I18n.t(:notice_successful_update)
-
-    redirect_to_backlogs_settings
-  end
-
-  def rebuild_positions
-    WorkPackages::RebuildPositionsService.new(project: @project).call
-    flash[:notice] = I18n.t("backlogs.positions_rebuilt_successfully")
-
-    redirect_to_backlogs_settings
-  rescue ActiveRecord::ActiveRecordError
-    flash[:error] = I18n.t("backlogs.positions_could_not_be_rebuilt")
-
-    log_rebuild_position_error
-
-    redirect_to_backlogs_settings
-  end
-
-  private
-
-  def redirect_to_backlogs_settings
-    redirect_to project_settings_backlogs_path(@project)
-  end
-
-  def log_rebuild_position_error
-    logger.error("Tried to rebuild positions for project #{@project.identifier.inspect} but could not...")
-    logger.error($!)
-    logger.error($@)
+    add_index :excluded_work_package_types_for_project,
+              %i[project_id type_id],
+              unique: true,
+              name: "idx_excluded_wp_types_for_project"
   end
 end
