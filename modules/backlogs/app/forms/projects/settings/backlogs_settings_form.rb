@@ -71,13 +71,15 @@ module Projects
             }
           }
         ) do |list|
-          [
+          available_types.each do |label, value|
+            active = false # TODO: persist and check here
+
             list.option(
-              label: "foo",
-              value: "foo",
-              selected: false
+              label:,
+              value:,
+              selected: active
             )
-          ]
+          end
         end
 
         f.submit(scheme: :primary, name: :apply, label: I18n.t(:button_save))
@@ -87,6 +89,10 @@ module Projects
 
       def available_statuses
         Status.pluck(:name, :id)
+      end
+
+      def available_types
+        model.types.pluck(:name, :id)
       end
     end
   end
