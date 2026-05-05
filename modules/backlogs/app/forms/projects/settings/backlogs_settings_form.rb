@@ -34,8 +34,8 @@ module Projects
       form do |f|
         f.autocompleter(
           name: :done_status_ids,
-          label: I18n.t(:"backlogs.definition_of_done"),
-          caption: I18n.t(:"backlogs.definition_of_done_caption"),
+          label: I18n.t(:"backlogs.statuses_considered_closed"),
+          caption: I18n.t(:"backlogs.statuses_considered_closed_caption"),
           autocomplete_options: {
             multiple: true,
             closeOnSelect: false,
@@ -55,6 +55,29 @@ module Projects
               selected: active
             )
           end
+        end
+
+        f.autocompleter(
+          name: :excluded_work_package_type_ids,
+          label: I18n.t(:"backlogs.excluded_work_package_types"),
+          caption: I18n.t(:"backlogs.excluded_work_package_types_caption"),
+          autocomplete_options: {
+            multiple: true,
+            closeOnSelect: false,
+            clearable: false,
+            decorated: true,
+            data: {
+              test_selector: "excluded_work_package_type_ids_autocomplete"
+            }
+          }
+        ) do |list|
+          [
+            list.option(
+              label: "foo",
+              value: "foo",
+              selected: false
+            )
+          ]
         end
 
         f.submit(scheme: :primary, name: :apply, label: I18n.t(:button_save))

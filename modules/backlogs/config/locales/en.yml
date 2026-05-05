@@ -95,9 +95,17 @@ en:
 
   backlogs:
     caption_sprints_default_fold_state: "Sprints will not be expanded by default when viewing the 'Backlog and sprints' page. Each one has to be manually expanded."
-    definition_of_done: "Definition of Done"
-    definition_of_done_caption: "Work packages with these statuses are treated as completed in backlog views and reporting."
-    done_status: "Done status"
+    excluded_work_package_types: "Excluded work package types"
+    excluded_work_package_types_caption: >
+      Choose which work package types to hide from the backlog. Items of the selected types will not appear automatically,
+      keeping your backlog focused on the work that matters to your team.
+      For example types like Epics or Milestones that are managed at a higher level can be hidden to keep the backlog focused on actionable items.
+    statuses_considered_closed: "Statuses considered closed"
+    statuses_considered_closed_caption: >
+      Choose the statuses that represent a closed or finished state in your workflow.
+      These will be treated as the "Closed" state across reporting (e.g. burndown) and sprint planning.
+      For example, statuses like Done, Resolved, or Won't Fix may all represent a closed work item in your process.
+    types_and_statuses: "Types and statuses"
     sharing_description: "This project can either share its own sprints, receive shared sprints or handle sprints independently (no sharing)."
     sharing: "Sharing"
     label_burndown_chart: "Burndown chart"
