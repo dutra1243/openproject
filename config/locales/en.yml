@@ -126,6 +126,9 @@ en:
       errors:
         cannot_delete_with_imports: "Cannot delete Jira host with existing imports"
         custom_field_creation_failed: "Failed to create custom field '%{name}': %{message}"
+        semantic_identifiers_must_be_enabled:
+          title: "Project-based semantic identifiers must be enabled."
+          description: "Jira uses work items identifiers consisting of project key and a sequence number (PRJ-123). OpenProject also supports it, but it needs to be enabled [here](link)."
       blank:
         title: "No Jira hosts configured yet"
         description: "Configure a Jira host to start importing items from Jira to this OpenProject instance."

@@ -32,6 +32,7 @@ module Import
   class JiraImportProjectsJob < ApplicationJob
     include Import::JiraOpenProjectReferenceCreation
     include JiraImportCustomFields
+    include Redmine::I18n
 
     # rubocop:disable Metrics/AbcSize
     def perform(jira_import_id)
@@ -40,6 +41,23 @@ module Import
       @jira_id = jira.id
       @user = User.system
       @jira_client = Import::JiraClient.new(url: jira.url, personal_access_token: jira.personal_access_token)
+
+      unless Setting::WorkPackageIdentifier.semantic?
+        view_context = ApplicationController.new.view_context
+        title = view_context.render(Primer::Beta::Text.new(tag: :p, font_weight: :bold).with_content(
+                                      I18n.t("admin.jira.errors.semantic_identifiers_must_be_enabled.title")
+                                    ))
+        description = view_context.render(
+          Primer::Beta::Text.new(tag: :p).with_content(
+            link_translate(
+              "admin.jira.errors.semantic_identifiers_must_be_enabled.description",
+              links: { link: OpenProject::StaticRouting::StaticUrlHelpers.new.admin_settings_work_packages_identifier_path },
+              external: true
+            )
+          )
+        )
+        raise title + description
+      end
 
       ActiveRecord::Base.transaction do
         @project_role = setup_project_role
@@ -51,6 +69,12 @@ module Import
           Import::JiraIssue.where(jira_id: @jira_id, jira_project_id: jira_project.id).find_each do |jira_issue|
             import_issue(jira_issue, project, custom_field_registry)
           end
+          # Update project.wp_sequence_counter to max sequence_number found in migrated from jira work_packages
+          # or 0 in case there are no work_packages in the project.
+          Project
+            .where(id: project.id)
+            .update_all("wp_sequence_counter = (SELECT COALESCE(MAX(sequence_number), 0) " \
+                        "FROM work_packages WHERE project_id = #{project.id})")
         end
       end
     end
@@ -76,12 +100,12 @@ module Import
 
     def import_project(jira_project)
       project_key = jira_project.payload.fetch("key")
-      identifier = Setting::WorkPackageIdentifier.semantic? ? project_key.upcase : project_key.downcase
+      project_keys = jira_project.payload.fetch("projectKeys")
       service_call = Projects::CreateService
                        .new(user: @user, contract_class: EmptyContract)
                        .call(
                          name: jira_project.payload.fetch("name"),
-                         identifier:,
+                         identifier: project_key,
                          description: jira_project.payload.fetch("description"),
                          active: true,
                          public: false,
@@ -92,8 +116,12 @@ module Import
                          workspace_type: "project"
                        )
       if service_call.success?
-        create_reference!(op_leg: service_call.result, jira_leg: jira_project, jira_import: @jira_import, uses_existing: false)
-        return service_call.result
+        project = service_call.result
+        project_keys.each do |key|
+          project.slugs.create(slug: key)
+        end
+        create_reference!(op_leg: project, jira_leg: jira_project, jira_import: @jira_import, uses_existing: false)
+        return project
       end
 
       if (error = service_call.errors.find { |e| e.attribute == :identifier && e.type == :taken }) && error.present?
@@ -246,11 +274,34 @@ module Import
                          priority:,
                          status:,
                          assigned_to:,
+                         skip_semantic_id_allocation: true,
                          **custom_field_attrs
                        )
       raise service_call.message unless service_call.success?
 
       work_package = service_call.result
+
+      key = jira_issue.payload["key"]
+      _, sequence_number = key.split("-")
+      work_package.update_columns(sequence_number:, identifier: key)
+      work_package_id = work_package.id
+      aliases_from_history = jira_issue
+                               .payload["changelog"]["histories"]
+                               .flat_map { |i| i["items"] }
+                               .select { |i| i["field"] == "Key" }
+                               .flat_map do |i|
+        [
+          { identifier: i["toString"], work_package_id: },
+          { identifier: i["fromString"], work_package_id: }
+        ]
+      end
+      aliases = work_package.alias_rows_for_sequence_number(sequence_number)
+      aliases.concat(aliases_from_history)
+      aliases.uniq!
+      work_package.semantic_aliases.upsert_all(aliases,
+                                               on_duplicate: :skip,
+                                               unique_by: :identifier)
+
       create_reference!(op_leg: work_package, jira_leg: jira_issue, jira_import: @jira_import, uses_existing: false)
       import_work_package_history(work_package, jira_issue, project)
     end

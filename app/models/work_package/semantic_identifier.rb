@@ -60,7 +60,9 @@ module WorkPackage::SemanticIdentifier
         .where("work_packages.identifier IS DISTINCT FROM projects.identifier || '-' || work_packages.sequence_number::text")
     }
 
-    after_create :allocate_and_register_semantic_id, if: -> { Setting::WorkPackageIdentifier.semantic? }
+    attr_accessor :skip_semantic_id_allocation
+
+    after_create :allocate_and_register_semantic_id, if: -> { Setting::WorkPackageIdentifier.semantic? && !skip_semantic_id_allocation }
 
     validate :semantic_identifier_fields_consistent
   end
@@ -126,6 +128,15 @@ module WorkPackage::SemanticIdentifier
     end
   end
 
+  # Builds alias rows for every identifier this project has ever used at the given sequence (including the current one).
+  # This also includes "ghost identifiers" -- i.e. those that weren't ever actually generated, but should work
+  # as a historical alias (e.g. OLDPROJ-42 should work even if WP #42 was created after rename to NEWPROJ)
+  def alias_rows_for_sequence_number(seq)
+    project.slugs
+           .pluck(:slug)
+           .map { |prefix| { identifier: "#{prefix}-#{seq}", work_package_id: id } }
+  end
+
   private
 
   # Ensures identifier and sequence_number are always written together.
@@ -134,14 +145,5 @@ module WorkPackage::SemanticIdentifier
     return unless identifier.present? ^ sequence_number.present?
 
     errors.add(:identifier, :semantic_identifier_incomplete)
-  end
-
-  # Builds alias rows for every identifier this project has ever used at the given sequence (including the current one).
-  # This also includes "ghost identifiers" -- i.e. those that weren't ever actually generated, but should work
-  # as a historical alias (e.g. OLDPROJ-42 should work even if WP #42 was created after rename to NEWPROJ)
-  def alias_rows_for_sequence_number(seq)
-    project.slugs
-           .pluck(:slug)
-           .map { |prefix| { identifier: "#{prefix}-#{seq}", work_package_id: id } }
   end
 end
