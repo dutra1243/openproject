@@ -76,8 +76,9 @@ RSpec.describe "MeetingParticipants requests",
 
       it "sends notification email" do
         expect do
-          post project_meeting_participants_path(project, meeting), params: params, as: :turbo_stream
-          perform_enqueued_jobs
+          perform_enqueued_jobs do
+            post project_meeting_participants_path(project, meeting), params: params, as: :turbo_stream
+          end
         end.to change { ActionMailer::Base.deliveries.size }.by(1)
       end
     end
@@ -327,8 +328,9 @@ RSpec.describe "MeetingParticipants requests",
         end
 
         it "only sends series invitation emails" do
-          post project_meeting_participants_path(project, template), params: add_params, as: :turbo_stream
-          perform_enqueued_jobs
+          perform_enqueued_jobs do
+            post project_meeting_participants_path(project, template), params: add_params, as: :turbo_stream
+          end
 
           # 1 series invite to new participant + 1 participant added email to existing participant
           expect(ActionMailer::Base.deliveries.size).to eq(2)
@@ -369,12 +371,14 @@ RSpec.describe "MeetingParticipants requests",
           expect(recurring_meeting.meetings.not_templated.find_by(recurrence_start_time: future_occurrence_time)).to be_nil
         end
 
-        it "sends emails for series and open occurrences, but not closed" do
-          post project_meeting_participants_path(project, template), params:, as: :turbo_stream
-          perform_enqueued_jobs
+        it "only sends series emails for the template, not for propagated occurrences" do
+          perform_enqueued_jobs do
+            post project_meeting_participants_path(project, template), params:, as: :turbo_stream
+          end
 
-          # 1 series invite to new participant + 1 participant added email to existing participant + 1 occurrence invite
-          expect(ActionMailer::Base.deliveries.size).to eq(3)
+          # 1 series invite to new participant + 1 participant added email to existing participant
+          # occurrence propagation runs with notify: false — no occurrence emails
+          expect(ActionMailer::Base.deliveries.size).to eq(2)
           expect(ActionMailer::Base.deliveries.map(&:to).flatten)
             .to include(user_with_meeting_permissions.mail, user.mail)
         end
@@ -402,8 +406,9 @@ RSpec.describe "MeetingParticipants requests",
         end
 
         it "only sends template cancellation emails" do
-          delete project_meeting_participant_path(project, template, template_participant), as: :turbo_stream
-          perform_enqueued_jobs
+          perform_enqueued_jobs do
+            delete project_meeting_participant_path(project, template, template_participant), as: :turbo_stream
+          end
 
           # 1 cancelled series to removed participant + 1 participant removed to remaining template participant
           expect(ActionMailer::Base.deliveries.size).to eq(2)
@@ -448,14 +453,15 @@ RSpec.describe "MeetingParticipants requests",
           expect(recurring_meeting.meetings.not_templated.find_by(recurrence_start_time: future_occurrence_time)).to be_nil
         end
 
-        it "sends cancellation emails for template and open occurrences, but not closed" do
-          delete project_meeting_participant_path(project, template, template_participant),
-                 params: delete_params, as: :turbo_stream
-          perform_enqueued_jobs
+        it "only sends template cancellation emails, not occurrence emails" do
+          perform_enqueued_jobs do
+            delete project_meeting_participant_path(project, template, template_participant),
+                   params: delete_params, as: :turbo_stream
+          end
 
-          # 1 cancelled series to removed participant + 1 participant removed to remaining participant +
-          # 1 occurrence cancelled
-          expect(ActionMailer::Base.deliveries.size).to eq(3)
+          # 1 cancelled series to removed participant + 1 participant removed to remaining participant
+          # occurrence propagation runs with notify: false — no occurrence emails
+          expect(ActionMailer::Base.deliveries.size).to eq(2)
           expect(ActionMailer::Base.deliveries.map(&:to).flatten).to include(user_with_meeting_permissions.mail)
         end
       end

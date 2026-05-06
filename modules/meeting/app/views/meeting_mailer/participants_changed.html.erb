@@ -31,7 +31,7 @@ See COPYRIGHT and LICENSE files for more details.
   <%= render partial: "mailer/mailer_header",
              locals: {
                user: @user,
-               summary: I18n.t("meeting.email.participant_removed.summary", title: @meeting.title, actor: @actor, participant: @removed_participants.join(", ")),
+               summary: I18n.t("meeting.email.participants_changed.summary", title: @meeting.title, actor: @actor),
                bottom_spacing: false
              } %>
 
@@ -76,29 +76,23 @@ See COPYRIGHT and LICENSE files for more details.
               <%= @meeting.author %>
             </td>
           </tr>
-          <tr>
-            <td style="<%= placeholder_text_styles(width: "30%") %>">
-              <%= I18n.t("meeting.email.participant_removed.label") %>
-            </td>
-            <td style="<%= placeholder_text_styles %>">
-              <s><%= @removed_participants.join(", ") %></s>
-            </td>
-          </tr>
-          <% if @meeting.participants.exists? %>
+          <% if @removed_participants.any? %>
             <tr>
               <td style="<%= placeholder_text_styles(width: "30%") %>">
-                <%= Meeting.human_attribute_name(:participants_invited) %>
+                <%= I18n.t("meeting.email.participants_changed.removed") %>
               </td>
               <td style="<%= placeholder_text_styles %>">
-                <%= @meeting.participants.invited.sort.join("; ") %>
+                <s><%= @removed_participants.join(", ") %></s>
               </td>
             </tr>
+          <% end %>
+          <% if @added_participants.any? %>
             <tr>
               <td style="<%= placeholder_text_styles(width: "30%") %>">
-                <%= Meeting.human_attribute_name(:participants_attended) %>
+                <%= I18n.t("meeting.email.participants_changed.added") %>
               </td>
-              <td style="<%= placeholder_text_styles %>">
-                <%= @meeting.participants.attended.sort.join("; ") %>
+              <td style="<%= placeholder_text_styles(color: "#1f2328", "font-weight": "bold") %>">
+                <%= @added_participants.join(", ") %>
               </td>
             </tr>
           <% end %>

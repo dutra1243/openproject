@@ -27,10 +27,15 @@ See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
 
-<%= I18n.t("meeting.email.participant_added.summary_series", title: @series.title, actor: @actor, participant: @added_participants.join(", ")) %>
+<%= I18n.t("meeting.email.participants_changed.summary_series", title: @series.title, actor: @actor) %>
 
 <%= @series.project.name %>: <%= @series.title %> (<%= recurring_meeting_url(@series) %>)
 
 <%= t :label_recurring_meeting_schedule %>: <%= @series.full_schedule_in_words %> (<%= formatted_time_zone_offset %>)
 <%= Meeting.human_attribute_name(:location) %>: <%= @template.location %>
-<%= Meeting.human_attribute_name(:participants_invited) %>: <%= @template.participants.invited.sort.join("; ") %>
+<% if @added_participants.any? %>
+<%= I18n.t("meeting.email.participants_changed.added") %>: <%= @added_participants.join(", ") %>
+<% end %>
+<% if @removed_participants.any? %>
+<%= I18n.t("meeting.email.participants_changed.removed") %>: <%= @removed_participants.join(", ") %>
+<% end %>

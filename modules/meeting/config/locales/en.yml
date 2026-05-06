@@ -301,6 +301,14 @@ en:
         header_series: "Meeting series '%{title}' - Participant removed"
         summary: "%{actor} removed %{participant} from the meeting '%{title}'"
         summary_series: "%{actor} removed %{participant} from the meeting series '%{title}'"
+        label: "Removed"
+      participants_changed:
+        header: "Meeting '%{title}' - Participants updated"
+        header_series: "Meeting series '%{title}' - Participants updated"
+        summary: "%{actor} updated the participants of the meeting '%{title}'"
+        summary_series: "%{actor} updated the participants of the meeting series '%{title}'"
+        added: "Added"
+        removed: "Removed"
       ended:
         header_series: "Ended: Meeting series '%{title}'"
         summary_series: "Meeting series '%{title}' has been ended by %{actor}"

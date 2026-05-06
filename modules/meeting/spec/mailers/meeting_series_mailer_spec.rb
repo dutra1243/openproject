@@ -156,8 +156,8 @@ RSpec.describe MeetingSeriesMailer do
   end
 
   describe "participant_added" do
-    let(:added_participant_name) { "New Participant" }
-    let(:mail) { described_class.participant_added(series, recipient, author, added_participant: added_participant_name) }
+    let(:added_participant_names) { ["New Participant"] }
+    let(:mail) { described_class.participant_added(series, recipient, author, added_participants: added_participant_names) }
 
     it "renders the headers" do
       expect(mail.subject).to include(series.project.name)
@@ -170,7 +170,7 @@ RSpec.describe MeetingSeriesMailer do
       User.execute_as(recipient) do
         expect(mail.text_part.body).to include(series.project.name)
         expect(mail.text_part.body).to include(series.title)
-        expect(mail.text_part.body).to include(added_participant_name)
+        expect(mail.text_part.body).to include(added_participant_names.first)
         expect(mail.text_part.body).to include(author.name)
       end
     end
@@ -179,15 +179,15 @@ RSpec.describe MeetingSeriesMailer do
       User.execute_as(recipient) do
         expect(mail.html_part.body).to include(series.project.name)
         expect(mail.html_part.body).to include(series.title)
-        expect(mail.html_part.body).to include(added_participant_name)
+        expect(mail.html_part.body).to include(added_participant_names.first)
         expect(mail.html_part.body).to include(author.name)
       end
     end
   end
 
   describe "participant_removed" do
-    let(:removed_participant_name) { "Removed Participant" }
-    let(:mail) { described_class.participant_removed(series, recipient, author, removed_participant: removed_participant_name) }
+    let(:removed_participant_names) { ["Removed Participant"] }
+    let(:mail) { described_class.participant_removed(series, recipient, author, removed_participants: removed_participant_names) }
 
     it "renders the headers" do
       expect(mail.subject).to include(series.project.name)
@@ -200,7 +200,7 @@ RSpec.describe MeetingSeriesMailer do
       User.execute_as(recipient) do
         expect(mail.text_part.body).to include(series.project.name)
         expect(mail.text_part.body).to include(series.title)
-        expect(mail.text_part.body).to include(removed_participant_name)
+        expect(mail.text_part.body).to include(removed_participant_names.first)
         expect(mail.text_part.body).to include(author.name)
       end
     end
@@ -209,8 +209,44 @@ RSpec.describe MeetingSeriesMailer do
       User.execute_as(recipient) do
         expect(mail.html_part.body).to include(series.project.name)
         expect(mail.html_part.body).to include(series.title)
-        expect(mail.html_part.body).to include(removed_participant_name)
+        expect(mail.html_part.body).to include(removed_participant_names.first)
         expect(mail.html_part.body).to include(author.name)
+      end
+    end
+  end
+
+  describe "participants_changed" do
+    let(:added_names) { ["Added Person"] }
+    let(:removed_names) { ["Removed Person"] }
+    let(:mail) do
+      described_class.participants_changed(series, recipient, author,
+                                           added_participants: added_names,
+                                           removed_participants: removed_names)
+    end
+
+    it "renders the headers" do
+      expect(mail.subject).to include(series.project.name)
+      expect(mail.to).to contain_exactly(recipient.mail)
+      expect(mail.from).to eq([ApplicationMailer.reply_to_address])
+    end
+
+    it "renders added and removed participants in the text body" do
+      User.execute_as(recipient) do
+        expect(mail.text_part.body).to include(added_names.first)
+        expect(mail.text_part.body).to include(removed_names.first)
+        expect(mail.text_part.body).to include(author.name)
+      end
+    end
+
+    it "renders added participants in the html body" do
+      User.execute_as(recipient) do
+        expect(mail.html_part.body).to include(added_names.first)
+      end
+    end
+
+    it "renders removed participants with strikethrough in the html body" do
+      User.execute_as(recipient) do
+        expect(mail.html_part.body).to include("<s>#{removed_names.first}</s>")
       end
     end
   end

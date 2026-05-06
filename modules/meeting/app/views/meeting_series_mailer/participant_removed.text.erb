@@ -27,7 +27,7 @@ See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
 
-<%= I18n.t("meeting.email.participant_removed.summary_series", title: @series.title, actor: @actor, participant: @removed_participant) %>
+<%= I18n.t("meeting.email.participant_removed.summary_series", title: @series.title, actor: @actor, participant: @removed_participants.join(", ")) %>
 
 <%= @series.project.name %>: <%= @series.title %> (<%= recurring_meeting_url(@series) %>)
 

@@ -31,7 +31,7 @@ See COPYRIGHT and LICENSE files for more details.
   <%= render partial: "mailer/mailer_header",
              locals: {
                user: @user,
-               summary: I18n.t("meeting.email.participant_added.summary", title: @meeting.title, actor: @actor, participant: @added_participant),
+               summary: I18n.t("meeting.email.participant_added.summary", title: @meeting.title, actor: @actor, participant: @added_participants.join(", ")),
                bottom_spacing: false
              } %>
 

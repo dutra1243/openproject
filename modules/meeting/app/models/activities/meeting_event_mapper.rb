@@ -212,7 +212,7 @@ class Activities::MeetingEventMapper < Activities::EventMapper
   end
 
   def journals_includes
-    super + %i[agenda_item_journals]
+    super + %i[agenda_item_journals participant_journals]
   end
 
   def url_helpers

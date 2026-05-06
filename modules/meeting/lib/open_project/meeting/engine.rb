@@ -197,6 +197,7 @@ module OpenProject::Meeting
       end
 
       Journals::CreateService::Association.register(:AgendaItemable)
+      Journals::CreateService::Association.register(:Participatable)
     end
 
     add_api_path :meetings do

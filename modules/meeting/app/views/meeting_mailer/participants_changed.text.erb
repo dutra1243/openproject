@@ -27,10 +27,15 @@ See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
 
-<%= I18n.t("meeting.email.participant_added.summary_series", title: @series.title, actor: @actor, participant: @added_participants.join(", ")) %>
+<%= I18n.t("meeting.email.participants_changed.summary", title: @meeting.title, actor: @actor) %>
 
-<%= @series.project.name %>: <%= @series.title %> (<%= recurring_meeting_url(@series) %>)
+<%= @meeting.project.name %>: <%= @meeting.title %> (<%= meeting_url(@meeting) %>)
 
-<%= t :label_recurring_meeting_schedule %>: <%= @series.full_schedule_in_words %> (<%= formatted_time_zone_offset %>)
-<%= Meeting.human_attribute_name(:location) %>: <%= @template.location %>
-<%= Meeting.human_attribute_name(:participants_invited) %>: <%= @template.participants.invited.sort.join("; ") %>
+<%= t :label_meeting_date_time %>: <%= format_date @meeting.start_time %> <%= format_time @meeting.start_time, include_date: false %>-<%= format_time @meeting.end_time, include_date: false %> (<%= formatted_time_zone_offset %>)
+<%= Meeting.human_attribute_name(:location) %>: <%= @meeting.location %>
+<% if @added_participants.any? %>
+<%= I18n.t("meeting.email.participants_changed.added") %>: <%= @added_participants.join(", ") %>
+<% end %>
+<% if @removed_participants.any? %>
+<%= I18n.t("meeting.email.participants_changed.removed") %>: <%= @removed_participants.join(", ") %>
+<% end %>

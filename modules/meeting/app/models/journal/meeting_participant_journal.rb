@@ -27,25 +27,12 @@
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
-module MeetingParticipants
-  class CreateService < BaseServices::Create
-    def initialize(user:, model: nil, contract_class: nil, contract_options: {}, notify: true)
-      @notify = notify
-      super(user:, model:, contract_class:, contract_options:)
-    end
 
-    protected
+class Journal::MeetingParticipantJournal < ApplicationRecord
+  self.table_name = "meeting_participant_journals"
 
-    def after_perform(call)
-      meeting = call.result.meeting
-      meeting.touch_and_save_journals
+  belongs_to :journal
+  belongs_to :user
 
-      if @notify
-        since_invited_ids = meeting.participants.where(invited: true).where.not(id: call.result.id).pluck(:user_id)
-        Meetings::NotificationDebounceJob.debounce(meeting, since_invited_ids:)
-      end
-
-      call
-    end
-  end
+  enum :participation_status, MeetingParticipant.participation_statuses, allow_nil: true
 end

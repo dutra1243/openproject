@@ -117,11 +117,11 @@ class MeetingMailer < UserMailer
     end
   end
 
-  def participant_added(meeting, user, actor, added_participant:)
+  def participant_added(meeting, user, actor, added_participants:)
     @actor = actor
     @meeting = meeting
     @user = user
-    @added_participant = added_participant
+    @added_participants = Array(added_participants)
 
     open_project_headers "Project" => @meeting.project.identifier,
                          "Meeting-Id" => @meeting.id
@@ -132,17 +132,33 @@ class MeetingMailer < UserMailer
     end
   end
 
-  def participant_removed(meeting, user, actor, removed_participant:)
+  def participant_removed(meeting, user, actor, removed_participants:)
     @actor = actor
     @meeting = meeting
     @user = user
-    @removed_participant = removed_participant
+    @removed_participants = Array(removed_participants)
 
     open_project_headers "Project" => @meeting.project.identifier,
                          "Meeting-Id" => @meeting.id
 
     with_attached_ics(meeting, user) do
       subject = I18n.t("meeting.email.participant_removed.header", title: @meeting.title)
+      mail(to: user, subject: "[#{@meeting.project.name}] #{subject}")
+    end
+  end
+
+  def participants_changed(meeting, user, actor, added_participants:, removed_participants:)
+    @actor = actor
+    @meeting = meeting
+    @user = user
+    @added_participants = Array(added_participants)
+    @removed_participants = Array(removed_participants)
+
+    open_project_headers "Project" => @meeting.project.identifier,
+                         "Meeting-Id" => @meeting.id
+
+    with_attached_ics(meeting, user) do
+      subject = I18n.t("meeting.email.participants_changed.header", title: @meeting.title)
       mail(to: user, subject: "[#{@meeting.project.name}] #{subject}")
     end
   end

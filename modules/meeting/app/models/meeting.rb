@@ -152,11 +152,10 @@ class Meeting < ApplicationRecord
     system: "system"
   }, prefix: :sharing, validate: { allow_nil: true }
 
-  # Journals for meetings are aggregated only within the email debounce window so that
-  # the debounce job always has a populated since_journal to diff against.
-  # Returns nil when the setting is not yet defined, falling back to the global default.
+  # Debounce meeting emails by one minute
+  # this is currently hard coded
   def self.journal_aggregation_time_minutes
-    Setting.meeting_email_debounce_minutes.to_i
+    1
   end
 
   def self.templates_visible_in_project(project, user = User.current)
@@ -348,22 +347,6 @@ class Meeting < ApplicationRecord
   def send_updated_mail
     return unless send_emails?
 
-    MeetingNotificationService
-      .new(self)
-      .call :updated,
-            changes: updated_mail_changes
-  end
-
-  def updated_mail_changes # rubocop:disable Metrics/AbcSize
-    {
-      old_start: saved_change_to_start_time? ? saved_change_to_start_time.first : start_time,
-      new_start: start_time,
-      old_duration: saved_change_to_duration? ? saved_change_to_duration.first : duration,
-      new_duration: duration,
-      old_location: saved_change_to_location? ? saved_change_to_location.first : location,
-      new_location: location,
-      old_title: saved_change_to_title? ? saved_change_to_title.first : title,
-      new_title: title
-    }
+    Meetings::NotificationDebounceJob.debounce(self, since_journal_id: last_journal&.id)
   end
 end

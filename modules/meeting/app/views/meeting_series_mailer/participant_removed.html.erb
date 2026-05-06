@@ -31,7 +31,7 @@ See COPYRIGHT and LICENSE files for more details.
   <%= render partial: "mailer/mailer_header",
              locals: {
                user: @user,
-               summary: I18n.t("meeting.email.participant_removed.summary_series", title: @series.title, actor: @actor, participant: @removed_participant),
+               summary: I18n.t("meeting.email.participant_removed.summary_series", title: @series.title, actor: @actor, participant: @removed_participants.join(", ")),
                bottom_spacing: false
              } %>
 
@@ -72,6 +72,14 @@ See COPYRIGHT and LICENSE files for more details.
             </td>
             <td style="<%= placeholder_text_styles %>">
               <%= @series.author %>
+            </td>
+          </tr>
+          <tr>
+            <td style="<%= placeholder_text_styles(width: "30%") %>">
+              <%= I18n.t("meeting.email.participant_removed.label") %>
+            </td>
+            <td style="<%= placeholder_text_styles %>">
+              <s><%= @removed_participants.join(", ") %></s>
             </td>
           </tr>
           <% if @template.participants.exists? %>

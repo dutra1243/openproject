@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-#-- copyright
+# -- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
 #
@@ -26,26 +26,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
-#++
-module MeetingParticipants
-  class CreateService < BaseServices::Create
-    def initialize(user:, model: nil, contract_class: nil, contract_options: {}, notify: true)
-      @notify = notify
-      super(user:, model:, contract_class:, contract_options:)
+# ++
+
+require Rails.root.join("db/migrate/tables/base").to_s
+
+class Tables::MeetingParticipantJournals < Tables::Base
+  def self.table(migration)
+    create_table migration do |t|
+      t.integer :journal_id, null: false
+      t.integer :user_id, null: false
+      t.boolean :invited, default: false, null: false
+      t.boolean :attended, default: false, null: false
+      t.string :participation_status
     end
 
-    protected
-
-    def after_perform(call)
-      meeting = call.result.meeting
-      meeting.touch_and_save_journals
-
-      if @notify
-        since_invited_ids = meeting.participants.where(invited: true).where.not(id: call.result.id).pluck(:user_id)
-        Meetings::NotificationDebounceJob.debounce(meeting, since_invited_ids:)
-      end
-
-      call
-    end
+    migration.add_index :meeting_participant_journals,
+                        %i[journal_id user_id],
+                        unique: true,
+                        name: :index_meeting_participant_journals_on_journal_id_and_user_id
   end
 end
