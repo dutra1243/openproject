@@ -34,11 +34,19 @@ class Projects::Settings::BacklogsController < Projects::SettingsController
   def show; end
 
   def update
-    @project.update!(params.expect(project: { done_status_ids: [], excluded_work_package_type_ids: [] }))
+    call = Projects::UpdateService
+      .new(model: @project,
+           user: current_user,
+           contract_class: Projects::BacklogsTypesAndStatusesContract)
+      .call(backlogs_settings_params)
 
-    flash[:notice] = I18n.t(:notice_successful_update)
-
-    redirect_to_backlogs_settings
+    if call.success?
+      flash[:notice] = I18n.t(:notice_successful_update)
+      redirect_to_backlogs_settings
+    else
+      flash.now[:error] = I18n.t(:notice_unsuccessful_update_with_reason, reason: call.message)
+      render action: :show, status: :unprocessable_entity
+    end
   end
 
   def rebuild_positions
@@ -55,6 +63,10 @@ class Projects::Settings::BacklogsController < Projects::SettingsController
   end
 
   private
+
+  def backlogs_settings_params
+    params.expect(project: { done_status_ids: [], excluded_work_package_type_ids: [] })
+  end
 
   def redirect_to_backlogs_settings
     redirect_to project_settings_backlogs_path(@project)
