@@ -44,6 +44,12 @@ module Wikis
 
     def configured? = raise SubclassResponsibilityError
 
+    def non_confidential_configuration
+      {
+        enabled:
+      }
+    end
+
     def to_s = self.class.registry_prefix
     def user_connected?(_user) = raise SubclassResponsibilityError
 

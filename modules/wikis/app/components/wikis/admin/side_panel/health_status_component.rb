@@ -28,31 +28,50 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.routes.draw do
-  namespace :admin do
-    namespace :settings do
-      resources :wiki_providers, controller: "/wikis/admin/wiki_providers", except: [:show] do
-        member do
-          get :confirm_destroy
-          get :edit_general_info
-          delete :replace_oauth_application
+module Wikis
+  module Admin
+    module SidePanel
+      class HealthStatusComponent < ApplicationComponent
+        include ApplicationHelper
+        include OpTurbo::Streamable
+        include OpPrimer::ComponentHelpers
+
+        private
+
+        def report
+          model.health_reports.order(created_at: :asc).last
         end
 
-        resource :health_status_report, controller: "/wikis/admin/health_status", only: %i[show create] do
-          post :create_health_status_report
+        def summary_header
+          tally = report.tally
+          case tally
+          in { failure: 1.. }
+            {
+              icon: :alert,
+              icon_color: :danger,
+              text: t(".checks.failures", count: tally[:failure])
+            }
+          in { warning: 1.. }
+            {
+              icon: :alert,
+              icon_color: :attention,
+              text: t(".checks.warnings", count: tally[:warning])
+            }
+          else
+            { icon: :"check-circle", icon_color: :success, text: t(".checks.success") }
+          end
         end
 
-        resource :oauth_client, controller: "/wikis/admin/oauth_clients", only: %i[new create] do
-          patch :update, on: :member
-        end
-      end
-    end
-  end
-  resources :projects, only: %i[] do
-    resources :work_packages, only: %i[] do
-      resources :wikis, only: %i[] do
-        collection do
-          resources :tab, only: %i[index], controller: "work_package_wikis_tab", as: "wikis_tab"
+        def summary_description
+          text = if report.healthy?
+                   t(".summary.success")
+                 elsif report.unhealthy?
+                   t(".summary.failure")
+                 else
+                   t(".summary.warning")
+                 end
+
+          "#{text} #{t('.last_check', datetime: helpers.format_time(report.created_at))}"
         end
       end
     end

@@ -54,6 +54,14 @@ module Wikis
         oauth_application.present?
     end
 
+    def non_confidential_configuration
+      super.merge(
+        url:,
+        oauth_client_id: oauth_client&.client_id,
+        oauth_application_client_id: oauth_application&.uid
+      )
+    end
+
     def user_connected?(user)
       return true if oauth_client.blank?
 

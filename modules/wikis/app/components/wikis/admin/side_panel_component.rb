@@ -28,33 +28,14 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-Rails.application.routes.draw do
-  namespace :admin do
-    namespace :settings do
-      resources :wiki_providers, controller: "/wikis/admin/wiki_providers", except: [:show] do
-        member do
-          get :confirm_destroy
-          get :edit_general_info
-          delete :replace_oauth_application
-        end
+module Wikis
+  module Admin
+    class SidePanelComponent < ApplicationComponent
+      include ApplicationHelper
+      include OpTurbo::Streamable
+      include OpPrimer::ComponentHelpers
 
-        resource :health_status_report, controller: "/wikis/admin/health_status", only: %i[show create] do
-          post :create_health_status_report
-        end
-
-        resource :oauth_client, controller: "/wikis/admin/oauth_clients", only: %i[new create] do
-          patch :update, on: :member
-        end
-      end
-    end
-  end
-  resources :projects, only: %i[] do
-    resources :work_packages, only: %i[] do
-      resources :wikis, only: %i[] do
-        collection do
-          resources :tab, only: %i[index], controller: "work_package_wikis_tab", as: "wikis_tab"
-        end
-      end
+      alias wiki_provider model
     end
   end
 end
