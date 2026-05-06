@@ -87,7 +87,7 @@ See COPYRIGHT and LICENSE files for more details.
             move_menu.with_item(
               id: dom_target(work_package, :menu, :move_to_sprint),
               label: t(".label_move_to_sprint"),
-              href: move_to_sprint_dialog_project_backlogs_inbox_path(project, work_package, all_backlogs_params),
+              href: move_to_sprint_dialog_project_backlogs_work_package_path(project, work_package, all_backlogs_params),
               content_arguments: { data: { controller: "async-dialog" } }
             ) do |item|
               item.with_leading_visual_icon(icon: :zap)

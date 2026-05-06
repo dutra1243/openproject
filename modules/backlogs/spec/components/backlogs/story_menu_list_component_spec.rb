@@ -57,7 +57,6 @@ RSpec.describe Backlogs::StoryMenuListComponent, type: :component do
   def render_component(position: 2, max_position: 3, open_sprints_exist: true)
     story.update!(position:)
     render_inline(described_class.new(story:,
-                                      sprint:,
                                       project:,
                                       max_position:,
                                       open_sprints_exist:,

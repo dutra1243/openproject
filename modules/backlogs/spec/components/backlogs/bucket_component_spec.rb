@@ -138,7 +138,7 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
           expect(row["data-controller"]).to eq("backlogs--story")
           expect(row["data-draggable-id"]).to eq(work_package.id.to_s)
           expect(row["data-draggable-type"]).to eq("story")
-          expect(row["data-drop-url"]).to end_with(move_project_backlogs_inbox_path(project, work_package))
+          expect(row["data-drop-url"]).to end_with(move_project_backlogs_work_package_path(project, work_package))
           expect(row["data-backlogs--story-split-url-value"])
             .to end_with(project_backlogs_backlog_details_path(project, work_package))
           expect(row["data-backlogs--story-full-url-value"])

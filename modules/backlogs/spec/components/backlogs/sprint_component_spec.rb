@@ -111,7 +111,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
           expect(row["data-draggable-type"]).to eq("story")
           expect(row["data-backlogs--story-display-id-value"]).to eq(work_package1.display_id.to_s)
           expect(row["data-drop-url"])
-            .to end_with(move_project_backlogs_work_package_path(project, sprint, work_package1))
+            .to end_with(move_project_backlogs_work_package_path(project, work_package1))
         end
       end
 
@@ -123,7 +123,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
         it "propagates ?all=1 to the work package drop URL" do
           expect(rendered_component).to have_css(".Box-row#work_package_#{work_package1.id}") do |row|
             expect(row["data-drop-url"])
-              .to eq(move_project_backlogs_work_package_path(project, sprint, work_package1, all: "1"))
+              .to eq(move_project_backlogs_work_package_path(project, work_package1, all: "1"))
           end
         end
       end

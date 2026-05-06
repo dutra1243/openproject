@@ -35,13 +35,12 @@ module Backlogs
     include OpPrimer::ComponentHelpers
     include CommonHelper
 
-    attr_reader :story, :sprint, :project, :max_position, :current_user, :open_sprints_exist
+    attr_reader :story, :project, :max_position, :current_user, :open_sprints_exist
 
-    def initialize(story:, sprint:, project:, max_position:, open_sprints_exist:, current_user: User.current)
+    def initialize(story:, project:, max_position:, open_sprints_exist:, current_user: User.current)
       super()
 
       @story = story
-      @sprint = sprint
       @project = project
       @max_position = max_position
       @open_sprints_exist = open_sprints_exist
@@ -103,7 +102,7 @@ module Backlogs
     end
 
     def move_href
-      reorder_project_backlogs_work_package_path(project, sprint, story, all_backlogs_params)
+      reorder_project_backlogs_work_package_path(project, story, all_backlogs_params)
     end
   end
 end

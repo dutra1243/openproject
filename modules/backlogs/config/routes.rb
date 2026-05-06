@@ -91,16 +91,16 @@ Rails.application.routes.draw do
         end
       end
 
-      scope "sprints/:sprint_id" do
-        resources :work_packages, controller: :work_packages, only: [] do
-          member do
-            get :menu
-            put :move
-            post :reorder
-            get :move_to_sprint_dialog
-          end
+      resources :work_packages, controller: :work_packages, only: [] do
+        member do
+          get :menu
+          put :move
+          post :reorder
+          get :move_to_sprint_dialog
         end
+      end
 
+      scope "sprints/:sprint_id" do
         get "taskboard", to: "taskboard#show", as: :sprint_taskboard
         get "burndown_chart", to: "burndown_chart#show", as: :sprint_burndown_chart
       end
@@ -108,9 +108,6 @@ Rails.application.routes.draw do
       resources :inbox, only: [] do
         member do
           get :menu
-          put :move
-          post :reorder
-          get :move_to_sprint_dialog
         end
       end
     end
