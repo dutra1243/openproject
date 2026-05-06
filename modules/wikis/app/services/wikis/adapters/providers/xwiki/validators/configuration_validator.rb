@@ -23,42 +23,40 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
 module Wikis
-  class Provider < ApplicationRecord
-    self.table_name = "wiki_providers"
+  module Adapters
+    module Providers
+      module XWiki
+        module Validators
+          class ConfigurationValidator < HealthReports::ValidatorGroup
+            def self.key = :base_configuration
 
-    has_many :page_links, dependent: :destroy
-    has_many :health_reports, as: :subject, dependent: :delete_all
+            private
 
-    scope :enabled, -> { where(enabled: true) }
-    scope :visible, ->(_user = User.current) { all }
+            def validate
+              register_checks(
+                :provider_configured
+              )
 
-    validates :name, presence: true, uniqueness: true, length: { maximum: 255 }
+              provider_configured
+              # TODO: check dependencies (e.g. OpenProject extension) and version requirements
+            end
 
-    before_create :generate_universal_identifier
-
-    def configured? = raise SubclassResponsibilityError
-
-    def to_s = self.class.registry_prefix
-    def user_connected?(_user) = raise SubclassResponsibilityError
-
-    class << self
-      def registry_prefix = raise SubclassResponsibilityError
-    end
-
-    def resolve(registry_path, **init_options)
-      Adapters::Registry["#{self.class.registry_prefix}.#{registry_path}"].new(model: self, **init_options)
-    end
-
-    private
-
-    def generate_universal_identifier
-      self.universal_identifier ||= SecureRandom.uuid
+            def provider_configured
+              if subject.configured?
+                pass_check(:provider_configured)
+              else
+                fail_check(:provider_configured, :not_configured)
+              end
+            end
+          end
+        end
+      end
     end
   end
 end

@@ -48,6 +48,12 @@ module Wikis
       def generate_client_id = SecureRandom.uuid
     end
 
+    def configured?
+      url.present? &&
+        oauth_client.present? &&
+        oauth_application.present?
+    end
+
     def user_connected?(user)
       return true if oauth_client.blank?
 

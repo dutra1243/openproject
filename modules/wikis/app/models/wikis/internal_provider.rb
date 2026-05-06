@@ -36,6 +36,8 @@ module Wikis
 
     def user_connected?(_user) = true
 
+    def configured? = true
+
     def name
       model_name.human
     end

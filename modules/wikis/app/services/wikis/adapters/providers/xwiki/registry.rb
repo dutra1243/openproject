@@ -65,6 +65,10 @@ module Wikis
             register(:referencing_pages, Queries::ReferencingPages)
             register(:relation_page_links, Queries::RelationPageLinks)
           end
+
+          namespace("validators") do
+            register("connection", Validators::ConnectionValidator)
+          end
         end
       end
     end
