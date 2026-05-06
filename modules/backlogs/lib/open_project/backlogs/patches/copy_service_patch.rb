@@ -38,7 +38,11 @@ module OpenProject::Backlogs::Patches::CopyServicePatch
   module InstanceMethods
     def clean_settings_attributes!(settings)
       # There can be only one project sharing with all projects.
-      settings.delete("sprint_sharing") if settings["sprint_sharing"] == Projects::SprintSharing::SHARE_ALL_PROJECTS
+      if settings["sprint_sharing"] == Projects::SprintSharing::SHARE_ALL_PROJECTS ||
+         !EnterpriseToken.allows_to?(:sprint_sharing)
+        settings.delete("sprint_sharing")
+      end
+
       super
     end
   end
