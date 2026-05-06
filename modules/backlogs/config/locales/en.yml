@@ -95,6 +95,8 @@ en:
 
   backlogs:
     caption_sprints_default_fold_state: "Sprints will not be expanded by default when viewing the 'Backlog and sprints' page. Each one has to be manually expanded."
+    copy:
+      backlogs_settings: "Backlogs settings"
     excluded_work_package_types: "Excluded work package types"
     excluded_work_package_types_caption: >
       Choose which work package types to hide from the backlog. Items of the selected types will not appear automatically,

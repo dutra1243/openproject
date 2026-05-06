@@ -28,28 +28,19 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module OpenProject::Backlogs::Patches::CopyServicePatch
-  extend ActiveSupport::Concern
-
-  included do
-    prepend InstanceMethods
-  end
-
-  def self.included(base)
-    base.singleton_class.prepend(ClassMethods)
-  end
-
-  module InstanceMethods
-    def clean_settings_attributes!(settings)
-      # There can be only one project sharing with all projects.
-      settings.delete("sprint_sharing") if settings["sprint_sharing"] == Projects::SprintSharing::SHARE_ALL_PROJECTS
-      super
+module Projects::Copy
+  class BacklogsSettingsDependentService < Dependency
+    def self.human_name
+      I18n.t(:"backlogs.copy.backlogs_settings")
     end
-  end
 
-  module ClassMethods
-    def copy_dependencies
-      super + [::Projects::Copy::BacklogsSettingsDependentService]
+    protected
+
+    def copy_dependency(*)
+      return unless source.backlogs_enabled?
+
+      target.done_statuses = source.done_statuses
+      target.excluded_work_package_types = source.excluded_work_package_types
     end
   end
 end

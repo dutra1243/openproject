@@ -133,6 +133,7 @@ module OpenProject::Backlogs
                Project]
 
     patch_with_namespace :BasicData, :SettingSeeder
+    patch_with_namespace :Projects, :CopyService
     patch_with_namespace :WorkPackages, :SetAttributesService
     patch_with_namespace :WorkPackages, :BaseContract
     patch_with_namespace :WorkPackages, :UpdateContract
