@@ -32,7 +32,7 @@ require "rails_helper"
 
 RSpec.describe "Backlogs project settings sprint sharing", :js do
   let(:project) { create(:project) }
-  let(:permissions) { %i[create_sprints share_sprint select_done_statuses] }
+  let(:permissions) { %i[create_sprints share_sprint select_backlog_types_and_statuses] }
 
   let(:current_user) do
     create(:user, member_with_permissions: { project => permissions })
@@ -128,7 +128,7 @@ RSpec.describe "Backlogs project settings sprint sharing", :js do
   end
 
   context "without share_sprint permission" do
-    let(:permissions) { %i[create_sprints select_done_statuses] }
+    let(:permissions) { %i[create_sprints select_backlog_types_and_statuses] }
 
     it "does not show the sharing tab and forbids direct route access" do
       visit project_settings_backlogs_path(project)

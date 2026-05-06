@@ -40,7 +40,7 @@ RSpec.describe "Backlogs Project Settings", :js do
   let!(:closed_like_status) { create(:status, name: "Sorta kinda Finished", is_default: true) }
   let(:role) do
     create(:project_role,
-           permissions: %i[select_done_statuses])
+           permissions: %i[select_backlog_types_and_statuses])
   end
   let!(:current_user) do
     create(:user,

@@ -236,7 +236,7 @@ en:
 
   permission_create_sprints: "Create sprints"
   permission_manage_sprint_items: "Manage sprint items"
-  permission_select_done_statuses: "Select done statuses"
+  permission_select_backlog_types_and_statuses: "Select backlog types and statuses"
   permission_share_sprint: "Share sprint"
   permission_start_complete_sprint: "Start/complete sprint"
   permission_view_sprints: "View sprints"
