@@ -239,6 +239,9 @@ en:
   permission_create_sprints: "Create sprints"
   permission_manage_sprint_items: "Manage sprint items"
   permission_select_backlog_types_and_statuses: "Select backlog types and statuses"
+  permission_select_backlog_types_and_statuses_explanation: >
+    Allows choosing which work package types to hide from the backlog. Also allows to define
+    which statuses represent a closed or finished state in the projects workflow.
   permission_share_sprint: "Share sprint"
   permission_start_complete_sprint: "Start/complete sprint"
   permission_view_sprints: "View sprints"
