@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-#-- copyright
+# -- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
 #
@@ -26,32 +26,39 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
-#++
+# ++
 
-module Sprints
-  class FinishContract < ModelContract
-    validate :sprint_must_be_active
-    validate :user_allowed_to_finish
-    validate :no_unfinished_work_packages
+require "spec_helper"
 
-    def self.model
-      Sprint
+RSpec.describe WorkPackages::Scopes::Unfinished do
+  let(:user) { create(:admin) }
+  let(:open_status) { create(:status, is_closed: false) }
+  let(:closed_status) { create(:status, is_closed: true) }
+  let(:open_status_defined_as_done_in_project) { create(:status, is_closed: false) }
+  let(:project) do
+    create(:project, enabled_module_names: %w[backlogs]) do |p|
+      p.done_status_ids = [closed_status.id, open_status_defined_as_done_in_project.id]
+    end
+  end
+
+  current_user { user }
+
+  subject(:unfinished) { WorkPackage.unfinished(project) }
+
+  describe ".unfinished" do
+    it "returns work packages that are defined as 'not done' in the project" do
+      wp_with_open_status = create(:work_package, project:, status: open_status)
+      create(:work_package, project:, status: closed_status)
+      create(:work_package, project:, status: open_status_defined_as_done_in_project)
+
+      expect(unfinished).to contain_exactly(wp_with_open_status)
     end
 
-    private
+    it "excludes work packages from other projects" do
+      create(:work_package, status: open_status)
+      own_wp = create(:work_package, project:, status: open_status)
 
-    def sprint_must_be_active
-      errors.add(:status, :not_active) unless model.active?
-    end
-
-    def user_allowed_to_finish
-      errors.add(:base, :error_unauthorized) unless user.allowed_in_project?(:start_complete_sprint, model.project)
-    end
-
-    def no_unfinished_work_packages
-      unfinished_work_package_count = model.work_packages.unfinished(model.project).count
-
-      errors.add(:base, :unfinished_work_packages, count: unfinished_work_package_count) if unfinished_work_package_count > 0
+      expect(unfinished).to contain_exactly(own_wp)
     end
   end
 end

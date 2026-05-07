@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-#-- copyright
+# -- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
 #
@@ -26,32 +26,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
-#++
+# ++
 
-module Sprints
-  class FinishContract < ModelContract
-    validate :sprint_must_be_active
-    validate :user_allowed_to_finish
-    validate :no_unfinished_work_packages
+module WorkPackages::Scopes::Unfinished
+  extend ActiveSupport::Concern
 
-    def self.model
-      Sprint
-    end
-
-    private
-
-    def sprint_must_be_active
-      errors.add(:status, :not_active) unless model.active?
-    end
-
-    def user_allowed_to_finish
-      errors.add(:base, :error_unauthorized) unless user.allowed_in_project?(:start_complete_sprint, model.project)
-    end
-
-    def no_unfinished_work_packages
-      unfinished_work_package_count = model.work_packages.unfinished(model.project).count
-
-      errors.add(:base, :unfinished_work_packages, count: unfinished_work_package_count) if unfinished_work_package_count > 0
+  class_methods do
+    def unfinished(project)
+      where(project:)
+        .where.not(status_id: project.done_statuses.select(:id))
+        .includes(:status)
     end
   end
 end

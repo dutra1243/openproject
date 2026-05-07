@@ -49,6 +49,7 @@ module OpenProject::Backlogs::Patches::WorkPackagePatch
     include OpenProject::Backlogs::List
 
     scopes :backlogs_inbox_for
+    scopes :unfinished
   end
 
   module ClassMethods
