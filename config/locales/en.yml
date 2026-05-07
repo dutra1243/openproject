@@ -3602,6 +3602,9 @@ en:
     additional:
       projects: "Newest visible projects in this instance."
       no_visible_projects: "There are no visible projects in this instance."
+      favorite_projects:
+        no_results: "You have no favorite projects"
+        no_results_subtext: "Add one or multiple projects as favorite through their overview or in a project list."
       users: "Newest registered users in this instance."
     blocks:
       community: "OpenProject community"

@@ -31,19 +31,16 @@
 module Homescreen
   module Blocks
     class Projects < Grids::WidgetComponent
-      include IconsHelper
       include ProjectsHelper
-      include Redmine::I18n
 
       def initialize(*)
         super
 
-        @favorite_projects = Project.visible.active.favorited_by(current_user)
-        @newest_projects = Project.visible.newest.take(3)
+        @favorite_projects = Project.visible.active.favorited_by(current_user).to_a
       end
 
       def title
-        I18n.t(:label_project_plural)
+        I18n.t("projects.lists.favorited")
       end
     end
   end

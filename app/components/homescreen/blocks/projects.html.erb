@@ -1,57 +1,40 @@
-<%= widget_wrapper do %>
-  <% if @favorite_projects.any? %>
-    <p class="widget-box--additional-info"><%= t("projects.lists.favorited") %></p>
-    <ul class="widget-box--arrow-links">
-      <% @favorite_projects.each do |project| %>
-        <li>
-          <%= render(
-                Primer::Beta::Octicon.new(
-                  icon: "star-fill",
-                  classes: "op-primer--star-icon",
-                  "aria-label": I18n.t(:label_favorite)
-                )
-              ) %>
-
-          <%= link_to project, project_path(project),
-                      title: short_project_description(project),
-                      data: { test_selector: "favorite-project" } %>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
-
-  <% if @newest_projects.empty? %>
-    <p class="widget-box--additional-info">
-      <%= t("homescreen.additional.no_visible_projects") %>
-    </p>
+<%= widget_wrapper do |container| %>
+  <% if @favorite_projects.empty? %>
+    <%= render(Primer::Beta::Blankslate.new(test_selector: "projects-widget-empty")) do |component| %>
+      <% component.with_visual_icon(icon: :project) %>
+      <% component.with_heading(tag: :h3).with_content(t("homescreen.additional.favorite_projects.no_results")) %>
+      <% component.with_description { t("homescreen.additional.favorite_projects.no_results_subtext") } %>
+    <% end %>
   <% else %>
-    <p class="widget-box--additional-info"><%= t("homescreen.additional.projects") %></p>
-    <ul class="widget-box--arrow-links">
-      <% @newest_projects.each do |project| %>
-      <li>
-        <%= link_to project, project_path(project), title: short_project_description(project) %>
-        <small>(<%= format_date(project.created_at) %>)</small>
-      </li>
+    <% @favorite_projects.each do |project| %>
+      <% container.with_row do %>
+        <%= flex_layout do |row| %>
+          <% row.with_column do %>
+            <%= render(
+                  Primer::Beta::Octicon.new(
+                    icon: "star-fill",
+                    classes: "op-primer--star-icon",
+                    "aria-label": I18n.t(:label_favorite)
+                  )
+                ) %>
+          <% end %>
+
+          <% row.with_column(ml: 2) do %>
+            <%= render(
+                  Primer::Beta::Link.new(
+                    font_weight: :bold,
+                    href: project_path(project),
+                    title: short_project_description(project),
+                    data: { "test-selector": "favorite-project" }
+                  )
+                ) { project.name } %>
+          <% end %>
+        <% end %>
       <% end %>
-    </ul>
+    <% end %>
+
+    <% container.with_footer do %>
+      <%= render(Primer::Beta::Link.new(href: projects_path)) { t(:label_project_view_all) } %>
+    <% end %>
   <% end %>
-
-  <div class="widget-box--blocks--buttons">
-    <% if current_user.allowed_globally?(:add_project) %>
-      <%= link_to new_project_path,
-                  { class: "button -primary",
-                    aria: { label: t(:label_project_new) },
-                    title: t(:label_project_new) } do %>
-        <%= op_icon("button--icon icon-add") %>
-        <span class="button--text"><%= Project.model_name.human %></span>
-      <% end %>
-    <% end %>
-
-    <%# If any project exists %>
-    <% unless @newest_projects.empty? %>
-      <%= link_to t(:label_project_view_all), projects_path,
-                  class: "button -highlight-inverted",
-                  title: t(:label_project_view_all) %>
-    <% end %>
-  </div>
 <% end %>
