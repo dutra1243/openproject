@@ -62,7 +62,7 @@ class Sprints::FinishService < BaseServices::BaseContracted
   private
 
   def unfinished_work_packages
-    model.work_packages.unfinished(model.project)
+    model.work_packages.unfinished
   end
 
   def move_to_sprint(target_sprint)

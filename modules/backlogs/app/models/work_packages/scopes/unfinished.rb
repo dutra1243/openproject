@@ -32,9 +32,16 @@ module WorkPackages::Scopes::Unfinished
   extend ActiveSupport::Concern
 
   class_methods do
-    def unfinished(project)
-      where(project:)
-        .where.not(status_id: project.done_statuses.select(:id))
+    def unfinished
+      # Excludes work packages whose status is configured as "done" on the project
+      # the work package belongs to. The correlated subquery ensures each work package
+      # is always checked against its own project's status configuration.
+      status_subquery = <<~SQL.squish
+        status_id NOT IN (SELECT status_id FROM done_statuses_for_project
+                            WHERE project_id = work_packages.project_id)
+      SQL
+
+      where(status_subquery)
         .includes(:status)
     end
   end

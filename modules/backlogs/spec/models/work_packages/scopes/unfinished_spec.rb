@@ -43,7 +43,7 @@ RSpec.describe WorkPackages::Scopes::Unfinished do
 
   current_user { user }
 
-  subject(:unfinished) { WorkPackage.unfinished(project) }
+  subject(:unfinished) { WorkPackage.unfinished }
 
   describe ".unfinished" do
     it "returns work packages that are defined as 'not done' in the project" do
@@ -54,11 +54,18 @@ RSpec.describe WorkPackages::Scopes::Unfinished do
       expect(unfinished).to contain_exactly(wp_with_open_status)
     end
 
-    it "excludes work packages from other projects" do
-      create(:work_package, status: open_status)
-      own_wp = create(:work_package, project:, status: open_status)
+    it "considers the 'not done' configuration of the project a work package belongs to" do
+      project_where_closed_status_is_not_defined_as_done = create(:project, enabled_module_names: %w[backlogs]) do |p|
+        # Note that 'closed_status' is missing here
+        p.done_status_ids = [open_status_defined_as_done_in_project.id]
+      end
 
-      expect(unfinished).to contain_exactly(own_wp)
+      create(:work_package, status: closed_status, project:)
+      not_quite_closed_wp = create(:work_package,
+                                   status: closed_status,
+                                   project: project_where_closed_status_is_not_defined_as_done)
+
+      expect(unfinished).to contain_exactly(not_quite_closed_wp)
     end
   end
 end

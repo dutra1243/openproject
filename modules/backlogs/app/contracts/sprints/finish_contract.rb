@@ -49,7 +49,7 @@ module Sprints
     end
 
     def no_unfinished_work_packages
-      unfinished_work_package_count = model.work_packages.unfinished(model.project).count
+      unfinished_work_package_count = model.work_packages.unfinished.count
 
       errors.add(:base, :unfinished_work_packages, count: unfinished_work_package_count) if unfinished_work_package_count > 0
     end
