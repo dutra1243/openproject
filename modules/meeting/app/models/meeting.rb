@@ -152,6 +152,13 @@ class Meeting < ApplicationRecord
     system: "system"
   }, prefix: :sharing, validate: { allow_nil: true }
 
+  # Journals for meetings are aggregated only within the email debounce window so that
+  # the debounce job always has a populated since_journal to diff against.
+  # Returns nil when the setting is not yet defined, falling back to the global default.
+  def self.journal_aggregation_time_minutes
+    Setting.meeting_email_debounce_minutes.to_i
+  end
+
   def self.templates_visible_in_project(project, user = User.current)
     accessible_ids = Project.allowed_to(user, :view_meetings).select(:id)
 
