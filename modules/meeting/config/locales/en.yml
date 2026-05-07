@@ -291,24 +291,6 @@ en:
         summary_series: "Meeting series '%{title}' has been cancelled by %{actor}, or you have been removed as a participant"
         summary: "'%{title}' has been cancelled by %{actor}, or you have been removed as a participant"
         date_time: "Scheduled date/time"
-      participant_added:
-        header: "Meeting '%{title}' - Participant added"
-        header_series: "Meeting series '%{title}' - Participant added"
-        summary: "%{actor} added %{participant} to the meeting '%{title}'"
-        summary_series: "%{actor} added %{participant} to the meeting series '%{title}'"
-      participant_removed:
-        header: "Meeting '%{title}' - Participant removed"
-        header_series: "Meeting series '%{title}' - Participant removed"
-        summary: "%{actor} removed %{participant} from the meeting '%{title}'"
-        summary_series: "%{actor} removed %{participant} from the meeting series '%{title}'"
-        label: "Removed"
-      participants_changed:
-        header: "Meeting '%{title}' - Participants updated"
-        header_series: "Meeting series '%{title}' - Participants updated"
-        summary: "%{actor} updated the participants of the meeting '%{title}'"
-        summary_series: "%{actor} updated the participants of the meeting series '%{title}'"
-        added: "Added"
-        removed: "Removed"
       ended:
         header_series: "Ended: Meeting series '%{title}'"
         summary_series: "Meeting series '%{title}' has been ended by %{actor}"
@@ -322,6 +304,8 @@ en:
         new_date_time: "New date/time"
         old_location: "Old location"
         new_location: "New location"
+        added_participants: "Added"
+        removed_participants: "Removed"
     label_mail_all_participants: "Send email invite to participants"
     types:
       one_time: "One-time"

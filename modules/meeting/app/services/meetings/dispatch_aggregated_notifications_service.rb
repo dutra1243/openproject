@@ -68,19 +68,13 @@ module Meetings
       added_user_ids.each   { |uid| send_invite(users_by_id[uid], actor) }
       removed_user_ids.each { |uid| send_cancellation(users_by_id[uid], actor) }
 
+      return if attribute_changes.empty? && added_names.empty? && removed_names.empty?
+
       still_invited_ids.each do |uid|
         recipient = users_by_id[uid]
         next unless recipient
 
-        send_updated(recipient, actor, attribute_changes) if attribute_changes.any?
-
-        if added_names.any? && removed_names.any?
-          send_participants_changed(recipient, actor, added_names, removed_names)
-        elsif added_names.any?
-          send_participant_added(recipient, actor, added_names)
-        elsif removed_names.any?
-          send_participant_removed(recipient, actor, removed_names)
-        end
+        send_updated(recipient, actor, attribute_changes, added_names:, removed_names:)
       end
     end
 
@@ -130,48 +124,38 @@ module Meetings
       end
     end
 
-    def send_updated(recipient, actor, changes)
+    def send_updated(recipient, actor, attribute_changes, added_names: [], removed_names: [])
+      if meeting.template?
+        send_series_updated(recipient, actor, added_names:, removed_names:)
+      else
+        send_meeting_updated(recipient, actor, attribute_changes, added_names:, removed_names:)
+      end
+    end
+
+    def send_series_updated(recipient, actor, added_names:, removed_names:)
+      series = meeting.recurring_meeting
+      MeetingSeriesMailer.updated(series, recipient, actor,
+                                  changes: { old_schedule: series.full_schedule_in_words,
+                                             old_location: series.location },
+                                  added_participants: added_names,
+                                  removed_participants: removed_names).deliver_later
+    end
+
+    def send_meeting_updated(recipient, actor, attribute_changes, added_names:, removed_names:)
       MeetingMailer.updated(meeting, recipient, actor,
-                            changes: {
-                              old_start: changes.dig(:start_time, 0) || meeting.start_time,
-                              new_start: changes.dig(:start_time, 1) || meeting.start_time,
-                              old_duration: changes.dig(:duration, 0) || meeting.duration,
-                              new_duration: changes.dig(:duration, 1) || meeting.duration,
-                              old_location: changes.dig(:location, 0) || meeting.location,
-                              new_location: changes.dig(:location, 1) || meeting.location
-                            }).deliver_later
+                            changes: meeting_changes(attribute_changes),
+                            added_participants: added_names,
+                            removed_participants: removed_names).deliver_later
     end
 
-    def send_participant_added(recipient, actor, added_names)
-      if meeting.template?
-        MeetingSeriesMailer.participant_added(meeting.recurring_meeting, recipient, actor,
-                                              added_participants: added_names).deliver_later
-      else
-        MeetingMailer.participant_added(meeting, recipient, actor,
-                                        added_participants: added_names).deliver_later
-      end
-    end
+    def meeting_changes(attribute_changes) # rubocop:disable Metrics/AbcSize
+      start_time = attribute_changes[:start_time] || [meeting.start_time, meeting.start_time]
+      duration   = attribute_changes[:duration]   || [meeting.duration,   meeting.duration]
+      location   = attribute_changes[:location]   || [meeting.location,   meeting.location]
 
-    def send_participant_removed(recipient, actor, removed_names)
-      if meeting.template?
-        MeetingSeriesMailer.participant_removed(meeting.recurring_meeting, recipient, actor,
-                                                removed_participants: removed_names).deliver_later
-      else
-        MeetingMailer.participant_removed(meeting, recipient, actor,
-                                          removed_participants: removed_names).deliver_later
-      end
-    end
-
-    def send_participants_changed(recipient, actor, added_names, removed_names)
-      if meeting.template?
-        MeetingSeriesMailer.participants_changed(meeting.recurring_meeting, recipient, actor,
-                                                 added_participants: added_names,
-                                                 removed_participants: removed_names).deliver_later
-      else
-        MeetingMailer.participants_changed(meeting, recipient, actor,
-                                           added_participants: added_names,
-                                           removed_participants: removed_names).deliver_later
-      end
+      { old_start: start_time[0], new_start: start_time[1],
+        old_duration: duration[0], new_duration: duration[1],
+        old_location: location[0], new_location: location[1] }
     end
   end
 end

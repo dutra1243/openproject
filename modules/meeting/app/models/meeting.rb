@@ -133,7 +133,7 @@ class Meeting < ApplicationRecord
 
   before_save :add_new_participants_as_watcher
 
-  after_update :send_updated_mail, if: -> {
+  after_commit :send_updated_mail, on: :update, if: -> {
     !template? &&
       (saved_change_to_start_time? || saved_change_to_duration? || saved_change_to_location? || saved_change_to_title?)
   }
@@ -347,6 +347,6 @@ class Meeting < ApplicationRecord
   def send_updated_mail
     return unless send_emails?
 
-    Meetings::NotificationDebounceJob.debounce(self, since_journal_id: last_journal&.id)
+    Meetings::NotificationDebounceJob.debounce(self, since_journal_id: last_journal&.predecessor&.id)
   end
 end
