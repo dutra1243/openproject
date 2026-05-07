@@ -49,14 +49,24 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
 
   let(:since_participant_journals) { class_double(Journal::MeetingParticipantJournal) }
   let(:latest_participant_journals) { class_double(Journal::MeetingParticipantJournal) }
+  let(:mail_delivery) { double(deliver_later: nil) }
 
   before do
-    allow(since_journal).to receive(:participant_journals).and_return(since_participant_journals)
+    allow(since_journal).to receive(:participant_journals).and_return(since_participant_journals) if since_journal
     allow(latest_journal).to receive(:participant_journals).and_return(latest_participant_journals)
     allow(since_participant_journals).to receive(:where).with(invited: true).and_return(since_participant_journals)
     allow(latest_participant_journals).to receive(:where).with(invited: true).and_return(latest_participant_journals)
 
     allow(Journal::NotificationConfiguration).to receive(:active?).and_return(true)
+    allow(MeetingMailer).to receive_messages(
+      invited: mail_delivery,
+      cancelled: mail_delivery,
+      updated: mail_delivery
+    )
+    allow(MeetingSeriesMailer).to receive_messages(
+      invited: mail_delivery,
+      updated: mail_delivery
+    )
   end
 
   subject(:service) do
@@ -74,23 +84,22 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends invite to the newly added user" do
-      expect(MeetingMailer).to receive(:invited).with(meeting, new_user, actor).and_return(double(deliver_later: nil))
       service
+      expect(MeetingMailer).to have_received(:invited).with(meeting, new_user, actor)
     end
 
-    it "sends participant_added to the existing user" do
-      allow(MeetingMailer).to receive(:invited).and_return(double(deliver_later: nil))
+    it "sends an updated email with the added participant to the existing user" do
+      service
       expect(MeetingMailer)
-        .to receive(:participant_added)
-        .with(meeting, existing_user, actor, added_participants: ["#{new_user.firstname} #{new_user.lastname}"])
-        .and_return(double(deliver_later: nil))
-      service
+        .to have_received(:updated)
+        .with(meeting, existing_user, actor,
+              hash_including(added_participants: [new_user.name],
+                             removed_participants: []))
     end
 
-    it "does not send participant_added to the newly added user" do
-      allow(MeetingMailer).to receive_messages(invited: double(deliver_later: nil), participant_added: double(deliver_later: nil))
-      expect(MeetingMailer).not_to receive(:participant_added).with(meeting, new_user, anything, anything)
+    it "does not send an updated email to the newly added user" do
       service
+      expect(MeetingMailer).not_to have_received(:updated).with(meeting, new_user, anything, anything)
     end
   end
 
@@ -101,17 +110,19 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends cancellation to the removed user" do
-      expect(MeetingMailer).to receive(:cancelled).with(meeting, removed_user, actor).and_return(double(deliver_later: nil))
       service
+      expect(MeetingMailer)
+        .to have_received(:cancelled)
+        .with(meeting, removed_user, actor)
     end
 
-    it "sends participant_removed to the still-invited user" do
-      allow(MeetingMailer).to receive(:cancelled).and_return(double(deliver_later: nil))
-      expect(MeetingMailer)
-        .to receive(:participant_removed)
-        .with(meeting, existing_user, actor, removed_participants: ["#{removed_user.firstname} #{removed_user.lastname}"])
-        .and_return(double(deliver_later: nil))
+    it "sends an updated email with the removed participant to the still-invited user" do
       service
+      expect(MeetingMailer)
+        .to have_received(:updated)
+        .with(meeting, existing_user, actor,
+              hash_including(added_participants: [],
+                             removed_participants: [removed_user.name]))
     end
   end
 
@@ -119,25 +130,14 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     before do
       stub_invited_ids(since_participant_journals, [existing_user.id, removed_user.id])
       stub_invited_ids(latest_participant_journals, [existing_user.id, new_user.id])
-      allow(MeetingMailer).to receive_messages(invited: double(deliver_later: nil),
-                                               cancelled: double(deliver_later: nil),
-                                               participant_added: double(deliver_later: nil),
-                                               participant_removed: double(deliver_later: nil),
-                                               participants_changed: double(deliver_later: nil))
     end
 
-    it "sends a single participants_changed email to the still-invited user" do
+    it "sends a single updated email with participant changes to the still-invited user" do
       service
-      expect(MeetingMailer).to have_received(:participants_changed)
+      expect(MeetingMailer).to have_received(:updated)
         .with(meeting, existing_user, actor,
-              added_participants: ["#{new_user.firstname} #{new_user.lastname}"],
-              removed_participants: ["#{removed_user.firstname} #{removed_user.lastname}"])
-    end
-
-    it "does not send separate participant_added and participant_removed emails" do
-      service
-      expect(MeetingMailer).not_to have_received(:participant_added)
-      expect(MeetingMailer).not_to have_received(:participant_removed)
+              hash_including(added_participants: [new_user.name],
+                             removed_participants: [removed_user.name]))
     end
   end
 
@@ -148,11 +148,10 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends no emails" do
-      expect(MeetingMailer).not_to receive(:invited)
-      expect(MeetingMailer).not_to receive(:cancelled)
-      expect(MeetingMailer).not_to receive(:participant_added)
-      expect(MeetingMailer).not_to receive(:participant_removed)
       service
+      expect(MeetingMailer).not_to have_received(:invited)
+      expect(MeetingMailer).not_to have_received(:cancelled)
+      expect(MeetingMailer).not_to have_received(:updated)
     end
   end
 
@@ -167,11 +166,36 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends updated email to the still-invited user" do
-      expect(MeetingMailer)
-        .to receive(:updated)
-        .with(meeting, existing_user, actor, hash_including(changes: hash_including(:old_start, :new_start)))
-        .and_return(double(deliver_later: nil))
       service
+      expect(MeetingMailer)
+        .to have_received(:updated)
+        .with(meeting, existing_user, actor, hash_including(changes: hash_including(:old_start, :new_start)))
+    end
+  end
+
+  context "when explicit since_attributes are provided" do
+    subject(:service) do
+      described_class.new(
+        meeting:,
+        since_journal: nil,
+        latest_journal:,
+        since_invited_ids: [existing_user.id],
+        since_attributes: { "title" => "Old Title", "start_time" => fixed_start_time.iso8601 }
+      ).call
+    end
+
+    before do
+      stub_invited_ids(latest_participant_journals, [existing_user.id])
+      allow(latest_data).to receive(:title).and_return("New Title")
+    end
+
+    it "uses them as the baseline for the updated email" do
+      service
+      expect(MeetingMailer)
+        .to have_received(:updated)
+        .with(meeting, existing_user, actor,
+              hash_including(changes: hash_including(old_title: "Old Title",
+                                                     new_title: "New Title")))
     end
   end
 
@@ -182,12 +206,10 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends no emails" do
-      expect(MeetingMailer).not_to receive(:invited)
-      expect(MeetingMailer).not_to receive(:cancelled)
-      expect(MeetingMailer).not_to receive(:updated)
-      expect(MeetingMailer).not_to receive(:participant_added)
-      expect(MeetingMailer).not_to receive(:participant_removed)
       service
+      expect(MeetingMailer).not_to have_received(:invited)
+      expect(MeetingMailer).not_to have_received(:cancelled)
+      expect(MeetingMailer).not_to have_received(:updated)
     end
   end
 
@@ -199,8 +221,10 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "treats all latest participants as newly added" do
-      expect(MeetingMailer).to receive(:invited).with(meeting, new_user, actor).and_return(double(deliver_later: nil))
       service
+      expect(MeetingMailer)
+        .to have_received(:invited)
+        .with(meeting, new_user, actor)
     end
   end
 
@@ -216,7 +240,6 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
 
     before do
       stub_invited_ids(latest_participant_journals, [existing_user.id, new_user.id])
-      allow(MeetingMailer).to receive_messages(invited: double(deliver_later: nil), participant_added: double(deliver_later: nil))
     end
 
     it "sends invite only to the newly added user (not the existing one)" do
@@ -225,11 +248,13 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
       expect(MeetingMailer).not_to have_received(:invited).with(meeting, existing_user, anything)
     end
 
-    it "sends participant_added to the existing user" do
+    it "sends an updated email with the added participant to the existing user" do
       service
       expect(MeetingMailer)
-        .to have_received(:participant_added)
-        .with(meeting, existing_user, actor, added_participants: ["#{new_user.firstname} #{new_user.lastname}"])
+        .to have_received(:updated)
+        .with(meeting, existing_user, actor,
+              hash_including(added_participants: [new_user.name],
+                             removed_participants: []))
     end
   end
 
@@ -244,27 +269,28 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends series invite via MeetingSeriesMailer" do
+      service
       expect(MeetingSeriesMailer)
-        .to receive(:invited)
+        .to have_received(:invited)
         .with(recurring_meeting, new_user, actor)
-        .and_return(double(deliver_later: nil))
-      service
     end
 
-    it "sends participant_added via MeetingSeriesMailer" do
-      allow(MeetingSeriesMailer).to receive(:invited).and_return(double(deliver_later: nil))
+    it "sends updated via MeetingSeriesMailer with the added participant" do
+      service
       expect(MeetingSeriesMailer)
-        .to receive(:participant_added)
-        .with(recurring_meeting, existing_user, actor, added_participants: anything)
-        .and_return(double(deliver_later: nil))
-      service
+        .to have_received(:updated)
+        .with(recurring_meeting, existing_user, actor,
+              hash_including(added_participants: [new_user.name],
+                             removed_participants: []))
     end
 
-    it "does not send updated even when attributes changed" do
-      allow(MeetingSeriesMailer).to receive_messages(invited: double(deliver_later: nil),
-                                                     participant_added: double(deliver_later: nil))
-      expect(MeetingSeriesMailer).not_to receive(:updated)
+    it "does not send meeting attribute changes via MeetingSeriesMailer" do
       service
+      expect(MeetingSeriesMailer)
+        .to have_received(:updated)
+        .with(recurring_meeting, existing_user, actor,
+              hash_including(changes: { old_schedule: recurring_meeting.full_schedule_in_words,
+                                        old_location: nil }))
     end
   end
 
@@ -274,8 +300,8 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends no emails" do
-      expect(MeetingMailer).not_to receive(:invited)
       service
+      expect(MeetingMailer).not_to have_received(:invited)
     end
   end
 
@@ -285,8 +311,8 @@ RSpec.describe Meetings::DispatchAggregatedNotificationsService do
     end
 
     it "sends no emails" do
-      expect(MeetingMailer).not_to receive(:invited)
       service
+      expect(MeetingMailer).not_to have_received(:invited)
     end
   end
 end

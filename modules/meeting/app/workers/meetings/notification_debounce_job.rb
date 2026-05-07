@@ -54,33 +54,31 @@ module Meetings
       "Meetings::NotificationDebounceJob-#{meeting_id}"
     end
 
-    # +since_invited_ids+ is an explicit array of invited user IDs representing the
-    # participant list BEFORE the current debounce window started. Callers that
-    # know them (CreateService, DeleteService) pass it here so the
-    # dispatch service can correctly diff participants even when journal aggregation
-    # has overwritten the predecessor journal in-place.
-    def self.debounce(meeting, since_journal_id: nil, since_invited_ids: nil)
+    # Since any changes after the since_journal_id might CHANGE this journal,
+    # we pass in the known values at the current time for the initial call.
+    # They are needed so that we can know the true "previous" values at the end of the debounce window.
+    def self.debounce(meeting, since_journal_id: nil, since_invited_ids: nil, since_attributes: nil)
       concurrency_key = unique_key_for(meeting.id)
       existing = GoodJob::Job.where(finished_at: nil, concurrency_key:).first
-      args = preserved_job_args(existing, meeting, since_journal_id, since_invited_ids)
+      args = preserved_job_args(existing, meeting, since_journal_id, since_invited_ids, since_attributes)
 
       GoodJob::Job.where(finished_at: nil, concurrency_key:).delete_all
       set(wait: 1.minute).perform_later(meeting.id, *args)
     end
 
-    def perform(meeting_id, since_journal_id, since_invited_ids = nil)
+    def perform(meeting_id, since_journal_id, since_invited_ids = nil, since_attributes = nil)
       meeting = Meeting.find_by(id: meeting_id)
-      return unless meeting
-      return unless meeting.send_emails?
+      return unless meeting&.send_emails?
 
       since_journal  = Journal.find_by(id: since_journal_id)
       latest_journal = meeting.last_journal
-
       return if latest_journal.nil?
-      return if latest_journal.id == since_journal_id
+
+      # Cancel if there are no relevant changes (anymore)
+      return if latest_journal.id == since_journal_id && since_invited_ids.nil? && since_attributes.nil?
 
       Meetings::DispatchAggregatedNotificationsService
-        .new(meeting:, since_journal:, latest_journal:, since_invited_ids:)
+        .new(meeting:, since_journal:, latest_journal:, since_invited_ids:, since_attributes:)
         .call
     end
 
@@ -88,19 +86,20 @@ module Meetings
       GoodJob::Job.where(finished_at: nil, concurrency_key: unique_key_for(meeting.id)).delete_all
     end
 
-    # Extracts since_journal_id, since_invited_ids from the existing pending job
+    # Extracts arguments from the existing pending job or the journal before we started the debounce
     # Uses the following order: previous job args > explicit caller arg > journal predecessor.
-    def self.preserved_job_args(existing, meeting, since_journal_id, since_invited_ids)
-      existing_journal_id, existing_invited_ids = serialized_job_args(existing)
+    def self.preserved_job_args(existing, meeting, since_journal_id, since_invited_ids, since_attributes)
+      existing_journal_id, existing_invited_ids, existing_attributes = serialized_job_args(existing)
       [
         existing_journal_id || since_journal_id || meeting.last_journal&.predecessor&.id,
-        existing_invited_ids || since_invited_ids
+        existing_invited_ids || since_invited_ids,
+        existing_attributes || since_attributes
       ]
     end
 
     def self.serialized_job_args(existing)
-      args = existing&.serialized_params&.dig("arguments") || []
-      [args[1], args[2]]
+      args = ActiveJob::Arguments.deserialize(existing&.serialized_params&.dig("arguments") || [])
+      [args[1], args[2], args[3]]
     end
   end
 end

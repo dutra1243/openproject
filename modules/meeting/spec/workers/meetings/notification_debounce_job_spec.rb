@@ -48,7 +48,7 @@ RSpec.describe Meetings::NotificationDebounceJob do
     it "enqueues a background job" do
       expect { described_class.debounce(meeting) }
         .to have_enqueued_job(described_class)
-              .with(meeting.id, anything, anything)
+              .with(meeting.id, anything, anything, anything)
     end
 
     it "does not call the dispatch service synchronously" do
@@ -94,6 +94,14 @@ RSpec.describe Meetings::NotificationDebounceJob do
           job = GoodJob::Job.where(finished_at: nil, concurrency_key: described_class.unique_key_for(meeting.id)).first
           expect(job.serialized_params.dig("arguments", 1)).to eq(first_since_id)
         end
+
+        it "preserves explicit since_attributes from the first call" do
+          described_class.debounce(meeting, since_attributes: { "title" => "Initial title" })
+          described_class.debounce(meeting, since_attributes: { "title" => "Later title" })
+
+          job = GoodJob::Job.where(finished_at: nil, concurrency_key: described_class.unique_key_for(meeting.id)).first
+          expect(job.serialized_params.dig("arguments", 3, "title")).to eq("Initial title")
+        end
       end
     end
   end
@@ -128,7 +136,11 @@ RSpec.describe Meetings::NotificationDebounceJob do
       subject
       expect(Meetings::DispatchAggregatedNotificationsService)
         .to have_received(:new)
-              .with(meeting:, since_journal:, latest_journal:, since_invited_ids: nil)
+              .with(meeting:,
+                    since_journal:,
+                    latest_journal:,
+                    since_invited_ids: nil,
+                    since_attributes: nil)
       expect(dispatch_service).to have_received(:call)
     end
 
