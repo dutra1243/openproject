@@ -31,9 +31,13 @@
 require "spec_helper"
 
 RSpec.describe WorkPackages::Scopes::BacklogsInboxFor do
-  let(:project) { create(:project) }
   let(:open_status) { create(:status, is_closed: false) }
   let(:closed_status) { create(:status, is_closed: true) }
+  let(:project) do
+    create(:project) do |p|
+      p.done_status_ids = [closed_status.id]
+    end
+  end
   let(:sprint) { create(:sprint, project:) }
 
   before { login_as create(:admin) }

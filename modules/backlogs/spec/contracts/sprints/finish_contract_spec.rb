@@ -49,7 +49,7 @@ RSpec.describe Sprints::FinishContract do
     end
 
     allow(sprint)
-      .to receive_message_chain(:work_packages, :with_status_open, :count) # rubocop:disable RSpec/MessageChain
+      .to receive_message_chain(:work_packages, :unfinished, :count) # rubocop:disable RSpec/MessageChain
             .and_return(unfinished_count)
   end
 
