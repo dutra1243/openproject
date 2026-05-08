@@ -31,12 +31,8 @@
 module OpenProject::Backlogs::Patches::CopyServicePatch
   extend ActiveSupport::Concern
 
-  included do
-    prepend InstanceMethods
-  end
-
   def self.included(base)
-    base.singleton_class.prepend(ClassMethods)
+    base.prepend(InstanceMethods)
   end
 
   module InstanceMethods
@@ -45,11 +41,15 @@ module OpenProject::Backlogs::Patches::CopyServicePatch
       settings.delete("sprint_sharing") if settings["sprint_sharing"] == Projects::SprintSharing::SHARE_ALL_PROJECTS
       super
     end
-  end
 
-  module ClassMethods
-    def copy_dependencies
-      super + [::Projects::Copy::BacklogsSettingsDependentService]
+    def after_perform(call)
+      super.tap do |result_call|
+        next unless source.backlogs_enabled?
+        next unless result_call.result&.persisted?
+
+        result_call.result.done_statuses = source.done_statuses
+        result_call.result.excluded_work_package_types = source.excluded_work_package_types
+      end
     end
   end
 end
