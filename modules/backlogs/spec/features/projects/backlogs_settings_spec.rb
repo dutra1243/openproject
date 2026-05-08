@@ -32,12 +32,12 @@ require "spec_helper"
 require_relative "../../support/pages/projects/settings/backlogs"
 
 RSpec.describe "Backlogs Project Settings", :js do
+  let!(:closed_status)      { create(:status, name: "Closed", is_closed: true) }
+  let!(:closed_like_status) { create(:status, name: "Sorta kinda Finished", is_default: true) }
   let!(:project) do
     create(:project,
            enabled_module_names: %w(backlogs))
   end
-  let!(:closed_status)      { create(:status, name: "Closed", is_closed: true) }
-  let!(:closed_like_status) { create(:status, name: "Sorta kinda Finished", is_default: true) }
   let(:role) do
     create(:project_role,
            permissions: %i[select_backlog_types_and_statuses])
@@ -61,8 +61,12 @@ RSpec.describe "Backlogs Project Settings", :js do
     wait_for_network_idle
     wait_for_autocompleter_options_to_be_loaded
 
-    done_status_ids_autocompleter.expect_blank
-    done_status_ids_autocompleter.select_option "Closed"
+    # Closed is preselected when the module is enabled, since it has the `is_closed: true` attribute
+    done_status_ids_autocompleter.expect_selected "Closed"
+    done_status_ids_autocompleter.open_options
+    # It cannot be disabled
+    done_status_ids_autocompleter.expect_disabled "Closed"
+
     done_status_ids_autocompleter.select_option "Sorta kinda Finished"
 
     done_status_ids_autocompleter.expect_selected "Closed"
