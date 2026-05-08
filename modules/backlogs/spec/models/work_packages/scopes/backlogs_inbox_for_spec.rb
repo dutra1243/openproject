@@ -34,13 +34,17 @@ RSpec.describe WorkPackages::Scopes::BacklogsInboxFor do
   let(:open_status) { create(:status, is_closed: false) }
   let(:closed_status) { create(:status, is_closed: true) }
   let(:project) do
-    create(:project) do |p|
-      p.done_status_ids = [closed_status.id]
-    end
+    create(:project, enabled_module_names: %w(work_package_tracking backlogs))
   end
   let(:sprint) { create(:sprint, project:) }
 
-  before { login_as create(:admin) }
+  before do
+    login_as create(:admin)
+
+    # closed_status is a lazy `let` created after the project, so it is not present
+    # when the backlogs module is enabled and auto-seeding runs. Add it explicitly.
+    project.done_statuses << closed_status
+  end
 
   subject(:inbox) { WorkPackage.backlogs_inbox_for(project:) }
 

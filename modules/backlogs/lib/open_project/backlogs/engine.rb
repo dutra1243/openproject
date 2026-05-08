@@ -130,7 +130,8 @@ module OpenProject::Backlogs
 
     patches %i[PermittedParams
                WorkPackage
-               Project]
+               Project
+               EnabledModule]
 
     patch_with_namespace :BasicData, :SettingSeeder
     patch_with_namespace :Projects, :CopyService
