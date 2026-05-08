@@ -64,8 +64,7 @@ RSpec.describe Backlogs::WorkPackagesController do
 
       expect(response).to be_successful
       expect(response).to have_http_status :ok
-      expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}"
-      assert_select %(turbo-stream[action="replace"][target="backlogs-sprint-component-#{sprint.id}"][method="morph"])
+      expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
       expect(assigns(:project)).to eq(project)
       expect(assigns(:story)).to eq(story)
     end
@@ -164,10 +163,9 @@ RSpec.describe Backlogs::WorkPackagesController do
 
         expect(response).to be_successful
         expect(response).to have_http_status :ok
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}"
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{other_sprint.id}"
-        assert_select %(turbo-stream[action="replace"][target="backlogs-sprint-component-#{sprint.id}"])
-        assert_select %(turbo-stream[action="replace"][target="backlogs-sprint-component-#{other_sprint.id}"])
+        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
+        expect(response)
+          .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{other_sprint.id}", method: "morph"
         expect(response).to have_turbo_stream action: "flash", target: "op-primer-flash-component"
         expect(assigns(:project)).to eq(project)
         expect(assigns(:story)).to eq(story_in_sprint)
@@ -188,10 +186,9 @@ RSpec.describe Backlogs::WorkPackagesController do
 
         expect(response).to be_successful
         expect(response).to have_http_status :ok
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}"
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}"
-        assert_select %(turbo-stream[action="replace"][target="backlogs-sprint-component-#{sprint.id}"])
-        assert_select %(turbo-stream[action="replace"][target="backlogs-backlog-component-#{project.id}"][method="morph"])
+        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
+        expect(response)
+          .to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}", method: "morph"
         expect(response).to have_turbo_stream action: "flash", target: "op-primer-flash-component"
         expect(assigns(:project)).to eq(project)
         expect(assigns(:story)).to eq(story_in_sprint)
