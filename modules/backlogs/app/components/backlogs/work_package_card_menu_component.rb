@@ -35,12 +35,12 @@ module Backlogs
     include OpPrimer::ComponentHelpers
     include CommonHelper
 
-    attr_reader :story, :project, :max_position, :current_user, :open_sprints_exist
+    attr_reader :work_package, :project, :max_position, :current_user, :open_sprints_exist
 
-    def initialize(story:, project:, max_position:, open_sprints_exist:, current_user: User.current)
+    def initialize(work_package:, project:, max_position:, open_sprints_exist:, current_user: User.current)
       super()
 
-      @story = story
+      @work_package = work_package
       @project = project
       @max_position = max_position
       @open_sprints_exist = open_sprints_exist
@@ -48,7 +48,7 @@ module Backlogs
     end
 
     def menu_id
-      dom_target(story, :menu)
+      dom_target(work_package, :menu)
     end
 
     private
@@ -83,10 +83,10 @@ module Backlogs
 
     def build_move_item(menu, label:, direction:, icon:)
       menu.with_item(
-        id: dom_target(story, :menu, direction),
+        id: dom_target(work_package, :menu, direction),
         label:,
         tag: :button,
-        href: move_project_backlogs_work_package_path(project, story, all_backlogs_params),
+        href: move_project_backlogs_work_package_path(project, work_package, all_backlogs_params),
         form_arguments: { method: :put, inputs: [{ name: "direction", value: direction }] }
       ) do |item|
         item.with_leading_visual_icon(icon:)
@@ -94,11 +94,11 @@ module Backlogs
     end
 
     def first_item?
-      story.position == 1
+      work_package.position == 1
     end
 
     def last_item?
-      story.position == max_position
+      work_package.position == max_position
     end
   end
 end

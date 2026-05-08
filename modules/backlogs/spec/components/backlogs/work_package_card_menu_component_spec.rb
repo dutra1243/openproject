@@ -42,7 +42,7 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
   let(:sprint) { create(:sprint, project:, name: "Sprint 1", start_date: Date.yesterday, finish_date: Date.tomorrow) }
   let(:position) { 2 }
   let(:max_position) { 3 }
-  let(:story) do
+  let(:work_package) do
     create(:work_package,
            subject: "Test Story",
            project:,
@@ -55,8 +55,8 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
   end
 
   def render_component(position: 2, max_position: 3, open_sprints_exist: true)
-    story.update!(position:)
-    render_inline(described_class.new(story:,
+    work_package.update!(position:)
+    render_inline(described_class.new(work_package:,
                                       project:,
                                       max_position:,
                                       open_sprints_exist:,
@@ -67,11 +67,11 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
     it "renders stable ids for the list and primary actions" do
       render_component
 
-      expect(page).to have_element(:ul, id: /\Awork_package_#{story.id}_menu-list\z/)
-      expect(page).to have_element(:a, id: /\Awork_package_#{story.id}_menu_open_details\z/)
-      expect(page).to have_element(:a, id: /\Awork_package_#{story.id}_menu_open_fullscreen\z/)
-      expect(page).to have_element(:"clipboard-copy", id: /\Awork_package_#{story.id}_menu_copy_url_to_clipboard\z/)
-      expect(page).to have_element(:"clipboard-copy", id: /\Awork_package_#{story.id}_menu_copy_work_package_id\z/)
+      expect(page).to have_element(:ul, id: /\Awork_package_#{work_package.id}_menu-list\z/)
+      expect(page).to have_element(:a, id: /\Awork_package_#{work_package.id}_menu_open_details\z/)
+      expect(page).to have_element(:a, id: /\Awork_package_#{work_package.id}_menu_open_fullscreen\z/)
+      expect(page).to have_element(:"clipboard-copy", id: /\Awork_package_#{work_package.id}_menu_copy_url_to_clipboard\z/)
+      expect(page).to have_element(:"clipboard-copy", id: /\Awork_package_#{work_package.id}_menu_copy_work_package_id\z/)
     end
 
     it "shows Open details link (split view)" do
@@ -91,7 +91,7 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
       it "adds the all param to the open details href" do
         render_component
 
-        expect(page).to have_css(%(#work_package_#{story.id}_menu_open_details[href*="all=1"]))
+        expect(page).to have_css(%(#work_package_#{work_package.id}_menu_open_details[href*="all=1"]))
       end
     end
 
@@ -112,8 +112,8 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
       expect(page).to have_octicon(:copy)
       expect(page).to have_element(
         :"clipboard-copy",
-        id: "work_package_#{story.id}_menu_copy_url_to_clipboard",
-        value: /\/work_packages\/#{story.id}\z/,
+        id: "work_package_#{work_package.id}_menu_copy_url_to_clipboard",
+        value: /\/work_packages\/#{work_package.id}\z/,
         text: "Copy URL to clipboard"
       )
     end
@@ -124,8 +124,8 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
       expect(page).to have_octicon(:hash)
       expect(page).to have_element(
         :"clipboard-copy",
-        id: "work_package_#{story.id}_menu_copy_work_package_id",
-        value: story.id.to_s,
+        id: "work_package_#{work_package.id}_menu_copy_work_package_id",
+        value: work_package.id.to_s,
         text: "Copy work package ID"
       )
     end
@@ -138,27 +138,27 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
       it "uses the semantic displayId in the open details, fullscreen, and clipboard URLs" do
         render_component
 
-        semantic_id = story.reload.identifier
+        semantic_id = work_package.reload.identifier
         expect(semantic_id).to start_with("STORY-")
 
-        details = page.find_by_id("work_package_#{story.id}_menu_open_details")
+        details = page.find_by_id("work_package_#{work_package.id}_menu_open_details")
         expect(details[:href]).to include("/details/#{semantic_id}")
-        expect(details[:href]).not_to include("/details/#{story.id}")
+        expect(details[:href]).not_to include("/details/#{work_package.id}")
 
-        fullscreen = page.find_by_id("work_package_#{story.id}_menu_open_fullscreen")
+        fullscreen = page.find_by_id("work_package_#{work_package.id}_menu_open_fullscreen")
         expect(fullscreen[:href]).to end_with("/work_packages/#{semantic_id}")
-        expect(fullscreen[:href]).not_to include("/work_packages/#{story.id}")
+        expect(fullscreen[:href]).not_to include("/work_packages/#{work_package.id}")
 
-        clipboard = page.find("clipboard-copy##{"work_package_#{story.id}_menu_copy_url_to_clipboard"}")
+        clipboard = page.find("clipboard-copy##{"work_package_#{work_package.id}_menu_copy_url_to_clipboard"}")
         expect(clipboard[:value]).to end_with("/work_packages/#{semantic_id}")
-        expect(clipboard[:value]).not_to include("/work_packages/#{story.id}")
+        expect(clipboard[:value]).not_to include("/work_packages/#{work_package.id}")
       end
 
       it "still copies the numeric primary key for the 'Copy work package ID' action" do
         render_component
 
-        clipboard_id = page.find("clipboard-copy##{"work_package_#{story.id}_menu_copy_work_package_id"}")
-        expect(clipboard_id[:value]).to eq(story.id.to_s)
+        clipboard_id = page.find("clipboard-copy##{"work_package_#{work_package.id}_menu_copy_work_package_id"}")
+        expect(clipboard_id[:value]).to eq(work_package.id.to_s)
       end
     end
 
@@ -275,7 +275,7 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
     it "is shown when other open sprints exist and the user can manage sprint items" do
       render_component(open_sprints_exist: true)
 
-      expect(page).to have_element(:a, id: /\Awork_package_#{story.id}_menu_move_to_sprint\z/)
+      expect(page).to have_element(:a, id: /\Awork_package_#{work_package.id}_menu_move_to_sprint\z/)
       expect(page).to have_octicon(:zap)
       expect(page).to have_text(I18n.t(:"backlogs.work_package_card_menu_component.action_menu.move_to_sprint"))
     end
@@ -283,7 +283,7 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
     it "is hidden when no other open sprints exist" do
       render_component(open_sprints_exist: false)
 
-      expect(page).to have_no_element(:a, id: /\Awork_package_#{story.id}_menu_move_to_sprint\z/)
+      expect(page).to have_no_element(:a, id: /\Awork_package_#{work_package.id}_menu_move_to_sprint\z/)
     end
 
     context "when params[:all] is true" do
@@ -292,7 +292,7 @@ RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
       it "adds the all param to the move to sprint href" do
         render_component(open_sprints_exist: true)
 
-        expect(page).to have_css(%(#work_package_#{story.id}_menu_move_to_sprint[href*="all=1"]))
+        expect(page).to have_css(%(#work_package_#{work_package.id}_menu_move_to_sprint[href*="all=1"]))
       end
     end
   end
