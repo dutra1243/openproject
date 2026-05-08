@@ -36,18 +36,16 @@ module Backlogs
 
     # Deferred ActionMenu items (Primer include-fragment).
     def menu
-      stories = if @story.sprint
-                  @allowed_stories.where(sprint: @story.sprint)
-                else
-                  @allowed_stories.with_status_open.where(sprint_id: nil)
-                end
+      # TODO: This is just a temporary guard, until this menu action is unified
+      # with the menu action from the InboxController.
+      raise ActiveRecord::RecordNotFound unless @story.sprint_id
 
+      stories = @allowed_stories.where(sprint_id: @story.sprint_id)
       max_position = stories.maximum(:position) || 0
-
       open_sprints_exist = Sprint.for_project(@project)
                                  .visible
                                  .not_completed
-                                 .where.not(id: @story.sprint)
+                                 .where.not(id: @story.sprint_id)
                                  .exists?
 
       render(Backlogs::StoryMenuListComponent.new(

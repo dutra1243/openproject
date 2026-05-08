@@ -221,6 +221,24 @@ RSpec.describe Backlogs::WorkPackagesController do
       end
     end
 
+    context "when reordering within the same sprint" do
+      it "replaces the sprint component once and emits no flash", :aggregate_failures do
+        put :move, params: {
+                     project_id: project.id,
+                     id: story_in_sprint.id,
+                     target_id: "sprint:#{sprint.id}",
+                     prev_id: nil
+                   },
+                   format: :turbo_stream
+
+        expect(response).to be_successful
+        expect(response).to have_turbo_stream action: "replace",
+                                              target: "backlogs-sprint-component-#{sprint.id}",
+                                              method: "morph"
+        expect(response).not_to have_turbo_stream action: "flash", target: "op-primer-flash-component"
+      end
+    end
+
     context "when service call fails" do
       let(:other_sprint) { create(:sprint, name: "Agile Sprint 2", project:) }
       let(:service_result) { ServiceResult.failure(message: "Something went wrong") }
@@ -338,15 +356,14 @@ RSpec.describe Backlogs::WorkPackagesController do
       get :menu, params: { project_id: project.id, id: story.id }, format: :html
     end
 
-    context "without sprint_id" do
-      it "returns deferred action menu list HTML for inbox items" do
+    context "when story has no sprint (inbox item)" do
+      it "responds with 404" do
         inbox_story = create(:work_package, status:, project:)
         get :menu,
             params: { project_id: project.id, id: inbox_story.id },
             format: :html
 
-        expect(response).to have_http_status :ok
-        expect(response.body).to include(I18n.t(:"js.button_open_details"))
+        expect(response).to have_http_status :not_found
       end
     end
 
