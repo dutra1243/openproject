@@ -78,6 +78,11 @@ RSpec.describe "Recurring meetings creation",
     travel_back
   end
 
+  def perform_debounced_meeting_notification_jobs
+    perform_enqueued_jobs(only: Meetings::NotificationDebounceJob, at: 2.minutes.from_now)
+    perform_enqueued_jobs
+  end
+
   context "with a user with permissions" do
     it "can create a recurring meeting" do
       login_as current_user
@@ -125,7 +130,7 @@ RSpec.describe "Recurring meetings creation",
 
       expect(page).to have_css("#meetings-side-panel-participants-component", text: 2)
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 0
 
       # Before exiting draft mode, user is always redirected to the template
@@ -154,7 +159,7 @@ RSpec.describe "Recurring meetings creation",
       show_page.expect_planned_meeting date: "01/07/2025 01:30 PM"
       show_page.expect_planned_meeting date: "01/14/2025 01:30 PM"
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 2
       expect(ActionMailer::Base.deliveries.map(&:to).flatten)
         .to contain_exactly user.mail, other_user.mail
@@ -182,9 +187,10 @@ RSpec.describe "Recurring meetings creation",
 
       expect(page).to have_css("#meetings-side-panel-participants-component", text: 3)
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 3
-      expect(ActionMailer::Base.deliveries.first.to).to contain_exactly(third_user.mail)
+      expect(ActionMailer::Base.deliveries.map(&:to).flatten)
+        .to contain_exactly user.mail, other_user.mail, third_user.mail
     end
   end
 

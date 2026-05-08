@@ -46,6 +46,11 @@ RSpec.describe "Meeting notifications", :js do
     login_as(user)
   end
 
+  def perform_debounced_meeting_notification_jobs
+    perform_enqueued_jobs(only: Meetings::NotificationDebounceJob, at: 2.minutes.from_now)
+    perform_enqueued_jobs
+  end
+
   shared_examples "notification checkbox behaviour" do
     it "shows checkbox checked initially" do
       page.find_by_id("open-meeting-button").click
@@ -104,7 +109,7 @@ RSpec.describe "Meeting notifications", :js do
       wait_for_network_idle
 
       # check if mail is sent on opening meeting (Bug #70109)
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -130,7 +135,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -183,7 +188,7 @@ RSpec.describe "Meeting notifications", :js do
 
       expect_flash(message: "Email calendar update sent to all participants")
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -199,7 +204,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 0
 
       show_page.trigger_dropdown_menu_item "Delete meeting"
@@ -211,7 +216,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 0
     end
   end
@@ -263,7 +268,7 @@ RSpec.describe "Meeting notifications", :js do
       wait_for_network_idle
 
       # check if mail is sent on opening first meeting
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -293,7 +298,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -324,7 +329,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -369,7 +374,7 @@ RSpec.describe "Meeting notifications", :js do
       wait_for_network_idle
       expect_flash(type: :success, message: "Successful deletion.")
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 0
     end
 
@@ -380,7 +385,7 @@ RSpec.describe "Meeting notifications", :js do
       wait_for_network_idle
 
       # check for initial invitation mail
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
       ActionMailer::Base.deliveries.clear
 
@@ -414,7 +419,7 @@ RSpec.describe "Meeting notifications", :js do
       expect(meeting.template.reload.notify).to be true
 
       # check for invitation mail on re-enabling notifications
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
       expect(ActionMailer::Base.deliveries.size).to eq 1
     end
   end
@@ -498,7 +503,7 @@ RSpec.describe "Meeting notifications", :js do
         show_page.expect_participant(third_user)
       end
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
 
       # 1 to the invited user + 2 to the existing participants
       expect(ActionMailer::Base.deliveries.size).to eq 3
@@ -520,7 +525,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
 
       # 1 to the removed user + 2 to the existing participants
       expect(ActionMailer::Base.deliveries.size).to eq 3
@@ -570,19 +575,19 @@ RSpec.describe "Meeting notifications", :js do
         show_page.expect_participant(third_user, editable: false)
       end
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
 
-      # apply_to_upcoming is enabled by default on templates.
-      # 3 mails for template (invite + 2 participant_added) and
-      # 2 mails for the upcoming instantiated occurrence (invite + participant_added).
-      expect(ActionMailer::Base.deliveries.size).to eq 5
+      # apply_to_upcoming is enabled by default on templates, but occurrence propagation
+      # runs with notify: false. Only the template sends mails:
+      # 1 invite to the new participant + 2 updates to existing participants.
+      expect(ActionMailer::Base.deliveries.size).to eq 3
 
       recipients = ActionMailer::Base.deliveries.map(&:to).flatten
       expect(recipients.tally)
         .to eq({
-                 user.mail => 2,
+                 user.mail => 1,
                  other_user.mail => 1,
-                 third_user.mail => 2
+                 third_user.mail => 1
                })
     end
 
@@ -599,7 +604,7 @@ RSpec.describe "Meeting notifications", :js do
 
       wait_for_network_idle
 
-      perform_enqueued_jobs
+      perform_debounced_meeting_notification_jobs
 
       # 1 to the removed user + 2 to the existing participants
       expect(ActionMailer::Base.deliveries.size).to eq 3
