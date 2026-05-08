@@ -20,10 +20,15 @@ en:
         one: Inline page link
         other: Inline page links
       wikis/internal_provider: Internal wiki
+      wikis/provider:
+        one: Wiki provider
+        other: Wiki providers
       wikis/relation_page_link:
         one: Relation page link
         other: Relation page links
-      wikis/xwiki_provider: XWiki provider
+      wikis/xwiki_provider:
+        one: XWiki provider
+        other: XWiki providers
   permission_manage_wiki_page_links: Manage Wiki Page Links
   project_module_wiki_platforms: Wiki providers
   wikis:
