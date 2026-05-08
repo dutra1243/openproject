@@ -671,7 +671,7 @@ module Pages
     end
 
     def backlog_bucket_destroy_modal_selector
-      test_selector(Backlogs::BacklogBucketDestroyModalComponent::TEST_SELECTOR)
+      test_selector(Backlogs::BucketDestroyModalComponent::TEST_SELECTOR)
     end
 
     def open_controlled_menu(button)

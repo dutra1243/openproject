@@ -98,7 +98,7 @@ en:
       title: "Backlog admin settings are evolving"
       text: "We are currently redesigning the Backlogs module. Admin settings for sprints and backlogs will be visible here in the near future. Project-level settings remain available."
 
-    backlog_bucket_destroy_modal_component:
+    bucket_destroy_modal_component:
       title: "Delete backlog bucket?"
       details: "The backlog bucket '%{name}' will be deleted and all work packages will be moved to the backlog inbox. No work package will be deleted."
 

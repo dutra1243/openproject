@@ -29,7 +29,7 @@
 # ++
 
 module Backlogs
-  class BacklogBucketDestroyModalComponent < ApplicationComponent
+  class BucketDestroyModalComponent < ApplicationComponent
     include OpTurbo::Streamable
     include OpPrimer::ComponentHelpers
 

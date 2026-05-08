@@ -45,7 +45,7 @@ module Backlogs
     end
 
     def destroy_dialog
-      respond_with_dialog Backlogs::BacklogBucketDestroyModalComponent.new(backlog_bucket: @backlog_bucket)
+      respond_with_dialog Backlogs::BucketDestroyModalComponent.new(backlog_bucket: @backlog_bucket)
     end
 
     def create
