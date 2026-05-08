@@ -28,65 +28,36 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class WorkPackage::PDFExport::DocumentGenerator < Exports::Exporter
-  include Exports::PDF::Common::Common
-  include Exports::PDF::Common::Attachments
-  include Exports::PDF::Common::Logo
-  include Exports::PDF::Common::Macro
-  include WorkPackage::PDFExport::Generator::Generator
+module Exports::PDF::Common::WorkPackageMentions
+  include Redmine::I18n
 
-  attr_accessor :pdf
+  def expand_wp_mention(work_package, content)
+    detail_level = content.count("#")
+    return work_package.formatted_id if detail_level == 1
 
-  self.model = WorkPackage
+    # ##: {Type} {formatted_id}: {Subject}
+    content = "#{work_package.type} #{work_package.formatted_id}: #{work_package.subject}"
+    return content if detail_level == 2
 
-  alias :work_package :object
-
-  def self.key
-    :generate_pdf
+    # ###: {Status} {Type} {formatted_id}: {Subject} ({Start Date} - {End Date})
+    "#{work_package.status.name} #{content}#{work_package_dates(work_package)}"
   end
 
-  def initialize(work_package, _options = {})
-    super
+  def work_package_dates(work_package)
+    return "" if work_package.start_date.blank? && work_package.due_date.blank?
 
-    setup_page!
+    if work_package.due_date.present? && work_package.start_date == work_package.due_date
+      return " (#{format_date(work_package.due_date)})"
+    end
+
+    work_package_date_range(work_package)
   end
 
-  def setup_page!
-    self.pdf = get_pdf
-  end
-
-  def export!
-    render_doc
-    success(pdf.render)
-  rescue StandardError => e
-    error(e)
-  ensure
-    delete_all_resized_images
-  end
-
-  def render_doc
-    generate_doc!(
-      apply_markdown_field_macros(work_package.description || "",
-                                  { work_package:, project: work_package.project, user: User.current }),
-      "contracts.yml"
-    )
-  end
-
-  def heading
-    options[:header_text_right]
-  end
-
-  def footer_title
-    options[:footer_text_center]
-  end
-
-  def title
-    # <project>_<type>_<ID>_<subject><YYYY-MM-DD>_<HH-MM>.pdf
-    build_pdf_filename([work_package.project, work_package.type,
-                        work_package.display_id, work_package.subject].join("_"))
-  end
-
-  def with_images?
-    true
+  def work_package_date_range(work_package)
+    content = [
+      work_package.start_date.present? ? format_date(work_package.start_date) : I18n.t("label_no_start_date"),
+      work_package.due_date.present? ? format_date(work_package.due_date) : I18n.t("label_no_due_date")
+    ].join(" - ")
+    " (#{content})"
   end
 end
