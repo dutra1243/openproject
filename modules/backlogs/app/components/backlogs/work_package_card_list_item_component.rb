@@ -53,11 +53,7 @@ module Backlogs
     end
 
     def menu_src
-      if container.is_a?(Sprint)
-        url_helpers.menu_project_backlogs_work_package_path(project, work_package, params)
-      else
-        url_helpers.menu_project_backlogs_inbox_path(project, work_package, params)
-      end
+      url_helpers.menu_project_backlogs_work_package_path(project, work_package, params)
     end
 
     # `story` data attrs match the live Stimulus controller and Dragula

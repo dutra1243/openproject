@@ -40,7 +40,7 @@ RSpec.describe OpenProject::Common::WorkPackageCardComponent::Menu, type: :compo
   shared_let(:work_package) { create(:work_package, project:) }
 
   let(:menu_button_id) { "work_package_#{work_package.id}_menu-button" }
-  let(:src) { menu_project_backlogs_inbox_path(project, work_package) }
+  let(:src) { menu_project_backlogs_work_package_path(project, work_package) }
   let(:system_arguments) { {} }
 
   subject(:rendered_component) do

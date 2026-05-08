@@ -29,33 +29,29 @@
 #++
 
 module Backlogs
-  # Renders Primer::Alpha::ActionMenu::List for the deferred menu (Backlogs::InboxController#menu).
-  # +menu_id+ must match the row ActionMenu in InboxItemComponent.
-  class InboxMenuComponent < ApplicationComponent
+  # Renders Primer::Alpha::ActionMenu::List for the deferred menu (Backlogs::WorkPackagesController#menu).
+  # +menu_id+ must match the row ActionMenu in WorkPackageCardComponent.
+  class WorkPackageCardMenuComponent < ApplicationComponent
     include OpPrimer::ComponentHelpers
     include CommonHelper
 
-    attr_reader :work_package, :project, :max_position, :current_user, :open_sprints_exist
+    attr_reader :story, :project, :max_position, :current_user, :open_sprints_exist
 
-    def initialize(work_package:, project:, max_position:, open_sprints_exist:, current_user: User.current)
+    def initialize(story:, project:, max_position:, open_sprints_exist:, current_user: User.current)
       super()
 
-      @work_package = work_package
+      @story = story
       @project = project
-      @current_user = current_user
       @max_position = max_position
       @open_sprints_exist = open_sprints_exist
+      @current_user = current_user
     end
 
     def menu_id
-      dom_target(work_package, :menu)
+      dom_target(story, :menu)
     end
 
     private
-
-    def show_move_submenu?
-      show_move_items? || show_move_to_sprint?
-    end
 
     def show_move_items?
       allowed_to_manage_sprint_items? &&
@@ -64,6 +60,10 @@ module Backlogs
 
     def show_move_to_sprint?
       allowed_to_manage_sprint_items? && open_sprints_exist
+    end
+
+    def show_move_submenu?
+      show_move_items? || show_move_to_sprint?
     end
 
     def allowed_to_manage_sprint_items?
@@ -83,10 +83,10 @@ module Backlogs
 
     def build_move_item(menu, label:, direction:, icon:)
       menu.with_item(
-        id: dom_target(work_package, :menu, direction),
+        id: dom_target(story, :menu, direction),
         label:,
         tag: :button,
-        href: move_project_backlogs_work_package_path(project, work_package, all_backlogs_params),
+        href: move_project_backlogs_work_package_path(project, story, all_backlogs_params),
         form_arguments: { method: :put, inputs: [{ name: "direction", value: direction }] }
       ) do |item|
         item.with_leading_visual_icon(icon:)
@@ -94,11 +94,11 @@ module Backlogs
     end
 
     def first_item?
-      work_package.position == 1
+      story.position == 1
     end
 
     def last_item?
-      work_package.position == max_position
+      story.position == max_position
     end
   end
 end

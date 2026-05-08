@@ -104,11 +104,6 @@ Rails.application.routes.draw do
         get "burndown_chart", to: "burndown_chart#show", as: :sprint_burndown_chart
       end
 
-      resources :inbox, only: [] do
-        member do
-          get :menu
-        end
-      end
     end
   end
 

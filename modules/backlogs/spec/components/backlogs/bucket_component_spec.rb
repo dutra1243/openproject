@@ -129,7 +129,7 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
       it "renders the shared work-package row menu with inbox src" do
         expect(rendered_component).to have_element(
           "include-fragment",
-          src: menu_project_backlogs_inbox_path(project, work_package)
+          src: menu_project_backlogs_work_package_path(project, work_package)
         )
       end
 
@@ -185,7 +185,7 @@ RSpec.describe Backlogs::BucketComponent, type: :component do
     it "includes all=1 in the action-menu src" do
       expect(rendered_component).to have_element(
         "include-fragment",
-        src: menu_project_backlogs_inbox_path(project, work_package, all: "1")
+        src: menu_project_backlogs_work_package_path(project, work_package, all: "1")
       )
     end
   end

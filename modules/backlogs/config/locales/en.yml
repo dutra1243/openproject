@@ -157,13 +157,6 @@ en:
         one: "Show 1 more item"
         other: "Show %{count} more items"
 
-    inbox_menu_component:
-      action_menu:
-        copy_url_to_clipboard: "Copy URL to clipboard"
-        copy_work_package_id: "Copy work package ID"
-        move_menu: "Move"
-      label_move_to_sprint: "Move to sprint"
-
     move_to_sprint_dialog_component:
       title: "Move to sprint"
       label_sprint: "Sprint"
@@ -196,7 +189,7 @@ en:
         invalid_target_type: "target_type must be one of: backlog_bucket, sprint, inbox."
         invalid_direction: "direction must be one of: higher, highest, lower, lowest."
 
-    story_menu_list_component:
+    work_package_card_menu_component:
       action_menu:
         copy_url_to_clipboard: "Copy URL to clipboard"
         copy_work_package_id: "Copy work package ID"

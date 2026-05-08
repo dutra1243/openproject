@@ -32,24 +32,20 @@ module Backlogs
   class WorkPackagesController < BaseController
     include OpTurbo::ComponentStream
 
-    before_action :load_story
+    before_action :load_work_package
 
     # Deferred ActionMenu items (Primer include-fragment).
     def menu
-      # TODO: This is just a temporary guard, until this menu action is unified
-      # with the menu action from the InboxController.
-      raise ActiveRecord::RecordNotFound unless @story.sprint_id
+      max_position = displayed_work_packages.maximum(:position) || 0
 
-      stories = @allowed_stories.where(sprint_id: @story.sprint_id)
-      max_position = stories.maximum(:position) || 0
       open_sprints_exist = Sprint.for_project(@project)
                                  .visible
                                  .not_completed
-                                 .where.not(id: @story.sprint_id)
+                                 .where.not(id: @work_package.sprint_id)
                                  .exists?
 
-      render(Backlogs::StoryMenuListComponent.new(
-               story: @story,
+      render(Backlogs::WorkPackageCardMenuComponent.new(
+               work_package: @work_package,
                project: @project,
                max_position:,
                open_sprints_exist:,
@@ -60,21 +56,21 @@ module Backlogs
 
     def move_to_sprint_dialog
       respond_with_dialog Backlogs::MoveToSprintDialogComponent.new(
-        work_package: @story,
+        work_package: @work_package,
         project: @project,
-        move_action: move_project_backlogs_work_package_path(@project, @story, helpers.all_backlogs_params)
+        move_action: move_project_backlogs_work_package_path(@project, @work_package, helpers.all_backlogs_params)
       )
     end
 
     def move
-      # Capture the source before the call; the service reloads @story internally via #move_after.
-      source = @story.sprint
+      # Capture the source before the call; the service reloads @work_package internally via #move_after.
+      source = @work_package.sprint
 
-      call = Stories::UpdateService.new(user: current_user, story: @story)
+      call = Stories::UpdateService.new(user: current_user, story: @work_package)
                                    .call(**move_params.to_h.symbolize_keys)
 
       if call.success?
-        move_story_to_target_component_via_turbo_stream(source:, target: call.result.sprint)
+        move_work_package_to_target_component_via_turbo_stream(source:, target: call.result.sprint)
       else
         render_error_flash_message_via_turbo_stream(
           message: I18n.t(:notice_unsuccessful_update_with_reason, reason: call.message)
@@ -86,7 +82,7 @@ module Backlogs
 
     private
 
-    def move_story_to_target_component_via_turbo_stream(source:, target:)
+    def move_work_package_to_target_component_via_turbo_stream(source:, target:)
       if source != target
         replace_component_via_turbo_stream(source)
       end
@@ -115,13 +111,23 @@ module Backlogs
       Backlogs::BacklogComponent.new(inbox_work_packages:, buckets:, project: @project)
     end
 
-    def load_story
-      @allowed_stories = WorkPackage.visible.where(project: @project)
-      @story = @allowed_stories.find(params[:id])
+    def load_work_package
+      @work_packages = WorkPackage.visible.where(project: @project)
+      @work_package = @work_packages.find(params[:id])
     end
 
     def move_params
       params.permit(:position, :prev_id, :target_id, :direction)
+    end
+
+    def displayed_work_packages
+      if @work_package.sprint_id?
+        @work_packages.where(sprint_id: @work_package.sprint_id)
+      elsif @work_package.backlog_bucket_id?
+        @work_packages.merge(@work_package.backlog_bucket.displayed_work_packages)
+      else
+        @work_packages.merge(WorkPackage.backlogs_inbox_for(project: @project))
+      end
     end
   end
 end

@@ -30,7 +30,7 @@
 
 require "rails_helper"
 
-RSpec.describe Backlogs::StoryMenuListComponent, type: :component do
+RSpec.describe Backlogs::WorkPackageCardMenuComponent, type: :component do
   shared_let(:type_feature) { create(:type_feature) }
   shared_let(:type_task) { create(:type_task) }
   shared_let(:default_status) { create(:default_status) }
@@ -277,7 +277,7 @@ RSpec.describe Backlogs::StoryMenuListComponent, type: :component do
 
       expect(page).to have_element(:a, id: /\Awork_package_#{story.id}_menu_move_to_sprint\z/)
       expect(page).to have_octicon(:zap)
-      expect(page).to have_text(I18n.t(:"backlogs.story_menu_list_component.action_menu.move_to_sprint"))
+      expect(page).to have_text(I18n.t(:"backlogs.work_package_card_menu_component.action_menu.move_to_sprint"))
     end
 
     it "is hidden when no other open sprints exist" do
