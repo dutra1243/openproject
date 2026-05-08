@@ -31,34 +31,51 @@
 module WorkPackage::Exports
   module Macros
     class WorkPackagesLinkHandler < OpenProject::TextFormatting::Matchers::LinkHandlers::WorkPackages
-      # PDF export currently only renders canonical numeric `#N` references.
-      # Semantic `#PROJ-1` shapes and leading-zero numerics like `#0123`
-      # match the parent regex (because `Macros::Links` subclasses
-      # `ResourceLinksMatcher`) but are rejected here so they fall through
-      # to literal text rather than emitting a broken `<mention data-id="0">`
-      # (since `"PROJ-1".to_i == 0`).
-      #
-      # Semantic-id support in PDF export is tracked separately in
-      # https://community.openproject.org/wp/74366.
-      def applicable?
-        %w(# ## ###).include?(matcher.sep) &&
-          matcher.prefix.blank? &&
-          WorkPackage::SemanticIdentifier.numeric_id?(matcher.identifier)
-      end
-
       # PDF rendering walks Markly nodes via `app/models/exports/pdf/common/macro.rb`,
       # not through `PatternMatcherFilter`'s preload pipeline, so the parent's
-      # cache-driven `call` would miss every reference. Render the legacy
-      # numeric mention directly from the matched id.
-      def call
-        render_link(matcher.identifier.to_i, matcher)
+      # cache-driven `call` would miss every reference. Numeric references
+      # render directly from the matched id (no DB hit); semantic references
+      # resolve via `find_by_display_id` so `data-id` carries the user-facing
+      # identifier the downstream PDF renderer consumes through the same
+      # finder.
+      def applicable?
+        return false unless %w(# ## ###).include?(matcher.sep) && matcher.prefix.blank?
+
+        if WorkPackage::SemanticIdentifier.numeric_id?(matcher.identifier)
+          true
+        elsif WorkPackage::SemanticIdentifier.semantic_id?(matcher.identifier)
+          # Semantic shape only links in semantic mode; classic instances
+          # fall through to literal text. Mirrors the in-app handler in
+          # `lib/open_project/text_formatting/matchers/link_handlers/work_packages.rb`.
+          Setting::WorkPackageIdentifier.semantic_mode_active?
+        else
+          false
+        end
       end
 
-      def render_link(wp_id, matcher)
-        link = "#{matcher.sep}#{wp_id}"
-        "<mention class=\"mention\" data-id=\"#{wp_id}\" data-type=\"work_package\" data-text=\"#{link}\">#{
-          link
-        }</mention>"
+      def call
+        if WorkPackage::SemanticIdentifier.semantic_id?(matcher.identifier)
+          wp = WorkPackage.find_by_display_id(matcher.identifier)
+          # Cache miss → return nil so the matcher emits the literal text
+          # rather than a mention pointing at a non-existent identifier.
+          return nil unless wp
+
+          render_link(wp.display_id, matcher)
+        else
+          render_link(matcher.identifier.to_i.to_s, matcher)
+        end
+      end
+
+      def render_link(data_id, matcher)
+        # `data_id` is regex-constrained at the matcher layer (numeric `\d+`
+        # or semantic `[A-Z][A-Z0-9_]*-\d+` per `ID_ROUTE_CONSTRAINT`) and
+        # for semantic input is sourced from `wp.display_id`. Escape both
+        # interpolated values so a future widening of the constraint, or a
+        # caller that bypasses the matcher, cannot regress into HTML
+        # attribute injection.
+        escaped_id = ERB::Util.html_escape(data_id)
+        link = "#{matcher.sep}#{escaped_id}"
+        %(<mention class="mention" data-id="#{escaped_id}" data-type="work_package" data-text="#{link}">#{link}</mention>)
       end
     end
 
@@ -67,9 +84,11 @@ module WorkPackage::Exports
         [WorkPackagesLinkHandler]
       end
 
-      # Faster inclusion check before the full regex is being applied
+      # Faster inclusion check before the full regex is being applied.
+      # Matches `#1`, `##42`, `#PROJ-7` openings — semantic-only bodies
+      # must reach the regex too.
       def self.applicable?(content)
-        /#\d/.match(content)
+        /#[A-Z\d]/.match(content)
       end
     end
   end
