@@ -152,11 +152,12 @@ $advanced-filters--grid-gap: 10px
     right: 0
 
   .FormControl-horizontalGroup.advanced-filters--filter
-    align-items: flex-end
-    justify-content: space-between
+    align-items: center
+    gap: $advanced-filters--grid-gap
 
     > .advanced-filters--filter-name
       flex: 0 0 $advanced-filters--label-size
+      text-align: right
       overflow: hidden
       text-overflow: ellipsis
       white-space: nowrap
@@ -167,6 +168,10 @@ $advanced-filters--grid-gap: 10px
     > .FormControl.advanced-filters--filter-value
       flex: 1 1 auto
       min-width: 0
+
+    > .advanced-filters--remove-filter
+      margin-left: auto
+      flex-shrink: 0
 
   .advanced-filters--filter-value .FormControl-select-wrap
     display: flex
