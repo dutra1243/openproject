@@ -80,10 +80,10 @@ module Components
           if boolean_filter?(name)
             set_toggle_filter(values)
           elsif autocomplete_filter?(selected_filter)
-            select(human_operator, from: "operator")
+            select(human_operator, from: "operator_#{name}")
             set_autocomplete_filter(values)
           elsif name == "created_at"
-            select(human_operator, from: "operator")
+            select(human_operator, from: "operator_#{name}")
             set_created_at_filter(human_operator, values, send_keys:)
           elsif date_filter?(selected_filter) && human_operator == "on"
             set_date_filter(values, send_keys)
@@ -114,7 +114,7 @@ module Components
       end
 
       def apply_operator(name, human_operator)
-        select(human_operator, from: "operator") unless boolean_filter?(name)
+        select(human_operator, from: "operator_#{name}") unless boolean_filter?(name)
       end
 
       def select_filter(name, human_name)

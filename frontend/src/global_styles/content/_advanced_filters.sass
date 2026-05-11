@@ -155,7 +155,13 @@ $advanced-filters--grid-gap: 10px
     align-items: flex-end
     justify-content: space-between
 
-    > .FormControl:first-child
+    > .advanced-filters--filter-name
+      flex: 0 0 $advanced-filters--label-size
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+
+    > .FormControl:not(.advanced-filters--filter-value)
       flex: 0 0 $advanced-filters--operator-size
 
     > .FormControl.advanced-filters--filter-value

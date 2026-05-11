@@ -167,7 +167,8 @@ module Filter
         component: "opce-autocompleter",
         bindValue: "id",
         bindLabel: "name",
-        hideSelected: true
+        hideSelected: true,
+        defaultData: false
       }
     end
 

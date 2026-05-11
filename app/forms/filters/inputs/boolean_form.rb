@@ -32,11 +32,18 @@ class Filters::Inputs::BooleanForm < Filters::Inputs::BaseFilterForm
   def add_operand(group)
     group.check_box(
       label: @filter.human_name,
+      visually_hide_label: true,
       name: "v-#{@filter.class.key}",
       value: "t",
       unchecked_value: "f",
       checked: @filter.values.first == "t"
     )
+  end
+
+  protected
+
+  def operand_input_id
+    "v-#{@filter.class.key}"
   end
 
   private

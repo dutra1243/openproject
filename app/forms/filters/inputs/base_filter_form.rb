@@ -40,6 +40,7 @@ class Filters::Inputs::BaseFilterForm < ApplicationForm
     super
     subclass.form do |form|
       form.group(**filter_row_arguments) do |group|
+        add_label(group)
         add_operator(group)
         add_operand(group)
         add_delete_button(group)
@@ -48,6 +49,22 @@ class Filters::Inputs::BaseFilterForm < ApplicationForm
   end
 
   protected
+
+  def add_label(group)
+    filter_human_name = @filter.human_name
+    for_id = operator_hidden? ? operand_input_id : "operator_#{@filter.name}"
+    group.html_content do
+      content_tag(:label, filter_human_name, class: "advanced-filters--filter-name", for: for_id)
+    end
+  end
+
+  def operator_hidden?
+    @filter.is_a?(Queries::Filters::Shared::BooleanFilter)
+  end
+
+  def operand_input_id
+    nil
+  end
 
   def add_operand(_group)
     raise SubclassResponsibilityError
@@ -75,6 +92,7 @@ class Filters::Inputs::BaseFilterForm < ApplicationForm
     group.select_list(
       name: :"operator_#{@filter.name}",
       label: @filter.human_name,
+      visually_hide_label: true,
       scope_name_to_model: false,
       hidden: @filter.is_a?(Queries::Filters::Shared::BooleanFilter),
       data: {

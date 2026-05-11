@@ -35,7 +35,7 @@ class Filters::Inputs::AutocompleteForm < Filters::Inputs::BaseFilterForm
       label: @filter.human_name,
       visually_hide_label: true,
       required: true,
-      include_blank: false,
+      wrapper_classes: ["advanced-filters--filter-value"],
       wrapper_data_attributes: {
         "filter--filters-form-target": "filterValueContainer",
         "filter-name": @filter.name,
@@ -45,7 +45,8 @@ class Filters::Inputs::AutocompleteForm < Filters::Inputs::BaseFilterForm
         multiple: true,
         multipleAsSeparateInputs: false,
         inputName: "value",
-        inputValue: @filter.values
+        inputValue: @filter.values,
+        hiddenFieldAction: "change->filter--filters-form#autocompleteSendForm"
       )
     )
   end
