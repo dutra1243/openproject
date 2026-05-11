@@ -75,6 +75,32 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
     end
   end
 
+  context "when the backlogs module is enabled on the source project but associations are empty" do
+    let(:source) do
+      # done_statuses and excluded_work_package_types are intentionally left empty
+      create(:project,
+             enabled_module_names: %w[backlogs work_package_tracking],
+             types: [type_story, type_task])
+    end
+
+    before do
+      # Clear any done_statuses that were auto-seeded when the module was enabled
+      source.done_statuses = []
+    end
+
+    it "is successful" do
+      expect(result).to be_success
+    end
+
+    it "results in an empty done_statuses on the new project" do
+      expect(result.result.done_statuses).to be_empty
+    end
+
+    it "results in empty excluded_work_package_types on the new project" do
+      expect(result.result.excluded_work_package_types).to be_empty
+    end
+  end
+
   context "when the backlogs module is NOT enabled on the source project" do
     let(:source) do
       create(:project,

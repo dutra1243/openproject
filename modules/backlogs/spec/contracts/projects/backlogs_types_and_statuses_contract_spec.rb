@@ -70,6 +70,20 @@ RSpec.describe Projects::BacklogsTypesAndStatusesContract, type: :model do
       end
     end
 
+    context "with empty done_status_ids" do
+      let!(:closed_status) { create(:status, is_closed: true) }
+
+      before { project.done_status_ids = [] }
+
+      it_behaves_like "contract is valid"
+
+      it "still populates done_status_ids with mandatory closed statuses" do
+        contract.validate
+
+        expect(project.done_status_ids).to contain_exactly(closed_status.id)
+      end
+    end
+
     context "when user cannot update backlogs type and status settings" do
       let(:permissions) { [] }
 

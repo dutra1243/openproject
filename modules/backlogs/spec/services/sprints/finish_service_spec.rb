@@ -72,6 +72,24 @@ RSpec.describe Sprints::FinishService do
     end
   end
 
+  context "when the sprint has a work package with an open-system-status configured as 'done' for the project" do
+    let!(:done_like_status) { create(:status, is_closed: false) }
+    let!(:done_like_wp) do
+      # Add the non-closed status to the project's done_statuses so it is
+      # treated as "finished" by the unfinished scope.
+      project.done_statuses << done_like_status
+      create(:work_package, project:, sprint:, status: done_like_status)
+    end
+
+    it "completes the sprint treating the work package as finished and leaving it in the sprint",
+       :aggregate_failures do
+      expect(result).to be_success
+      expect(sprint.reload).to be_completed
+      # The WP is not moved — it stays in the completed sprint.
+      expect(done_like_wp.reload.sprint).to eq(sprint)
+    end
+  end
+
   context "when the sprint has unfinished (open) work packages" do
     let!(:open_wp) do
       create(:work_package, project:, sprint:, status: open_status)
