@@ -156,17 +156,16 @@ module Components
         case human_operator
         when "on", "less than days ago", "more than days ago", "days ago"
           if send_keys
-            find_field("value").send_keys values.first
+            find_field("created_at").send_keys values.first
           else
-            fill_in "value", with: values.first
+            fill_in "created_at", with: values.first
           end
         when "between"
+          value = values.join(" - ")
           if send_keys
-            find_field("from_value").send_keys values.first
-            find_field("to_value").send_keys values.second
+            find_field("created_at").send_keys value
           else
-            fill_in "from_value", with: values.first
-            fill_in "to_value", with: values.second
+            fill_in "created_at", with: value
           end
         end
       end
