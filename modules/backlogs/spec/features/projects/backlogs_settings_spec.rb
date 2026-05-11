@@ -34,9 +34,12 @@ require_relative "../../support/pages/projects/settings/backlogs"
 RSpec.describe "Backlogs Project Settings", :js do
   let!(:closed_status)      { create(:status, name: "Closed", is_closed: true) }
   let!(:closed_like_status) { create(:status, name: "Sorta kinda Finished", is_default: true) }
+  let!(:type_story) { create(:type_feature, name: "Story") }
+  let!(:type_task)  { create(:type_task, name: "Task") }
   let!(:project) do
     create(:project,
-           enabled_module_names: %w(backlogs))
+           enabled_module_names: %w(backlogs),
+           types: [type_story, type_task])
   end
   let(:role) do
     create(:project_role,
@@ -48,6 +51,7 @@ RSpec.describe "Backlogs Project Settings", :js do
   end
   let(:settings_page) { Pages::Projects::Settings::Backlogs.new(project) }
   let(:done_status_ids_autocompleter) { FormFields::Primerized::AutocompleteField.new("story_types", selector: "[data-test-selector='done_status_ids_autocomplete']") }
+  let(:excluded_type_ids_autocompleter) { FormFields::Primerized::AutocompleteField.new("excluded_types", selector: "[data-test-selector='excluded_work_package_type_ids_autocomplete']") }
 
   before do
     login_as current_user
@@ -96,5 +100,43 @@ RSpec.describe "Backlogs Project Settings", :js do
 
     done_status_ids_autocompleter.expect_selected "Closed"
     done_status_ids_autocompleter.expect_not_selected "Sorta kinda Finished"
+  end
+
+  it "allows excluding work package types from the backlog" do
+    settings_page.visit!
+
+    expect(page).to have_heading "Backlogs"
+
+    wait_for_network_idle
+    wait_for_autocompleter_options_to_be_loaded
+
+    # No types are excluded by default
+    excluded_type_ids_autocompleter.expect_not_selected "Task"
+
+    excluded_type_ids_autocompleter.select_option "Task"
+    excluded_type_ids_autocompleter.expect_selected "Task"
+
+    excluded_type_ids_autocompleter.close_autocompleter
+
+    click_button "Save"
+
+    expect_flash(type: :success, message: "Successful update")
+
+    wait_for_network_idle
+    wait_for_autocompleter_options_to_be_loaded
+
+    # After save, Task should still be selected
+    excluded_type_ids_autocompleter.expect_selected "Task"
+
+    # Deselect the type and save again
+    excluded_type_ids_autocompleter.deselect_option "Task"
+    click_button "Save"
+
+    wait_for_network_idle
+    wait_for_autocompleter_options_to_be_loaded
+
+    expect_and_dismiss_flash(type: :success, message: "Successful update")
+
+    excluded_type_ids_autocompleter.expect_not_selected "Task"
   end
 end

@@ -39,20 +39,22 @@ module OpenProject::Backlogs::Patches::EnabledModulePatch
 
   # When the backlogs module is first enabled on a project, automatically populate
   # the project's done_statuses with all statuses that are globally marked as closed
-  # (is_closed: true). This mirrors the form behaviour where these statuses are
+  # (is_closed: true). This mirrors the form behavior where these statuses are
   # pre-selected and disabled, so users never have to visit the settings page just
   # to get sensible defaults.
-  def seed_backlogs_done_statuses
+  def seed_backlogs_done_statuses # rubocop:disable Metrics/AbcSize
     return unless project
 
-    mandatory_statuses = Status.where(is_closed: true)
-    return if mandatory_statuses.empty?
+    mandatory_ids = Status.where(is_closed: true).pluck(:id)
+    return if mandatory_ids.empty?
 
-    # Only add statuses not already present to avoid duplicate-key errors
-    already_present_ids = project.done_statuses.pluck(:id)
-    to_add = mandatory_statuses.where.not(id: already_present_ids)
+    merged_ids = (project.done_statuses.reorder(nil).pluck(:id) | mandatory_ids)
 
-    project.done_statuses << to_add if to_add.any?
+    # Normalize the HABTM association explicitly by clearing and setting it:
+    project.class.transaction do
+      project.done_statuses = []
+      project.done_statuses = Status.where(id: merged_ids)
+    end
   end
 end
 
