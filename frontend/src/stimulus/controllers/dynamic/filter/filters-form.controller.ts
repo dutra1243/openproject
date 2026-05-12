@@ -59,7 +59,6 @@ export default class FiltersFormController extends Controller {
     'addFilterSelect',
     'operator',
     'filterValueContainer',
-    'filterValueSelect',
     'days',
     'singleDay',
     'dateRange',
@@ -73,7 +72,6 @@ export default class FiltersFormController extends Controller {
   declare readonly addFilterSelectTarget:HTMLSelectElement;
   declare readonly operatorTargets:HTMLSelectElement[];
   declare readonly filterValueContainerTargets:HTMLElement[];
-  declare readonly filterValueSelectTargets:HTMLSelectElement[];
   declare readonly daysTargets:HTMLInputElement[];
   declare readonly singleDayTargets:HTMLInputElement[];
   declare readonly dateRangeTargets:HTMLInputElement[];
@@ -150,10 +148,6 @@ export default class FiltersFormController extends Controller {
     }
   }
 
-  filterValueSelectTargetConnected(target:HTMLElement) {
-    this.addChangeListener(target);
-  }
-
   daysTargetConnected(target:HTMLElement) {
     this.addChangeListener(target);
   }
@@ -196,10 +190,6 @@ export default class FiltersFormController extends Controller {
   }
 
   filterValueContainerTargetDisconnected(target:HTMLElement) {
-    this.removeChangeListener(target);
-  }
-
-  filterValueSelectTargetDisconnected(target:HTMLElement) {
     this.removeChangeListener(target);
   }
 
@@ -252,27 +242,6 @@ export default class FiltersFormController extends Controller {
     }
   }
 
-  toggleMultiSelect({ params: { filterName } }:{ params:{ filterName:string } }) {
-    const valueContainer = this.findTargetByName(filterName, this.filterValueContainerTargets);
-    const singleSelect = this.findTargetByName<HTMLSelectElement>(filterName, this.filterValueSelectTargets, (s) => !s.multiple);
-    const multiSelect = this.findTargetByName<HTMLSelectElement>(filterName, this.filterValueSelectTargets, (s) => s.multiple);
-    const multiInput = valueContainer?.querySelector<PrimerMultiInputElement>('primer-multi-input');
-
-    if (valueContainer && singleSelect && multiSelect && multiInput) {
-      const isMultiMode = valueContainer.dataset.multiValue === 'true';
-
-      if (isMultiMode) {
-        this.setSelectOptions(singleSelect, this.getValueToSelect(multiSelect));
-        multiInput.activateField('single');
-      } else {
-        this.setSelectOptions(multiSelect, this.getValueToSelect(singleSelect));
-        multiInput.activateField('multi');
-      }
-
-      valueContainer.dataset.multiValue = isMultiMode ? 'false' : 'true';
-    }
-  }
-
   private addChangeListener(target:HTMLElement) {
     if (!this.performTurboRequestsValue) { return; }
 
@@ -291,16 +260,6 @@ export default class FiltersFormController extends Controller {
     } else {
       target.removeEventListener('change', this.boundListener);
     }
-  }
-
-  private getValueToSelect(selectElement:HTMLSelectElement) {
-    return selectElement.selectedOptions[0]?.value;
-  }
-
-  private setSelectOptions(selectElement:HTMLSelectElement, selectedValue:string) {
-    Array.from(selectElement.options).forEach((option) => {
-      option.selected = option.value === selectedValue;
-    });
   }
 
   addFilter(event:Event) {
@@ -521,7 +480,6 @@ export default class FiltersFormController extends Controller {
   }
 
   private readonly operatorsWithoutValues = ['*', '!*', 't', 'w'];
-  private readonly selectFilterTypes = ['list', 'list_all', 'list_optional'];
   private readonly dateFilterTypes = ['datetime_past', 'date'];
 
   private parseFilterValue(valueContainer:HTMLElement, filterName:string, filterType:string, operator:string) {
@@ -539,10 +497,6 @@ export default class FiltersFormController extends Controller {
       return [];
     }
 
-    if (this.selectFilterTypes.includes(filterType)) {
-      return this.parseSelectFilterValue(valueContainer, filterName);
-    }
-
     if (this.dateFilterTypes.includes(filterType)) {
       return this.parseDateFilterValue(valueContainer, filterName);
     }
@@ -552,25 +506,6 @@ export default class FiltersFormController extends Controller {
     if (value && value.length > 0) {
       return [value];
     }
-    return null;
-  }
-
-  private parseSelectFilterValue(valueContainer:HTMLElement, filterName:string) {
-    const isMultiMode = valueContainer.dataset.multiValue === 'true';
-    let selectFields;
-
-    if (isMultiMode) {
-      selectFields = this.filterValueSelectTargets.filter((selectField) => selectField.multiple && selectField.getAttribute('data-filter-name') === filterName);
-    } else {
-      selectFields = this.filterValueSelectTargets.filter((selectField) => !selectField.multiple && selectField.getAttribute('data-filter-name') === filterName);
-    }
-
-    const selectedValues = _.flatten(Array.from(selectFields).map((selectField) => Array.from(selectField.selectedOptions).map((option) => option.value)));
-
-    if (selectedValues.length > 0) {
-      return selectedValues;
-    }
-
     return null;
   }
 

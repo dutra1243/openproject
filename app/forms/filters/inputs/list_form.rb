@@ -32,38 +32,34 @@ class Filters::Inputs::ListForm < Filters::Inputs::BaseFilterForm
   def add_operand(group)
     filter_name = @filter.name
     filter_values = @filter.values || []
-    allowed_values = @filter.allowed_values
-    multi_value = filter_values.size > 1
+    items = @filter.allowed_values.map { |name, id| { name:, id: } }
+    field_id = "#{filter_name}_value"
 
-    group.multi(name: :value, label: :value, visually_hide_label: true,
-                class: ["advanced-filters--filter-value"],
-                data: {
-                  "filter--filters-form-target": "filterValueContainer",
-                  "filter-name": filter_name,
-                  "multi-value": multi_value.to_s
-                }) do |builder|
-      builder.select_with_toggle(
-        name: :single, label: :single,
-        allowed_values:,
-        selected_values: [filter_values.first].compact,
-        multiple: false, collapse: false, filter_name:,
-        hidden: multi_value,
-        data: {
-          "filter--filters-form-target": "filterValueSelect",
-          "filter-name": filter_name
-        }
-      )
-      builder.select_with_toggle(
-        name: :multi, label: :multi,
-        allowed_values:,
-        selected_values: filter_values,
-        multiple: true, collapse: true, filter_name:,
-        hidden: !multi_value,
-        data: {
-          "filter--filters-form-target": "filterValueSelect",
-          "filter-name": filter_name
-        }
-      )
-    end
+    group.autocompleter(
+      name: field_id,
+      label: :value,
+      visually_hide_label: true,
+      wrapper_classes: ["advanced-filters--filter-value"],
+      wrapper_data_attributes: {
+        "filter--filters-form-target": "filterValueContainer",
+        "filter-name": filter_name,
+        "filter-autocomplete": "true"
+      },
+      autocomplete_options: {
+        component: "opce-autocompleter",
+        id: field_id,
+        multiple: true,
+        multipleAsSeparateInputs: false,
+        inputName: "value",
+        inputValue: filter_values,
+        items:,
+        model: items.select { |item| filter_values.include?(item[:id]) },
+        bindLabel: "name",
+        bindValue: "id",
+        hideSelected: true,
+        defaultData: false,
+        hiddenFieldAction: "change->filter--filters-form#autocompleteSendForm"
+      }
+    )
   end
 end

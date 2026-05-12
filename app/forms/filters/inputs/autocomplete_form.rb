@@ -30,8 +30,10 @@
 
 class Filters::Inputs::AutocompleteForm < Filters::Inputs::BaseFilterForm
   def add_operand(group)
+    field_id = "#{@filter.name}_value"
+
     group.autocompleter(
-      name: "v-#{@filter.class.key}",
+      name: field_id,
       label: @filter.human_name,
       visually_hide_label: true,
       required: true,
@@ -42,6 +44,7 @@ class Filters::Inputs::AutocompleteForm < Filters::Inputs::BaseFilterForm
         "filter-autocomplete": "true"
       },
       autocomplete_options: @additional_attributes[:autocomplete_options].merge(
+        id: field_id,
         multiple: true,
         multipleAsSeparateInputs: false,
         inputName: "value",

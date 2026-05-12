@@ -11,10 +11,6 @@ module Primer
             super(**decorate_options(**), &)
           end
 
-          def select_with_toggle(**, &)
-            add_input Filters::Inputs::SelectWithToggleInput.new(builder:, form:, **decorate_options(**), &)
-          end
-
           def check_box(**, &)
             super(**decorate_options(**), &)
           end
