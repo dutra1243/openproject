@@ -42,8 +42,7 @@ RSpec.describe OpenProject::CustomFieldFormat do
 
     context "for a 'Project' class" do
       context "with some enterprise addons",
-              with_ee: %i[calculated_values weighted_item_lists custom_field_hierarchies],
-              with_flag: { calculated_value_project_attribute: true } do
+              with_ee: %i[calculated_values weighted_item_lists custom_field_hierarchies] do
         it_behaves_like "custom field formats",
                         "Project",
                         %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
@@ -120,9 +119,7 @@ RSpec.describe OpenProject::CustomFieldFormat do
                       "excluding hierarchy",
                       %w[bool date float int link list string text user version empty]
 
-      context "with a calculated values ee",
-              with_ee: [:calculated_values],
-              with_flag: { calculated_value_project_attribute: true } do
+      context "with a calculated values ee", with_ee: [:calculated_values] do
         it_behaves_like "available custom field formats",
                         "including calculated values",
                         %w[bool calculated_value date float int link list string text user version empty]
@@ -140,31 +137,16 @@ RSpec.describe OpenProject::CustomFieldFormat do
     end
 
     context "for a 'Project' class" do
-      context "with feature flags enabled", with_flag: { calculated_value_project_attribute: true } do
-        it_behaves_like "custom field formats",
-                        "Project",
-                        %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
-      end
-
-      context "with no feature flags enabled", with_flag: {} do
-        it_behaves_like "custom field formats",
-                        "Project",
-                        %w[bool date float hierarchy int link list string text user version weighted_item_list]
-      end
+      it_behaves_like "custom field formats",
+                      "Project",
+                      %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
     end
   end
 
   describe ".disabled_formats" do
-    it "returns disabled formats" do
+    it "returns no disabled formats" do
       formats = described_class.disabled_formats
-      expect(formats).to match_array(%w[calculated_value])
-    end
-
-    context "with feature flags enabled", with_flag: { calculated_value_project_attribute: true } do
-      it "returns no disabled formats" do
-        formats = described_class.disabled_formats
-        expect(formats).to be_empty
-      end
+      expect(formats).to be_empty
     end
   end
 end

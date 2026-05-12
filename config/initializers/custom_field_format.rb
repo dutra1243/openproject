@@ -102,9 +102,6 @@ OpenProject::CustomFieldFormat.map do |fields|
                                                      label: :label_calculated_value,
                                                      only: %w(Project),
                                                      order: 14,
-                                                     enabled: lambda do
-                                                       OpenProject::FeatureDecisions.calculated_value_project_attribute_active?
-                                                     end,
                                                      enterprise_feature: :calculated_values,
                                                      formatter: "CustomValue::CalculatedValueStrategy")
 end

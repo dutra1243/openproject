@@ -267,9 +267,7 @@ RSpec.describe(
           end
         end
 
-        context "with calculated custom fields",
-                with_ee: %i[calculated_values],
-                with_flag: { calculated_value_project_attribute: true } do
+        context "with calculated custom fields", with_ee: %i[calculated_values] do
           using CustomFieldFormulaReferencing
           let(:integer_custom_field) { create(:integer_project_custom_field, projects: [source]) }
           let(:calculated_custom_field) do
@@ -315,9 +313,7 @@ RSpec.describe(
             expect(calculated_cv.value).to eq "16"
           end
 
-          context "with calculation errors",
-                  with_ee: %i[calculated_values],
-                  with_flag: { calculated_value_project_attribute: true } do
+          context "with calculation errors", with_ee: %i[calculated_values] do
             let(:calculated_custom_field) do
               create(:calculated_value_project_custom_field, :skip_validations,
                      projects: [source],

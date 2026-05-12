@@ -734,9 +734,7 @@ RSpec.describe "Projects list filters", :js, with_settings: { login_required?: f
     end
   end
 
-  context "when filtering via calculated values",
-          with_ee: %i[calculated_values],
-          with_flag: { calculated_value_project_attribute: true } do
+  context "when filtering via calculated values", with_ee: %i[calculated_values] do
     let(:projects_with_calculated_value) do
       [project, public_project]
     end
