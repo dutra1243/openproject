@@ -37,8 +37,7 @@ Redmine::MenuManager.map :top_menu do |menu|
             caption: I18n.t("label_portfolio_plural"),
             icon: "briefcase",
             if: ->(_) {
-              OpenProject::FeatureDecisions.portfolio_models_active? &&
-                (User.current.logged? || !Setting.login_required?) &&
+              (User.current.logged? || !Setting.login_required?) &&
                 (User.current.allowed_globally?(:add_portfolios) ||
                   Project.portfolio.allowed_to(User.current, :view_project).any?)
             },
@@ -198,8 +197,7 @@ Redmine::MenuManager.map :global_menu do |menu|
             icon: "briefcase",
             after: :my_page,
             if: ->(_) {
-              OpenProject::FeatureDecisions.portfolio_models_active? &&
-                (User.current.logged? || !Setting.login_required?) &&
+              (User.current.logged? || !Setting.login_required?) &&
                 (User.current.allowed_globally?(:add_portfolios) ||
                   Project.portfolio.allowed_to(User.current, :view_project).any?)
             },

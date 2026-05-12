@@ -334,7 +334,7 @@ RSpec.describe "Projects", "editing settings", :js do
     end
   end
 
-  describe "workspace type badges in Subproject of field", with_flag: { portfolio_models: true } do
+  describe "workspace type badges in Subproject of field" do
     shared_let(:portfolio) { create(:portfolio, name: "Parent Portfolio") }
     shared_let(:program) { create(:program, name: "Parent Program") }
     shared_let(:regular_project) { create(:project, name: "Regular Project") }

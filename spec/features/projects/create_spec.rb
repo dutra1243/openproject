@@ -602,7 +602,7 @@ RSpec.describe "Projects", "creation",
     end
   end
 
-  context "with workspace type badges in parent field", with_flag: { portfolio_models: true } do
+  context "with workspace type badges in parent field" do
     include_context "ng-select-autocomplete helpers"
 
     shared_let(:portfolio) { create(:portfolio, name: "Parent Portfolio") }

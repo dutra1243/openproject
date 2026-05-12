@@ -87,7 +87,7 @@ RSpec.describe "Projects navigation", :js do
     end
   end
 
-  context "with workspace type badges in project dropdown", with_flag: { portfolio_models: true } do
+  context "with workspace type badges in project dropdown" do
     shared_let(:portfolio_project) { create(:portfolio, name: "Test Portfolio") }
     shared_let(:program_project) { create(:program, name: "Test Program") }
     shared_let(:regular_project) { project }

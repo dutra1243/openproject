@@ -186,8 +186,7 @@ RSpec.describe "Projects autocomplete page", :js do
     top_menu.expect_current_project project2.name
   end
 
-  it "displays workspace type badges for portfolios and programs",
-     with_flag: { portfolio_models: true } do
+  it "displays workspace type badges for portfolios and programs" do
     retry_block do
       top_menu.toggle unless top_menu.open?
       top_menu.expect_open
