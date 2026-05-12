@@ -161,11 +161,14 @@ module Components
             fill_in "created_at", with: values.first
           end
         when "between"
-          value = values.join(" - ")
           if send_keys
+            value = values.join(" - ")
             find_field("created_at").send_keys value
           else
-            fill_in "created_at", with: value
+            find_field("created_at").click
+            datepicker = ::Components::RangeDatepicker.new
+            datepicker.set_date values.first
+            datepicker.set_date values.last
           end
         end
       end

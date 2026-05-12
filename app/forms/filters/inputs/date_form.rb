@@ -105,7 +105,7 @@ class Filters::Inputs::DateForm < Filters::Inputs::BaseFilterForm
       label: :dateRange,
       hidden: value.nil?,
       leading_visual: { icon: :calendar },
-      value:,
+      value: value || "-",
       data: {
         "filter-name": filter_name
       }
