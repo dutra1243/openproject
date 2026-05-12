@@ -97,8 +97,8 @@ en:
     caption_sprints_default_fold_state: "Sprints will not be expanded by default when viewing the 'Backlog and sprints' page. Each one has to be manually expanded."
     excluded_work_package_types: "Excluded work package types"
     excluded_work_package_types_caption: >
-      Choose which work package types to hide from the backlog. Items of the selected types will not appear automatically,
-      keeping your backlog focused on the work that matters to your team.
+      Choose which work package types to hide from the backlog. Items of the selected types will not appear in the backlog automatically,
+      keeping it focused on the work that matters to your team.
       For example types like Epics or Milestones that are managed at a higher level can be hidden to keep the backlog focused on actionable items.
     statuses_considered_closed: "Statuses considered closed"
     statuses_considered_closed_caption: >
