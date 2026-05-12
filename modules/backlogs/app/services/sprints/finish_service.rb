@@ -61,12 +61,12 @@ class Sprints::FinishService < BaseServices::BaseContracted
 
   private
 
-  def unfinished_work_packages
-    model.work_packages.unfinished
+  def closed_work_packages
+    model.work_packages.with_status_considered_closed
   end
 
   def move_to_sprint(target_sprint)
-    unfinished_work_packages.order(position: :desc).map do |wp|
+    closed_work_packages.order(position: :desc).map do |wp|
       WorkPackages::UpdateService
         .new(user:, model: wp, contract_class: WorkPackages::MoveBetweenSprintsContract)
         .call(sprint: target_sprint, position: 1)
@@ -80,7 +80,7 @@ class Sprints::FinishService < BaseServices::BaseContracted
     call_args = { sprint: nil }
     call_args[:position] = position if position
 
-    unfinished_work_packages.order(position: order_direction).map do |wp|
+    closed_work_packages.order(position: order_direction).map do |wp|
       WorkPackages::UpdateService
         .new(user:, model: wp, contract_class: WorkPackages::MoveToBacklogContract)
         .call(**call_args)

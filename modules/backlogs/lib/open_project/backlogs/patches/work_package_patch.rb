@@ -49,7 +49,7 @@ module OpenProject::Backlogs::Patches::WorkPackagePatch
     include OpenProject::Backlogs::List
 
     scopes :backlogs_inbox_for
-    scopes :unfinished
+    scopes :with_status_considered_closed
   end
 
   module ClassMethods

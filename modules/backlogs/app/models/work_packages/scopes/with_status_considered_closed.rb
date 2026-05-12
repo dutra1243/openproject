@@ -28,12 +28,12 @@
 # See COPYRIGHT and LICENSE files for more details.
 # ++
 
-module WorkPackages::Scopes::Unfinished
+module WorkPackages::Scopes::WithStatusConsideredClosed
   extend ActiveSupport::Concern
 
   class_methods do
-    def unfinished
-      # Excludes work packages whose status is configured as "done" on the project
+    def with_status_considered_closed
+      # Excludes work packages whose status is configured as "closed" on the project
       # the work package belongs to. The correlated subquery ensures each work package
       # is always checked against its own project's status configuration.
       status_subquery = <<~SQL.squish
