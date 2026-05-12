@@ -105,22 +105,10 @@ module Backlogs
 
     def move_story_to_target_component_via_turbo_stream(source:, target:)
       if source != target
-        flash_successful_move(from: source, to: target)
         replace_component_via_turbo_stream(source)
       end
 
       replace_component_via_turbo_stream(target)
-    end
-
-    def flash_successful_move(from:, to:)
-      # No success message when moving from the inbox.
-      if from != :inbox
-        render_success_flash_message_via_turbo_stream(
-          message: I18n.t(:notice_successful_move,
-                          from: from.name,
-                          to: to == :inbox ? I18n.t(:label_inbox) : to.name)
-        )
-      end
     end
 
     def replace_component_via_turbo_stream(container)

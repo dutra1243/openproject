@@ -163,7 +163,6 @@ RSpec.describe Backlogs::WorkPackagesController do
         expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
         expect(response)
           .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{other_sprint.id}", method: "morph"
-        expect(response).to have_turbo_stream action: "flash", target: "op-primer-flash-component"
         expect(assigns(:project)).to eq(project)
         expect(assigns(:story)).to eq(story_in_sprint)
       end
@@ -186,7 +185,6 @@ RSpec.describe Backlogs::WorkPackagesController do
         expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
         expect(response)
           .to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}", method: "morph"
-        expect(response).to have_turbo_stream action: "flash", target: "op-primer-flash-component"
         expect(assigns(:project)).to eq(project)
         expect(assigns(:story)).to eq(story_in_sprint)
         expect(story_in_sprint.reload.sprint).to be_nil
@@ -229,7 +227,6 @@ RSpec.describe Backlogs::WorkPackagesController do
         expect(response).to have_turbo_stream action: "replace",
                                               target: "backlogs-sprint-component-#{sprint.id}",
                                               method: "morph"
-        expect(response).not_to have_turbo_stream action: "flash", target: "op-primer-flash-component"
       end
     end
 
@@ -281,8 +278,6 @@ RSpec.describe Backlogs::WorkPackagesController do
           expect(response).to have_turbo_stream action: "replace",
                                                 target: "backlogs-sprint-component-#{target_sprint.id}"
 
-          # Flash message is omitted here on purpose (#73600)
-          expect(response).not_to have_turbo_stream action: "flash", target: "op-primer-flash-component"
           expect(inbox_story.reload.sprint).to eq(target_sprint)
         end
       end
@@ -302,7 +297,6 @@ RSpec.describe Backlogs::WorkPackagesController do
           expect(response).to be_successful
           expect(response).to have_turbo_stream action: "replace",
                                                 target: "backlogs-backlog-component-#{project.id}"
-          expect(response).not_to have_turbo_stream action: "flash", target: "op-primer-flash-component"
         end
 
         it "moves the work package to position 2" do

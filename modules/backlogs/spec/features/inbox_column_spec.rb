@@ -407,10 +407,10 @@ RSpec.describe "Inbox column in sprint planning view", :js do
 
       it "moves all sprint items back to the inbox" do
         planning_page.drag_sprint_item_to_inbox(sprint_wp1)
-        expect_and_dismiss_flash(message: "Successful move from Sprint 1 to Inbox.")
+        wait_for_network_idle
 
         planning_page.drag_sprint_item_to_inbox(sprint_wp2)
-        expect_and_dismiss_flash(message: "Successful move from Sprint 1 to Inbox.")
+        wait_for_network_idle
 
         planning_page.expect_story_not_in_sprint(sprint_wp1, sprint)
         planning_page.expect_story_not_in_sprint(sprint_wp2, sprint)
