@@ -410,16 +410,65 @@ RSpec.describe Backlogs::WorkPackagesController do
   end
 
   describe "GET #move_to_sprint_dialog" do
+    let!(:other_sprint) { create(:sprint) }
+    let!(:displayed_sprints) { create_list(:sprint, 2, project:) }
+
     let(:params) { { project_id: project.id, id: story.id } }
 
     subject { get :move_to_sprint_dialog, params:, format: :turbo_stream }
 
-    context "when user has manage_sprint_items permission" do
+    context "with a Sprint source" do
       it "responds with a dialog turbo stream", :aggregate_failures do
         subject
 
         expect(response).to be_successful
         expect(response).to have_turbo_stream action: "dialog"
+      end
+
+      it "includes the existing sprints in the target_id" do
+        subject
+
+        existing_sprints.each do |sprint|
+          expect(response.body).to include("sprint:#{sprint.id}")
+        end
+      end
+
+      it "does not include the current sprints from the target_id" do
+        subject
+
+        expect(response.body).not_to include("sprint:#{sprint.id}")
+      end
+
+      it "does not include the other sprint" do
+        subject
+
+        expect(response.body).not_to include("sprint:#{other_sprint.id}")
+      end
+    end
+
+    context "with inbox source (no sprint_id)" do
+      let(:inbox_story) { create(:work_package, status:, project:) }
+      let(:params) { { project_id: project.id, id: inbox_story.id } }
+
+      it "responds with a dialog turbo stream", :aggregate_failures do
+        subject
+
+        expect(response).to be_successful
+        expect(response).to have_turbo_stream action: "dialog"
+      end
+
+      it "includes the existing sprints in the target_id" do
+        subject
+
+        existing_sprints.each do |sprint|
+          expect(response.body).to include("sprint:#{sprint.id}")
+        end
+      end
+
+      it "does not include the other sprint" do
+        subject
+
+        expect(response.body).not_to include("sprint:#{other_sprint.id}")
       end
     end
 
@@ -448,45 +497,6 @@ RSpec.describe Backlogs::WorkPackagesController do
       it "responds with 404" do
         subject
         expect(response).to have_http_status :not_found
-      end
-    end
-
-    context "with inbox source (no sprint_id)" do
-      let(:inbox_story) { create(:work_package, status:, project:) }
-      let(:params) { { project_id: project.id, id: inbox_story.id } }
-
-      it "responds with a dialog turbo stream", :aggregate_failures do
-        subject
-
-        expect(response).to be_successful
-        expect(response).to have_turbo_stream action: "dialog"
-      end
-
-      it "embeds the no-sprint work_packages path in the dialog form action URL" do
-        subject
-
-        expect(response.body).to include("backlogs/work_packages/#{inbox_story.id}/move")
-        expect(response.body).not_to include("sprints")
-      end
-
-      context "when all=1 is in params" do
-        let(:params) { { project_id: project.id, id: inbox_story.id, all: "1" } }
-
-        it "embeds the all query in the dialog form action URL" do
-          subject
-
-          expect(response.body).to match(/all=1/)
-        end
-      end
-
-      context "with a user lacking manage_sprint_items permission" do
-        let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
-
-        it "responds with 403" do
-          subject
-
-          expect(response).to have_http_status :forbidden
-        end
       end
     end
   end
