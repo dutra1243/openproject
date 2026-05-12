@@ -14,6 +14,8 @@
       "emailAddress": "p.balashou@openproject.com",
       "active": true
     },
+    "duedate": "2031-05-29",
+    "timetracking": {"timeSpent":"2d 5h","originalEstimate":"3w","timeSpentSeconds":75600,"remainingEstimate":"1d 3h","originalEstimateSeconds":432000,"remainingEstimateSeconds":39600},
     "assignee": {
       "key": "JIRAUSER10000",
       "name": "p.balashou",

@@ -143,6 +143,9 @@ RSpec.describe Import::JiraImportProjectsJob, :webmock do
         expect(work_package.status.name).to eq("In Progress")
         expect(work_package.priority.name).to eq("Highest")
         expect(work_package.assigned_to).to eq(op_user)
+        expect(work_package.due_date.to_s).to eq("2031-05-29")
+        expect(work_package.estimated_hours).to eq(7200.0)
+        expect(work_package.remaining_hours).to eq(660.0)
       end
 
       it "creates a comment on the work package" do
