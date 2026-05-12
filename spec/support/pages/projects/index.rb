@@ -263,7 +263,7 @@ module Pages
             set_autocomplete_filter(values)
           elsif is_date_or_datetime
             wait_for_network_idle
-            set_created_at_filter(human_operator, values, send_keys:)
+            set_datetime_filter(name, human_operator, values, send_keys:)
           end
         end
       end

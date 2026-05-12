@@ -84,7 +84,7 @@ module Components
             set_autocomplete_filter(values)
           elsif name == "created_at"
             select(human_operator, from: "operator_#{name}")
-            set_created_at_filter(human_operator, values, send_keys:)
+            set_datetime_filter(name, human_operator, values, send_keys:)
           elsif date_filter?(selected_filter) && human_operator == "on"
             set_date_filter(values, send_keys)
           end
@@ -152,20 +152,20 @@ module Components
         end
       end
 
-      def set_created_at_filter(human_operator, values, send_keys: false)
+      def set_datetime_filter(filter_name, human_operator, values, send_keys: false)
         case human_operator
         when "on", "less than days ago", "more than days ago", "days ago"
           if send_keys
-            find_field("created_at").send_keys values.first
+            find_field(filter_name).send_keys values.first
           else
-            fill_in "created_at", with: values.first
+            fill_in filter_name, with: values.first
           end
         when "between"
           if send_keys
             value = values.join(" - ")
-            find_field("created_at").send_keys value
+            find_field(filter_name).send_keys value
           else
-            find_field("created_at").click
+            find_field(filter_name).click
             datepicker = ::Components::RangeDatepicker.new
             datepicker.set_date values.first
             datepicker.set_date values.last

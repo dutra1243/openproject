@@ -68,7 +68,6 @@ class Filters::Inputs::DateForm < Filters::Inputs::BaseFilterForm
 
   def days_div(builder, filter_name, value)
     field_arguments = {
-      id: "#{filter_name}_value",
       name: :days,
       label: I18n.t("datetime.units.day.other"),
       visually_hide_label: true,

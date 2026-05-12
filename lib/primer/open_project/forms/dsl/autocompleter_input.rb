@@ -24,7 +24,8 @@ module Primer
             end
           end
 
-          def initialize(name:, label:, autocomplete_options:, wrapper_data_attributes: {}, wrapper_classes: [], **system_arguments)
+          def initialize(name:, label:, autocomplete_options:, wrapper_data_attributes: {}, wrapper_classes: [],
+                         **system_arguments)
             @name = name
             @label = label
             @autocomplete_options = derive_autocompleter_options(autocomplete_options)
