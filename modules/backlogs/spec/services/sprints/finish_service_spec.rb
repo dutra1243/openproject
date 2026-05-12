@@ -76,7 +76,7 @@ RSpec.describe Sprints::FinishService do
     let!(:done_like_status) { create(:status, is_closed: false) }
     let!(:done_like_wp) do
       # Add the non-closed status to the project's done_statuses so it is
-      # treated as "finished" by the unfinished scope.
+      # treated as "finished" by the work packages scope.
       project.done_statuses << done_like_status
       create(:work_package, project:, sprint:, status: done_like_status)
     end

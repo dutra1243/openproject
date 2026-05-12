@@ -30,7 +30,7 @@
 
 require "spec_helper"
 
-RSpec.describe WorkPackages::Scopes::WithStatusConsideredClosed do
+RSpec.describe WorkPackages::Scopes::WithoutStatusConsideredClosed do
   let(:user) { create(:admin) }
   let(:open_status) { create(:status, is_closed: false) }
   let(:closed_status) { create(:status, is_closed: true) }
@@ -43,9 +43,9 @@ RSpec.describe WorkPackages::Scopes::WithStatusConsideredClosed do
 
   current_user { user }
 
-  subject(:unfinished) { WorkPackage.with_status_considered_closed }
+  subject(:unfinished) { WorkPackage.without_status_considered_closed }
 
-  describe ".with_status_considered_closed" do
+  describe ".without_status_considered_closed" do
     it "returns work packages that are defined as 'not done' in the project" do
       wp_with_open_status = create(:work_package, project:, status: open_status)
       create(:work_package, project:, status: closed_status)

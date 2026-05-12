@@ -28,11 +28,11 @@
 # See COPYRIGHT and LICENSE files for more details.
 # ++
 
-module WorkPackages::Scopes::WithStatusConsideredClosed
+module WorkPackages::Scopes::WithoutStatusConsideredClosed
   extend ActiveSupport::Concern
 
   class_methods do
-    def with_status_considered_closed
+    def without_status_considered_closed
       # Excludes work packages whose status is configured as "closed" on the project
       # the work package belongs to. The correlated subquery ensures each work package
       # is always checked against its own project's status configuration.

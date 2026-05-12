@@ -36,7 +36,7 @@ class BacklogBucket < ApplicationRecord
   has_many :displayed_work_packages, # rubocop:disable Rails/HasManyOrHasOneDependent
            -> do
              visible(User.current)
-               .with_status_considered_closed
+               .without_status_considered_closed
                .order_by_position
            end,
            class_name: "WorkPackage",
