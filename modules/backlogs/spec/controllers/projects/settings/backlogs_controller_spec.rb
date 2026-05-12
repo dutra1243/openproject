@@ -58,7 +58,7 @@ RSpec.describe Projects::Settings::BacklogsController do
     context "when service call succeeds" do
       let(:project_params) do
         {
-          done_status_ids: ["1", "2"],
+          done_status_ids: %w[1 2],
           excluded_work_package_type_ids: ["3"],
           name: "must_be_ignored"
         }
@@ -66,10 +66,8 @@ RSpec.describe Projects::Settings::BacklogsController do
 
       it "updates backlogs type and status settings and redirects to show", :aggregate_failures do
         expect(update_service).to have_received(:call).with(
-          ActionController::Parameters.new(
-            "done_status_ids" => ["1", "2"],
-            "excluded_work_package_type_ids" => ["3"]
-          ).permit!
+          done_status_ids: %w[1 2],
+          excluded_work_package_type_ids: ["3"]
         )
 
         expect(response).to redirect_to(project_settings_backlogs_path(project))
@@ -90,6 +88,24 @@ RSpec.describe Projects::Settings::BacklogsController do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response).to render_template("projects/settings/backlogs/show")
         expect(flash[:error]).to eq I18n.t(:notice_unsuccessful_update_with_reason, reason: "invalid setting")
+      end
+    end
+
+    context "when done_status_ids is omitted by an empty multi-select" do
+      let(:project_params) do
+        {
+          excluded_work_package_type_ids: ["3"]
+        }
+      end
+
+      it "still passes an empty done_status_ids array to the service", :aggregate_failures do
+        expect(update_service).to have_received(:call).with(
+          done_status_ids: [],
+          excluded_work_package_type_ids: ["3"]
+        )
+
+        expect(response).to redirect_to(project_settings_backlogs_path(project))
+        expect(flash[:notice]).to include I18n.t(:notice_successful_update)
       end
     end
   end
