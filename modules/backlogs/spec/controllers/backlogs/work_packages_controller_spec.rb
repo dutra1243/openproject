@@ -93,33 +93,33 @@ RSpec.describe Backlogs::WorkPackagesController do
     context "with inbox source (no sprint_id)" do
       let!(:inbox_items) { create_list(:work_package, 5, project:, status:) }
       let(:inbox_story) { inbox_items.last }
+      let(:params) do
+        { project_id: project.id, id: inbox_story.id, direction: "highest" }
+      end
+
+      subject { post :reorder, params:, format: :turbo_stream }
 
       it "replaces the inbox component and responds with turbo streams", :aggregate_failures do
-        post :reorder,
-             params: { project_id: project.id, id: inbox_story.id, direction: "highest" },
-             format: :turbo_stream
-
+        subject
         expect(response).to be_successful
         expect(response).to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}"
         expect(assigns(:story)).to eq(inbox_story)
       end
 
       it "moves the inbox item to the first place" do
-        post :reorder,
-             params: { project_id: project.id, id: inbox_story.id, direction: "highest" },
-             format: :turbo_stream
-
+        subject
         expect(inbox_story.reload.position).to eq(1)
       end
 
       context "when all=1 with an inbox over the pagination threshold" do
         before { stub_const("Backlogs::InboxComponent::TRUNCATE_MIDDLE", 2) }
 
-        it "replaces the inbox without a show-more row in the stream" do
-          post :reorder,
-               params: { project_id: project.id, id: inbox_story.id, direction: "lower", all: "1" },
-               format: :turbo_stream
+        let(:params) do
+          { project_id: project.id, id: inbox_story.id, direction: "lower", all: "1" }
+        end
 
+        it "replaces the inbox without a show-more row in the stream" do
+          subject
           expect(response).to be_successful
           expect(response.body).not_to include("inbox_project_#{project.id}_show_more")
         end
@@ -133,10 +133,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         end
 
         it "renders an error flash with 422", :aggregate_failures do
-          post :reorder,
-               params: { project_id: project.id, id: inbox_story.id, direction: "highest" },
-               format: :turbo_stream
-
+          subject
           expect(response).to have_http_status :unprocessable_entity
           expect(response).to have_turbo_stream action: "flash", target: "op-primer-flash-component"
           expect(response).not_to have_turbo_stream action: "replace",
