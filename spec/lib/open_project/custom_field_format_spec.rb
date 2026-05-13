@@ -106,7 +106,8 @@ RSpec.describe OpenProject::CustomFieldFormat do
     context "for a 'Project' class" do
       it_behaves_like "custom field formats",
                       "Project",
-                      %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
+                      %w[bool calculated_value date float hierarchy int link list string text user version
+                         weighted_item_list]
     end
 
     context "for a 'WorkPackage' class" do
@@ -148,35 +149,41 @@ RSpec.describe OpenProject::CustomFieldFormat do
       end
     end
 
+    context "without any ee" do
+      it_behaves_like "available custom field formats",
+                      "not requiring an ee",
+                      %w[bool date float int link list string text user version empty]
+    end
+
     context "with a custom_field_hierarchies ee", with_ee: [:custom_field_hierarchies] do
       it_behaves_like "available custom field formats",
                       "including hierarchy",
                       %w[bool date float hierarchy int link list string text user version empty]
     end
 
-    context "with a weighted item lists ee", with_ee: [:weighted_item_lists] do
+    context "with a weighted_item_lists ee", with_ee: [:weighted_item_lists] do
       it_behaves_like "available custom field formats",
                       "including hierarchy",
                       %w[bool date float int link list string text user version weighted_item_list empty]
     end
 
-    context "without a custom_field_hierarchies ee" do
+    context "with a calculated_values ee", with_ee: [:calculated_values] do
       it_behaves_like "available custom field formats",
-                      "excluding hierarchy",
-                      %w[bool date float int link list string text user version empty]
+                      "including calculated values",
+                      %w[bool calculated_value date float int link list string text user version empty]
+    end
 
-      context "with a calculated values ee", with_ee: [:calculated_values] do
-        it_behaves_like "available custom field formats",
-                        "including calculated values",
-                        %w[bool calculated_value date float int link list string text user version empty]
-      end
+    context "with all ees", with_ee: %i[custom_field_hierarchies weighted_item_lists calculated_values] do
+      it_behaves_like "available custom field formats",
+                      "including hierarchy",
+                      %w[bool calculated_value date float hierarchy int link list string text user version
+                         weighted_item_list empty]
     end
   end
 
   describe ".disabled_formats" do
     it "returns no disabled formats" do
-      formats = described_class.disabled_formats
-      expect(formats).to be_empty
+      expect(described_class.disabled_formats).to be_empty
     end
   end
 end
