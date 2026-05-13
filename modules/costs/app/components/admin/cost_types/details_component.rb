@@ -28,45 +28,21 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::CostTypesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    class DetailsComponent < ApplicationComponent
+      include ApplicationHelper
+      include OpPrimer::ComponentHelpers
+      include OpPrimer::FormHelpers
 
-  before_action :find_cost_type, only: :toggle
+      alias_method :cost_type, :model
 
-  def index
-    @cost_types = CostType.active.order(:name)
-  end
+      def form_url
+        cost_type.persisted? ? admin_cost_type_path(cost_type) : admin_cost_types_path
+      end
 
-  def toggle
-    if @cost_type.is_for_all?
-      respond_with_status(:unprocessable_entity)
-      return
-    end
-
-    mapping = CostTypesProject.find_or_initialize_by(project_id: @project.id, cost_type_id: @cost_type.id)
-
-    if mapping.persisted?
-      mapping.destroy!
-    else
-      mapping.save!
-    end
-
-    respond_with_status(:ok)
-  end
-
-  private
-
-  def find_cost_type
-    @cost_type = CostType.active.find(params[:id])
-  end
-
-  def respond_with_status(status)
-    respond_to do |format|
-      format.json { render json: {}, status: }
-      format.html do
-        flash[:notice] = I18n.t(:notice_successful_update) if status == :ok
-        flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify") if status != :ok
-        redirect_to project_settings_cost_types_path(@project)
+      def form_method
+        cost_type.persisted? ? :put : :post
       end
     end
   end

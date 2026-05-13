@@ -32,7 +32,7 @@ module Admin
   class CostTypesController < ApplicationController
     # Allow only admins here
     before_action :require_admin
-    before_action :find_cost_type, only: %i[edit update set_rate destroy restore]
+    before_action :find_cost_type, only: %i[edit update set_rate destroy restore rates]
     layout "admin"
     menu_item :cost_types
 
@@ -49,6 +49,7 @@ module Admin
                        "unit_plural" => "#{CostType.table_name}.unit_plural" }
       sort_update sort_columns
 
+      @active_cost_types = CostType.active
       @cost_types = CostType.order(sort_clause)
 
       if params[:clear_filter]
@@ -78,6 +79,10 @@ module Admin
       render action: :edit, layout: !request.xhr?
     end
 
+    def rates
+      render action: :rates, layout: !request.xhr?
+    end
+
     def create # rubocop:disable Metrics/AbcSize
       @cost_type = CostType.new(permitted_params.cost_type)
 
@@ -98,9 +103,9 @@ module Admin
 
       if @cost_type.save
         flash[:notice] = t(:notice_successful_update)
-        redirect_to edit_admin_cost_type_path(@cost_type)
+        redirect_to redirect_target_after_update
       else
-        render action: :edit, status: :unprocessable_entity, layout: !request.xhr?
+        render action: render_action_for_failed_update, status: :unprocessable_entity, layout: !request.xhr?
       end
     rescue ActiveRecord::StaleObjectError
       # Optimistic locking exception
@@ -152,6 +157,19 @@ module Admin
 
     def find_cost_type
       @cost_type = CostType.find(params[:id])
+    end
+
+    def rates_submission?
+      params.dig(:cost_type, :new_rate_attributes).present? ||
+        params.dig(:cost_type, :existing_rate_attributes).present?
+    end
+
+    def redirect_target_after_update
+      rates_submission? ? rates_admin_cost_type_path(@cost_type) : edit_admin_cost_type_path(@cost_type)
+    end
+
+    def render_action_for_failed_update
+      rates_submission? ? :rates : :edit
     end
   end
 end

@@ -48,11 +48,11 @@ RSpec.describe Projects::Settings::CostTypesController, :skip_csrf, type: :rails
     end
   end
 
-  describe "PUT #toggle" do
+  describe "POST #toggle" do
     context "with a non-global cost type not yet enabled in the project" do
       it "creates the mapping" do
         expect do
-          put toggle_project_settings_cost_type_path(project, scoped_ct)
+          post toggle_project_settings_cost_type_path(project, scoped_ct)
         end.to change { CostTypesProject.where(project:, cost_type: scoped_ct).count }.from(0).to(1)
         expect(response).to redirect_to(project_settings_cost_types_path(project))
       end
@@ -63,7 +63,7 @@ RSpec.describe Projects::Settings::CostTypesController, :skip_csrf, type: :rails
 
       it "removes the mapping" do
         expect do
-          put toggle_project_settings_cost_type_path(project, scoped_ct)
+          post toggle_project_settings_cost_type_path(project, scoped_ct)
         end.to change { CostTypesProject.where(project:, cost_type: scoped_ct).count }.from(1).to(0)
       end
     end
@@ -71,7 +71,7 @@ RSpec.describe Projects::Settings::CostTypesController, :skip_csrf, type: :rails
     context "with a global cost type" do
       it "rejects toggling" do
         expect do
-          put toggle_project_settings_cost_type_path(project, global_ct)
+          post toggle_project_settings_cost_type_path(project, global_ct)
         end.not_to change(CostTypesProject, :count)
         expect(flash[:error]).to be_present
       end

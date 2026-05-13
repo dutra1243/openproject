@@ -265,11 +265,14 @@ en:
         no_projects:
           heading: "No projects assigned"
           description: "Add projects so this cost type can be used in them."
+      rates:
+        title: "Rate history"
     settings:
       time_and_costs: "Time & Costs"
       cost_types:
         heading: "Cost types"
         none_active: "No cost types are currently active in this project."
+        is_for_all_hint: "This cost type is enabled in all projects."
 
   costs:
     widgets:

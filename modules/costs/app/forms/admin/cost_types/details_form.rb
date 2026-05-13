@@ -30,45 +30,54 @@
 
 module Admin
   module CostTypes
-    class EditFormHeaderComponent < ApplicationComponent
-      def initialize(cost_type:, selected:, **)
-        @cost_type = cost_type
-        @selected = selected
-        super(cost_type, **)
+    class DetailsForm < ApplicationForm
+      form do |f|
+        f.text_field(
+          name: :name,
+          label: ::CostType.human_attribute_name(:name),
+          required: true,
+          input_width: :large
+        )
+
+        f.text_field(
+          name: :unit,
+          label: ::CostType.human_attribute_name(:unit),
+          required: true,
+          input_width: :medium
+        )
+
+        f.text_field(
+          name: :unit_plural,
+          label: ::CostType.human_attribute_name(:unit_plural),
+          required: true,
+          input_width: :medium
+        )
+
+        f.text_field(
+          name: :current_rate,
+          label: ::CostType.human_attribute_name(:current_rate),
+          input_width: :small,
+          inputmode: :decimal,
+          value: current_rate_value,
+          trailing_visual: { text: { text: Setting.costs_currency } }
+        )
+
+        f.check_box(
+          name: :default,
+          label: ::CostType.human_attribute_name(:default)
+        )
+
+        f.check_box(
+          name: :is_for_all,
+          label: ::CostType.human_attribute_name(:is_for_all)
+        )
       end
 
-      def tabs
-        [
-          {
-            name: "edit",
-            path: edit_admin_cost_type_path(@cost_type),
-            label: t(:label_details)
-          },
-          {
-            name: "rates",
-            path: rates_admin_cost_type_path(@cost_type),
-            label: t("cost_types.admin.rates.title")
-          },
-          {
-            name: "cost_type_projects",
-            path: admin_cost_type_projects_path(@cost_type),
-            label: t(:label_project_plural)
-          }
-        ]
-      end
+      def current_rate_value
+        rate = model.rate_at(Date.current)
+        return "" unless rate
 
-      private
-
-      def page_title
-        @cost_type.persisted? ? @cost_type.name : "#{t(:label_new)} #{::CostType.model_name.human}"
-      end
-
-      def breadcrumbs_items
-        [
-          { href: admin_index_path, text: t(:label_administration) },
-          { href: admin_cost_types_path, text: t(:label_cost_type_plural) },
-          page_title
-        ]
+        helpers.unitless_currency_number(rate.rate.round(2))
       end
     end
   end

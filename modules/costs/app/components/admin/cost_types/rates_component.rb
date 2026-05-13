@@ -28,45 +28,27 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::CostTypesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    class RatesComponent < ApplicationComponent
+      include ApplicationHelper
+      include OpPrimer::ComponentHelpers
+      include OpPrimer::FormHelpers
 
-  before_action :find_cost_type, only: :toggle
+      alias_method :cost_type, :model
 
-  def index
-    @cost_types = CostType.active.order(:name)
-  end
-
-  def toggle
-    if @cost_type.is_for_all?
-      respond_with_status(:unprocessable_entity)
-      return
-    end
-
-    mapping = CostTypesProject.find_or_initialize_by(project_id: @project.id, cost_type_id: @cost_type.id)
-
-    if mapping.persisted?
-      mapping.destroy!
-    else
-      mapping.save!
-    end
-
-    respond_with_status(:ok)
-  end
-
-  private
-
-  def find_cost_type
-    @cost_type = CostType.active.find(params[:id])
-  end
-
-  def respond_with_status(status)
-    respond_to do |format|
-      format.json { render json: {}, status: }
-      format.html do
-        flash[:notice] = I18n.t(:notice_successful_update) if status == :ok
-        flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify") if status != :ok
-        redirect_to project_settings_cost_types_path(@project)
+      def sorted_rates
+        cost_type.rates.sort do |a, b|
+          if !a.valid? && !b.valid?
+            0
+          elsif !a.valid?
+            -1
+          elsif !b.valid?
+            1
+          else
+            b.valid_from <=> a.valid_from
+          end
+        end
       end
     end
   end

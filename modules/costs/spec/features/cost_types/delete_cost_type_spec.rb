@@ -43,13 +43,13 @@ RSpec.describe "deleting a cost type", :js do
   it "can delete the cost type" do
     visit admin_cost_types_path
 
-    within("#delete_cost_type_#{cost_type.id}") do
-      scroll_to_and_click(find("button.submit_cost_type"))
+    accept_confirm do
+      scroll_to_and_click(find("[data-test-selector='op-admin-cost-type-#{cost_type.id}-lock']"))
     end
 
     # Expect no results if not locked
     expect_angular_frontend_initialized
-    expect(page).to have_css ".generic-table--no-results-container", wait: 10
+    expect(page).to have_css ".generic-table--empty-row", wait: 10
 
     # Show locked
     find_by_id("include_deleted").set true
@@ -57,7 +57,7 @@ RSpec.describe "deleting a cost type", :js do
 
     wait_for_network_idle
 
-    # Expect no results if not locked
+    # Expect locked list to render with the cost type
     expect(page).to have_text I18n.t(:label_locked_cost_types)
 
     expect(page).to have_css(".restore_cost_type")

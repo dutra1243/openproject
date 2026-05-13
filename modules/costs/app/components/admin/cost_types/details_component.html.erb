@@ -26,20 +26,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 See COPYRIGHT and LICENSE files for more details.
 ++#%>
 
-<%=
-  render(
-    Projects::Settings::TimeAndCosts::PageHeaderComponent.new(
-      project: @project,
-      selected: :cost_types
-    )
-  )
-%>
+<%= settings_primer_form_with(
+      model: cost_type,
+      url: form_url,
+      method: form_method
+    ) do |f| %>
+  <%= helpers.error_messages_for "cost_type" %>
+  <%= helpers.back_url_hidden_field_tag %>
 
-<%=
-  render(
-    Projects::Settings::CostTypes::IndexComponent.new(
-      project: @project,
-      cost_types: @cost_types
-    )
-  )
-%>
+  <%= render(Admin::CostTypes::DetailsForm.new(f)) %>
+
+  <%= render(
+        Primer::Beta::Button.new(
+          scheme: :primary,
+          type: :submit,
+          mt: 3,
+          test_selector: "op-cost-type-form--submit"
+        )
+      ) { t(:button_save) } %>
+<% end %>

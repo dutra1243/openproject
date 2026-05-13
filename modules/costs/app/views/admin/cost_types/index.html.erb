@@ -24,7 +24,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 See COPYRIGHT and LICENSE files for more details.
-
 ++#%>
 
 <% html_title t(:label_administration), t(:label_cost_type_plural) %>
@@ -85,7 +84,7 @@ See COPYRIGHT and LICENSE files for more details.
    <% end %>
  <% end %>
 
-<%= render partial: "list" %>
+<%= render(Admin::CostTypes::TableComponent.new(rows: @active_cost_types, fixed_date: @fixed_date)) %>
 
 <% if @include_deleted %>
   <div class="cost-types--list-deleted">

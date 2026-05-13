@@ -28,45 +28,33 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::CostTypesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    class TableComponent < ::TableComponent
+      columns :name, :unit, :unit_plural, :current_rate, :default
+      sortable_columns :name, :unit, :unit_plural
+      options :fixed_date
 
-  before_action :find_cost_type, only: :toggle
+      def initial_sort
+        %i[name asc]
+      end
 
-  def index
-    @cost_types = CostType.active.order(:name)
-  end
+      def headers
+        [
+          ["name", { caption: CostType.model_name.human }],
+          ["unit", { caption: CostType.human_attribute_name(:unit) }],
+          ["unit_plural", { caption: CostType.human_attribute_name(:unit_plural) }],
+          ["current_rate", { caption: CostType.human_attribute_name(:current_rate) }],
+          ["default", { caption: I18n.t(:caption_default) }]
+        ]
+      end
 
-  def toggle
-    if @cost_type.is_for_all?
-      respond_with_status(:unprocessable_entity)
-      return
-    end
+      def sortable?
+        true
+      end
 
-    mapping = CostTypesProject.find_or_initialize_by(project_id: @project.id, cost_type_id: @cost_type.id)
-
-    if mapping.persisted?
-      mapping.destroy!
-    else
-      mapping.save!
-    end
-
-    respond_with_status(:ok)
-  end
-
-  private
-
-  def find_cost_type
-    @cost_type = CostType.active.find(params[:id])
-  end
-
-  def respond_with_status(status)
-    respond_to do |format|
-      format.json { render json: {}, status: }
-      format.html do
-        flash[:notice] = I18n.t(:notice_successful_update) if status == :ok
-        flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify") if status != :ok
-        redirect_to project_settings_cost_types_path(@project)
+      def fixed_date
+        options.fetch(:fixed_date) { Date.current }
       end
     end
   end

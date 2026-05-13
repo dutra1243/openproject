@@ -26,20 +26,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 See COPYRIGHT and LICENSE files for more details.
 ++#%>
 
+<% html_title t(:label_cost_type_specific, id: @cost_type.id, name: @cost_type.name) %>
+
 <%=
   render(
-    Projects::Settings::TimeAndCosts::PageHeaderComponent.new(
-      project: @project,
-      selected: :cost_types
+    Admin::CostTypes::EditFormHeaderComponent.new(
+      cost_type: @cost_type,
+      selected: :rates
     )
   )
 %>
 
-<%=
-  render(
-    Projects::Settings::CostTypes::IndexComponent.new(
-      project: @project,
-      cost_types: @cost_types
-    )
-  )
-%>
+<%= render(Admin::CostTypes::RatesComponent.new(@cost_type)) %>

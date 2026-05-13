@@ -37,6 +37,7 @@ class CostType < ApplicationRecord
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
   after_update :save_rates
+  after_save :persist_current_rate_input
 
   include ActiveModel::ForbiddenAttributesProtection
 
@@ -68,8 +69,12 @@ class CostType < ApplicationRecord
     name.downcase <=> other.name.downcase
   end
 
+  attr_writer :current_rate
+
   def current_rate
-    rate_at(Date.today)
+    return @current_rate if instance_variable_defined?(:@current_rate)
+
+    rate_at(Date.current)&.rate
   end
 
   def rate_at(date)
@@ -113,5 +118,25 @@ class CostType < ApplicationRecord
 
   def save_rates
     rates.each(&:save!)
+  end
+
+  def persist_current_rate_input
+    return unless instance_variable_defined?(:@current_rate)
+
+    amount = parse_current_rate_amount(remove_instance_variable(:@current_rate))
+    return if amount.nil?
+
+    today = Time.zone.today
+    if (rate = rate_at(today))
+      rate.update!(rate: amount)
+    else
+      rates.create!(valid_from: today, rate: amount)
+    end
+  end
+
+  def parse_current_rate_amount(value)
+    return if value.to_s.strip.empty?
+
+    CostRate.parse_number_string_to_number(value.to_s)
   end
 end

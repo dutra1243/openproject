@@ -28,45 +28,61 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::CostTypesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    class RowComponent < ::RowComponent
+      def cost_type
+        model
+      end
 
-  before_action :find_cost_type, only: :toggle
+      def name
+        helpers.link_to(cost_type.name, helpers.edit_admin_cost_type_path(cost_type))
+      end
 
-  def index
-    @cost_types = CostType.active.order(:name)
-  end
+      def unit
+        cost_type.unit
+      end
 
-  def toggle
-    if @cost_type.is_for_all?
-      respond_with_status(:unprocessable_entity)
-      return
-    end
+      def unit_plural
+        cost_type.unit_plural
+      end
 
-    mapping = CostTypesProject.find_or_initialize_by(project_id: @project.id, cost_type_id: @cost_type.id)
+      def current_rate
+        helpers.to_currency_with_empty(cost_type.rate_at(table.fixed_date))
+      end
 
-    if mapping.persisted?
-      mapping.destroy!
-    else
-      mapping.save!
-    end
+      def default
+        checkmark(cost_type.is_default?)
+      end
 
-    respond_with_status(:ok)
-  end
+      def column_css_class(column)
+        column == :current_rate ? "currency" : super
+      end
 
-  private
+      def row_css_id
+        "cost_type_#{cost_type.id}"
+      end
 
-  def find_cost_type
-    @cost_type = CostType.active.find(params[:id])
-  end
+      def button_links
+        [lock_link]
+      end
 
-  def respond_with_status(status)
-    respond_to do |format|
-      format.json { render json: {}, status: }
-      format.html do
-        flash[:notice] = I18n.t(:notice_successful_update) if status == :ok
-        flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify") if status != :ok
-        redirect_to project_settings_cost_types_path(@project)
+      def lock_link
+        render(
+          Primer::Beta::IconButton.new(
+            icon: :lock,
+            scheme: :invisible,
+            tag: :a,
+            href: helpers.admin_cost_type_path(cost_type),
+            "aria-label": t(:button_lock),
+            tooltip_direction: :w,
+            test_selector: "op-admin-cost-type-#{cost_type.id}-lock",
+            data: {
+              turbo_method: :delete,
+              turbo_confirm: t(:text_are_you_sure)
+            }
+          )
+        )
       end
     end
   end
