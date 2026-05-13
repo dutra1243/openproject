@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { CurrentProjectService } from 'core-app/core/current-project/current-project.service';
 import { DeviceService } from 'core-app/core/browser/device.service';
@@ -35,6 +35,9 @@ import { queryVisible } from 'core-app/shared/helpers/dom-helpers';
 
 @Injectable({ providedIn: 'root' })
 export class MainMenuToggleService {
+  injector = inject(Injector);
+  readonly deviceService = inject(DeviceService);
+
   private elementWidth:number;
 
   private elementMinWidth = 11;
@@ -61,10 +64,7 @@ export class MainMenuToggleService {
 
   private wasCollapsedByUser = false;
 
-  constructor(
-    public injector:Injector,
-    readonly deviceService:DeviceService,
-  ) {
+  constructor() {
     this.initializeMenu();
     // Add resize event listener
     window.addEventListener('resize', this.onWindowResize.bind(this));

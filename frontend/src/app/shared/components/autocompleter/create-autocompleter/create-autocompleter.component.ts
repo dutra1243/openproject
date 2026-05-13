@@ -26,17 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Injector,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Injector, Input, Output, ViewChild, inject } from '@angular/core';
 import { NgSelectComponent } from '@ng-select/ng-select';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { CurrentProjectService } from 'core-app/core/current-project/current-project.service';
@@ -64,6 +54,8 @@ export interface CreateAutocompleterValueOption {
   standalone: false,
 })
 export class CreateAutocompleterComponent extends UntilDestroyedMixin implements AfterViewInit {
+  readonly injector = inject(Injector);
+
   @Input() public availableValues:CreateAutocompleterValueOption[];
 
   @Input() public appendTo:string;
@@ -118,7 +110,7 @@ export class CreateAutocompleterComponent extends UntilDestroyedMixin implements
 
   private _openDirectly = false;
 
-  constructor(readonly injector:Injector) {
+  constructor() {
     super();
 
     this.text.add_new_action = this.I18n.t('js.label_create');

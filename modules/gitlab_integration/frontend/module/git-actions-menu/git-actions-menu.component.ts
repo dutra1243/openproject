@@ -28,15 +28,11 @@
 //++
 
 import copy from 'copy-text-to-clipboard';
-import { Component, Inject, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { GitActionsService } from '../git-actions/git-actions.service';
 import { ISnippet } from "core-app/features/plugins/linked/openproject-gitlab_integration/typings";
 import { WorkPackageResource } from "core-app/features/hal/resources/work-package-resource";
 import { OPContextMenuComponent } from "core-app/shared/components/op-context-menu/op-context-menu.component";
-import {
-  OpContextMenuLocalsMap,
-  OpContextMenuLocalsToken
-} from "core-app/shared/components/op-context-menu/op-context-menu.types";
 import { I18nService } from "core-app/core/i18n/i18n.service";
 
 
@@ -49,6 +45,9 @@ import { I18nService } from "core-app/core/i18n/i18n.service";
   standalone: false,
 })
 export class GitActionsMenuComponent extends OPContextMenuComponent {
+  readonly I18n = inject(I18nService);
+  readonly gitActions = inject(GitActionsService);
+
   @Input() public workPackage:WorkPackageResource;
 
   public text = {
@@ -85,12 +84,9 @@ export class GitActionsMenuComponent extends OPContextMenuComponent {
     },
   ];
 
-  constructor(@Inject(OpContextMenuLocalsToken)
-              public locals:OpContextMenuLocalsMap,
-              readonly I18n:I18nService,
-              readonly gitActions:GitActionsService) {
-    super(locals);
-    this.workPackage = this.locals.workPackage;
+  constructor() {
+    super();
+    this.workPackage = this.locals.workPackage as WorkPackageResource;
   }
 
   public onCopyButtonClick(snippet:ISnippet):void {

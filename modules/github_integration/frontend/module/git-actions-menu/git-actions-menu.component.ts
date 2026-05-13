@@ -27,18 +27,10 @@
 //++
 
 import copy from 'copy-text-to-clipboard';
-import {
-  Component,
-  Inject,
-  Input,
-} from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { GitActionsService } from '../git-actions/git-actions.service';
 import { WorkPackageResource } from "core-app/features/hal/resources/work-package-resource";
 import { OPContextMenuComponent } from "core-app/shared/components/op-context-menu/op-context-menu.component";
-import {
-  OpContextMenuLocalsMap,
-  OpContextMenuLocalsToken,
-} from "core-app/shared/components/op-context-menu/op-context-menu.types";
 import { I18nService } from "core-app/core/i18n/i18n.service";
 import { ISnippet } from 'core-app/features/plugins/linked/openproject-github_integration/state/github-pull-request.model';
 
@@ -52,6 +44,9 @@ import { ISnippet } from 'core-app/features/plugins/linked/openproject-github_in
   standalone: false,
 })
 export class GitActionsMenuComponent extends OPContextMenuComponent {
+  readonly I18n = inject(I18nService);
+  readonly gitActions = inject(GitActionsService);
+
   @Input() public workPackage:WorkPackageResource;
 
   public text = {
@@ -90,13 +85,8 @@ export class GitActionsMenuComponent extends OPContextMenuComponent {
     },
   ];
 
-  constructor(
-    @Inject(OpContextMenuLocalsToken)
-    public locals:OpContextMenuLocalsMap,
-    readonly I18n:I18nService,
-    readonly gitActions:GitActionsService,
-  ) {
-    super(locals);
+  constructor() {
+    super();
     this.workPackage = this.locals.workPackage as WorkPackageResource;
   }
 

@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { XeokitServer } from 'core-app/features/bim/ifc_models/xeokit/xeokit-server';
 import { ViewerBridgeService } from 'core-app/features/bim/bcf/bcf-viewer-bridge/viewer-bridge.service';
 import { BehaviorSubject, Observable, of } from 'rxjs';
@@ -122,10 +122,6 @@ export class IFCViewerService extends ViewerBridgeService {
   @InjectField() currentProjectService:CurrentProjectService;
 
   @InjectField() httpClient:HttpClient;
-
-  constructor(readonly injector:Injector) {
-    super(injector);
-  }
 
   public newViewer(elements:XeokitElements, projects:IfcProjectDefinition[]):void {
     const server = new XeokitServer(this.pathHelper, this.ifcModelsDataService);

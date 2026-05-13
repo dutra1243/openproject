@@ -75,6 +75,28 @@ interface CalendarOptionsWithDayGrid extends CalendarOptions {
 
 @Injectable()
 export class OpWorkPackagesCalendarService extends UntilDestroyedMixin {
+  private I18n = inject(I18nService);
+  private configuration = inject(ConfigurationService);
+  private sanitizer = inject(DomSanitizer);
+  readonly injector = inject(Injector);
+  readonly schemaCache = inject(SchemaCacheService);
+  readonly toastService = inject(ToastService);
+  readonly wpTableFilters = inject(WorkPackageViewFiltersService);
+  readonly wpListService = inject(WorkPackagesListService);
+  readonly wpListChecksumService = inject(WorkPackagesListChecksumService);
+  readonly urlParamsHelper = inject(UrlParamsHelperService);
+  readonly querySpace = inject(IsolatedQuerySpace);
+  readonly apiV3Service = inject(ApiV3Service);
+  readonly halResourceService = inject(HalResourceService);
+  readonly timezoneService = inject(TimezoneService);
+  readonly pathHelper = inject(PathHelperService);
+  readonly halEditing = inject(HalResourceEditingService);
+  readonly wpTableSelection = inject(WorkPackageViewSelectionService);
+  readonly contextMenuService = inject(OPContextMenuService);
+  readonly calendarService = inject(OpCalendarService);
+  readonly weekdayService = inject(WeekdayService);
+  readonly dayService = inject(DayResourceService);
+
   static MAX_DISPLAYED = 500;
 
   tooManyResultsText:string|null;
@@ -90,32 +112,6 @@ export class OpWorkPackagesCalendarService extends UntilDestroyedMixin {
     );
 
   private readonly states = inject(States);
-
-  constructor(
-    private I18n:I18nService,
-    private configuration:ConfigurationService,
-    private sanitizer:DomSanitizer,
-    readonly injector:Injector,
-    readonly schemaCache:SchemaCacheService,
-    readonly toastService:ToastService,
-    readonly wpTableFilters:WorkPackageViewFiltersService,
-    readonly wpListService:WorkPackagesListService,
-    readonly wpListChecksumService:WorkPackagesListChecksumService,
-    readonly urlParamsHelper:UrlParamsHelperService,
-    readonly querySpace:IsolatedQuerySpace,
-    readonly apiV3Service:ApiV3Service,
-    readonly halResourceService:HalResourceService,
-    readonly timezoneService:TimezoneService,
-    readonly pathHelper:PathHelperService,
-    readonly halEditing:HalResourceEditingService,
-    readonly wpTableSelection:WorkPackageViewSelectionService,
-    readonly contextMenuService:OPContextMenuService,
-    readonly calendarService:OpCalendarService,
-    readonly weekdayService:WeekdayService,
-    readonly dayService:DayResourceService,
-  ) {
-    super();
-  }
 
   calendarOptions(additionalOptions:CalendarOptions):CalendarOptions {
     return { ...this.defaultOptions(), ...additionalOptions };

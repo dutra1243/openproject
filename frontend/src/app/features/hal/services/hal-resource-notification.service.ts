@@ -28,7 +28,7 @@
 
 import { StateService } from '@uirouter/core';
 import { HalResourceService } from 'core-app/features/hal/services/hal-resource.service';
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { LoadingIndicatorService } from 'core-app/core/loading-indicator/loading-indicator.service';
 import { ToastService } from 'core-app/shared/components/toaster/toast.service';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
@@ -41,6 +41,8 @@ import { HalError } from 'core-app/features/hal/services/hal-error';
 
 @Injectable()
 export class HalResourceNotificationService {
+  injector = inject(Injector);
+
   @InjectField() protected I18n:I18nService;
 
   @InjectField() protected $state:StateService;
@@ -52,9 +54,6 @@ export class HalResourceNotificationService {
   @InjectField() protected loadingIndicator:LoadingIndicatorService;
 
   @InjectField() protected schemaCache:SchemaCacheService;
-
-  constructor(public injector:Injector) {
-  }
 
   public showSave(resource:HalResource, isCreate = false) {
     const message:any = {

@@ -26,12 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  ChangeDetectorRef,
-  Directive,
-  Injector,
-  Input,
-} from '@angular/core';
+import { ChangeDetectorRef, Directive, Injector, Input, inject } from '@angular/core';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import {
@@ -71,6 +66,8 @@ import { StateService } from '@uirouter/angular';
 
 @Directive()
 export abstract class WorkPackageSingleViewBase extends UntilDestroyedMixin {
+  injector = inject(Injector);
+
   @Input() routedFromAngular = true;
 
   @Input() workPackageId:string;
@@ -128,9 +125,7 @@ export abstract class WorkPackageSingleViewBase extends UntilDestroyedMixin {
 
   public displayNotificationsButton$:Observable<boolean>;
 
-  constructor(
-    public injector:Injector,
-  ) {
+  constructor() {
     super();
 
     if (this.routedFromAngular && this.workPackageId === undefined) {

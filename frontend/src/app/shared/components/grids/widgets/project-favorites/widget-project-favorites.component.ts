@@ -1,14 +1,5 @@
 import { AbstractWidgetComponent } from 'core-app/shared/components/grids/widgets/abstract-widget.component';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  Injector,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
-import { I18nService } from 'core-app/core/i18n/i18n.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { HalResourceService } from 'core-app/features/hal/services/hal-resource.service';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import { CurrentProjectService } from 'core-app/core/current-project/current-project.service';
@@ -26,6 +17,13 @@ import { Observable } from 'rxjs';
   standalone: false,
 })
 export class WidgetProjectFavoritesComponent extends AbstractWidgetComponent implements OnInit {
+  readonly halResource = inject(HalResourceService);
+  readonly pathHelper = inject(PathHelperService);
+  readonly timezone = inject(TimezoneService);
+  readonly apiV3Service = inject(ApiV3Service);
+  readonly currentProject = inject(CurrentProjectService);
+  readonly cdr = inject(ChangeDetectorRef);
+
   @HostBinding('class.op-widget-project-favorites') className = true;
 
   public text = {
@@ -34,19 +32,6 @@ export class WidgetProjectFavoritesComponent extends AbstractWidgetComponent imp
   };
 
   public projects$:Observable<ProjectResource[]>;
-
-  constructor(
-    readonly halResource:HalResourceService,
-    readonly pathHelper:PathHelperService,
-    readonly i18n:I18nService,
-    protected readonly injector:Injector,
-    readonly timezone:TimezoneService,
-    readonly apiV3Service:ApiV3Service,
-    readonly currentProject:CurrentProjectService,
-    readonly cdr:ChangeDetectorRef,
-  ) {
-    super(i18n, injector);
-  }
 
   ngOnInit() {
     const filters = new ApiV3FilterBuilder();

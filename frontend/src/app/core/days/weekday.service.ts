@@ -26,10 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  Injectable,
-  Injector,
-} from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import moment, { Moment } from 'moment';
 import {
   take,
@@ -45,13 +42,11 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class WeekdayService {
+  readonly injector = inject(Injector);
+
   @InjectField() weekdaysService:WeekdayResourceService;
 
   private weekdays:IWeekday[];
-
-  constructor(
-    readonly injector:Injector,
-  ) {}
 
   /**
    * @param date The iso day number (1-7) or a date instance

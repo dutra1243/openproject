@@ -26,10 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  Injectable,
-  Injector,
-} from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import {
   firstValueFrom,
   Observable,
@@ -68,23 +65,23 @@ export const newWorkPackageHref = '/api/v3/work_packages/new';
 
 @Injectable()
 export class WorkPackageCreateService extends UntilDestroyedMixin {
+  protected injector = inject(Injector);
+  protected hooks = inject(HookService);
+  protected apiV3Service = inject(ApiV3Service);
+  protected halResourceService = inject(HalResourceService);
+  protected querySpace = inject(IsolatedQuerySpace);
+  protected authorisationService = inject(AuthorisationService);
+  protected halEditing = inject(HalResourceEditingService);
+  protected schemaCache = inject(SchemaCacheService);
+  protected halEvents = inject(HalEventsService);
+  protected attachmentsService = inject(AttachmentsResourceService);
+
   protected form:Promise<FormResource>|undefined;
 
   // Allow callbacks to happen on newly created work packages
   protected newWorkPackageCreatedSubject = new Subject<WorkPackageResource>();
 
-  constructor(
-    protected injector:Injector,
-    protected hooks:HookService,
-    protected apiV3Service:ApiV3Service,
-    protected halResourceService:HalResourceService,
-    protected querySpace:IsolatedQuerySpace,
-    protected authorisationService:AuthorisationService,
-    protected halEditing:HalResourceEditingService,
-    protected schemaCache:SchemaCacheService,
-    protected halEvents:HalEventsService,
-    protected attachmentsService:AttachmentsResourceService,
-  ) {
+  constructor() {
     super();
 
     this.halEditing

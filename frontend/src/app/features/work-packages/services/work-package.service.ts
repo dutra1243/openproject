@@ -39,20 +39,19 @@ import { resolveNumericId } from 'core-app/features/work-packages/helpers/work-p
 
 @Injectable()
 export class WorkPackageService {
+  private readonly http = inject(HttpClient);
+  private readonly $state = inject(StateService);
+  private readonly PathHelper = inject(PathHelperService);
+  private readonly UrlParamsHelper = inject(UrlParamsHelperService);
+  private readonly toastService = inject(ToastService);
+  private readonly I18n = inject(I18nService);
+  private readonly halEvents = inject(HalEventsService);
+
   private text = {
     successful_delete: this.I18n.t('js.work_packages.message_successful_bulk_delete'),
   };
 
   private readonly states = inject(States);
-
-  constructor(private readonly http:HttpClient,
-    private readonly $state:StateService,
-    private readonly PathHelper:PathHelperService,
-    private readonly UrlParamsHelper:UrlParamsHelperService,
-    private readonly toastService:ToastService,
-    private readonly I18n:I18nService,
-    private readonly halEvents:HalEventsService) {
-  }
 
   public performBulkDelete(ids:string[], defaultHandling:boolean) {
     const params = {

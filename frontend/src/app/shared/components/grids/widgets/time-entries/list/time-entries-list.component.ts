@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Directive,
-  Injector,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Directive, Injector, OnDestroy, OnInit, inject } from '@angular/core';
 import { AbstractWidgetComponent } from 'core-app/shared/components/grids/widgets/abstract-widget.component';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
@@ -27,6 +20,13 @@ import { MeetingResource } from 'core-app/features/hal/resources/meeting-resourc
 
 @Directive()
 export abstract class WidgetTimeEntriesListComponent extends AbstractWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  readonly injector = inject(Injector);
+  readonly timezone = inject(TimezoneService);
+  readonly i18n = inject(I18nService);
+  readonly pathHelper = inject(PathHelperService);
+  readonly confirmDialog = inject(ConfirmDialogService);
+  protected readonly cdr = inject(ChangeDetectorRef);
+
   public text = {
     edit: this.i18n.t('js.button_edit'),
     delete: this.i18n.t('js.button_delete'),
@@ -50,17 +50,6 @@ export abstract class WidgetTimeEntriesListComponent extends AbstractWidgetCompo
 
   @InjectField() public readonly apiV3Service:ApiV3Service;
   @InjectField() public readonly turboRequests:TurboRequestsService;
-
-  constructor(
-    readonly injector:Injector,
-    readonly timezone:TimezoneService,
-    readonly i18n:I18nService,
-    readonly pathHelper:PathHelperService,
-    readonly confirmDialog:ConfirmDialogService,
-    protected readonly cdr:ChangeDetectorRef,
-  ) {
-    super(i18n, injector);
-  }
 
   ngOnInit():void {
     this.loadTimeEntries();

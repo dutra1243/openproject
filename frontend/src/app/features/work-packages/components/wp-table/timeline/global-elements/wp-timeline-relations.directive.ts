@@ -26,9 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  ChangeDetectionStrategy, Component, ElementRef, Injector, OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Injector, OnInit, inject } from '@angular/core';
 import { IsolatedQuerySpace } from 'core-app/features/work-packages/directives/query-space/isolated-query-space';
 import { State } from '@openproject/reactivestates';
 import { combineLatest } from 'rxjs';
@@ -87,20 +85,18 @@ function newSegment(vp:TimelineViewParameters,
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class WorkPackageTableTimelineRelations extends UntilDestroyedMixin implements OnInit {
+  readonly injector = inject(Injector);
+  elementRef = inject(ElementRef);
+  states = inject(States);
+  workPackageTimelineTableController = inject(WorkPackageTimelineTableController);
+  wpTableTimeline = inject(WorkPackageViewTimelineService);
+  wpRelations = inject(WorkPackageRelationsService);
+
   @InjectField() querySpace:IsolatedQuerySpace;
 
   private container:HTMLElement;
 
   private workPackagesWithRelations:Record<string, RelationsStateValue> = {};
-
-  constructor(public readonly injector:Injector,
-              public elementRef:ElementRef,
-              public states:States,
-              public workPackageTimelineTableController:WorkPackageTimelineTableController,
-              public wpTableTimeline:WorkPackageViewTimelineService,
-              public wpRelations:WorkPackageRelationsService) {
-    super();
-  }
 
   ngOnInit() {
     const element = this.elementRef.nativeElement;

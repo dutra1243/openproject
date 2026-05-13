@@ -37,8 +37,8 @@ import { ProjectResource } from 'core-app/features/hal/resources/project-resourc
 export class ProjectCache extends StateCacheService<ProjectResource> {
   @InjectField() private schemaCacheService:SchemaCacheService;
 
-  constructor(readonly injector:Injector,
-    state:MultiInputState<ProjectResource>) {
+  // eslint-disable-next-line @angular-eslint/prefer-inject -- manually instantiated, not DI-resolved
+  constructor(readonly injector:Injector, state:MultiInputState<ProjectResource>) {
     super(state);
   }
 

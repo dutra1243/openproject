@@ -26,11 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  Injectable,
-  Injector,
-  OnDestroy,
-} from '@angular/core';
+import { Injectable, Injector, OnDestroy, inject } from '@angular/core';
 import { WorkPackageResource } from 'core-app/features/hal/resources/work-package-resource';
 import {
   Observable,
@@ -45,14 +41,13 @@ import { CurrentProjectService } from 'core-app/core/current-project/current-pro
 
 @Injectable()
 export class WorkPackageInlineCreateService implements OnDestroy {
+  readonly injector = inject(Injector);
+
   @InjectField() I18n!:I18nService;
 
   @InjectField() protected readonly currentUser:CurrentUserService;
 
   @InjectField() protected readonly currentProject:CurrentProjectService;
-
-  constructor(readonly injector:Injector) {
-  }
 
   /**
    * A separate reference pane for the inline create component

@@ -1,15 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Inject,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import { OpModalLocalsMap } from 'core-app/shared/components/modal/modal.types';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { OpModalComponent } from 'core-app/shared/components/modal/modal.component';
-import { OpModalLocalsToken } from 'core-app/shared/components/modal/modal.service';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { WorkPackageResource } from 'core-app/features/hal/resources/work-package-resource';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
@@ -23,6 +13,10 @@ import { shareModalUpdated } from 'core-app/features/work-packages/components/wp
   standalone: false,
 })
 export class WorkPackageShareModalComponent extends OpModalComponent implements OnInit {
+  readonly I18n = inject(I18nService);
+  readonly pathHelper = inject(PathHelperService);
+  readonly actions$ = inject(ActionsService);
+
   @ViewChild('frameElement') frameElement:ElementRef<HTMLIFrameElement>|undefined;
 
   // Hide close button so it's not duplicated in primer (WP#51699)
@@ -36,15 +30,8 @@ export class WorkPackageShareModalComponent extends OpModalComponent implements 
     button_close: this.I18n.t('js.button_close'),
   };
 
-  constructor(
-    @Inject(OpModalLocalsToken) public locals:OpModalLocalsMap,
-    readonly cdRef:ChangeDetectorRef,
-    readonly I18n:I18nService,
-    readonly elementRef:ElementRef<HTMLElement>,
-    readonly pathHelper:PathHelperService,
-    readonly actions$:ActionsService,
-  ) {
-    super(locals, cdRef, elementRef);
+  constructor() {
+    super();
 
     this.workPackage = this.locals.workPackage as WorkPackageResource;
     this.frameSrc = this.pathHelper.workPackageSharePath(this.workPackage.id!);

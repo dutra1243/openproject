@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { ChangeDetectorRef, Directive, Injector, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Directive, Injector, OnDestroy, OnInit, inject } from '@angular/core';
 import { StateService, TransitionService } from '@uirouter/core';
 import { AuthorisationService } from 'core-app/core/model-auth/model-auth.service';
 import { IsolatedQuerySpace } from 'core-app/features/work-packages/directives/query-space/isolated-query-space';
@@ -94,6 +94,8 @@ import { tableRefreshRequest } from 'core-app/features/work-packages/routing/wp-
 
 @Directive()
 export abstract class WorkPackagesViewBase extends UntilDestroyedMixin implements OnInit, OnDestroy {
+  injector = inject(Injector);
+
   @InjectField() $state:StateService;
 
   @InjectField() states:States;
@@ -157,10 +159,6 @@ export abstract class WorkPackagesViewBase extends UntilDestroyedMixin implement
 
   /** Remember explicitly when this component was destroyed */
   destroyed = false;
-
-  constructor(public injector:Injector) {
-    super();
-  }
 
   ngOnInit() {
     // Listen to changes on the query state objects

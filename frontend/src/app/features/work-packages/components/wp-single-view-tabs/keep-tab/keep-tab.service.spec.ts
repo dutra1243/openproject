@@ -26,6 +26,12 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
+import { TestBed } from '@angular/core/testing';
+import {
+  StateService,
+  TransitionService,
+  UIRouterGlobals,
+} from '@uirouter/core';
 import { KeepTabService } from './keep-tab.service';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import { CurrentProjectService } from 'core-app/core/current-project/current-project.service';
@@ -57,7 +63,20 @@ describe('keepTab service', () => {
       params: { tabIdentifier: 'activity' },
     };
 
-    keepTab = new KeepTabService($state, uiRouterGlobals, $transitions, pathHelper, currentProject);
+    TestBed.configureTestingModule({
+      providers: [
+        KeepTabService,
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+        { provide: StateService, useValue: $state },
+        { provide: UIRouterGlobals, useValue: uiRouterGlobals },
+        { provide: TransitionService, useValue: $transitions },
+        { provide: PathHelperService, useValue: pathHelper },
+        { provide: CurrentProjectService, useValue: currentProject },
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+      ],
+    });
+
+    keepTab = TestBed.inject(KeepTabService);
 
     defaults = {
       showTab: 'work-packages.show.tabs',

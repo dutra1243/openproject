@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { WpSingleViewStore } from './wp-single-view.store';
 import {
   filter,
@@ -27,6 +27,10 @@ import { Query } from '@datorama/akita';
 @EffectHandler
 @Injectable()
 export class WpSingleViewService {
+  readonly actions$ = inject(ActionsService);
+  readonly currentUser$ = inject(CurrentUserService);
+  private resourceService = inject(InAppNotificationsResourceService);
+
   id = 'WorkPackage Activity Store';
 
   protected store = new WpSingleViewStore();
@@ -62,13 +66,6 @@ export class WpSingleViewService {
 
   get params():ApiV3ListParameters {
     return { filters: this.query.getValue().notifications.filters };
-  }
-
-  constructor(
-    readonly actions$:ActionsService,
-    readonly currentUser$:CurrentUserService,
-    private resourceService:InAppNotificationsResourceService,
-  ) {
   }
 
   setFilters(workPackageId:string):void {

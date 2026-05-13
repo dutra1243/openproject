@@ -2,7 +2,7 @@ import type { Mock } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { States } from 'core-app/core/states/states.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, map } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -10,6 +10,15 @@ import { OpAutocompleterComponent } from './op-autocompleter.component';
 import { TOpAutocompleterResource } from './typings';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+
+@Component({
+  selector: 'op-test-autocompleter',
+  template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
+})
+class TestAutocompleterComponent extends OpAutocompleterComponent {
+}
 
 describe('autocompleter', () => {
   let fixture:ComponentFixture<OpAutocompleterComponent>;
@@ -86,7 +95,7 @@ describe('autocompleter', () => {
     fixture = TestBed.createComponent(OpAutocompleterComponent);
     getOptionsFnSpy = vi.fn().mockImplementation((searchTerm:string) => {
       return of(workPackagesStub).pipe(map((wps) => wps.filter((wp) => searchTerm !== '' && wp.subject.includes(searchTerm))));
-    });
+    }) as unknown as Mock;
 
     fixture.componentInstance.resource = 'work_packages' as TOpAutocompleterResource;
     fixture.componentInstance.filters = [];
@@ -328,5 +337,20 @@ describe('autocompleter', () => {
 
       expect(getOptionsFnSpy).toHaveBeenCalledWith('Wor');
     });
+  });
+});
+
+describe('derived autocompleter', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [TestAutocompleterComponent],
+      providers: [States, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+    }).compileComponents();
+  });
+
+  it('provides shared autocompleter dependencies to subclasses', () => {
+    const fixture = TestBed.createComponent(TestAutocompleterComponent);
+
+    expect(fixture.componentInstance.opAutocompleterService).toBeDefined();
   });
 });

@@ -1,17 +1,5 @@
 import { I18nService } from 'core-app/core/i18n/i18n.service';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import {
   SearchableProjectListService,
 } from 'core-app/shared/components/searchable-project-list/searchable-project-list.service';
@@ -29,6 +17,14 @@ import { getMetaContent } from 'core-app/core/setup/globals/global-helpers';
   standalone: false,
 })
 export class OpHeaderProjectSelectListComponent implements OnInit, OnChanges {
+  readonly I18n = inject(I18nService);
+  readonly pathHelper = inject(PathHelperService);
+  readonly configuration = inject(ConfigurationService);
+  readonly searchableProjectListService = inject(SearchableProjectListService);
+  readonly elementRef = inject(ElementRef);
+  readonly cdRef = inject(ChangeDetectorRef);
+  readonly currentProjectService = inject(CurrentProjectService);
+
   @HostBinding('class.spot-list') classNameList = true;
 
   @HostBinding('class.op-header-project-select-list') className = true;
@@ -63,16 +59,6 @@ export class OpHeaderProjectSelectListComponent implements OnInit, OnChanges {
   };
 
   public portfolioModelsEnabled = this.configuration.activeFeatureFlags.includes('portfolioModels');
-
-  constructor(
-    readonly I18n:I18nService,
-    readonly pathHelper:PathHelperService,
-    readonly configuration:ConfigurationService,
-    readonly searchableProjectListService:SearchableProjectListService,
-    readonly elementRef:ElementRef,
-    readonly cdRef:ChangeDetectorRef,
-    readonly currentProjectService:CurrentProjectService,
-  ) { }
 
   ngOnInit():void {
     if (this.root) {

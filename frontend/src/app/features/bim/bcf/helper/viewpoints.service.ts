@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { InjectField } from 'core-app/shared/helpers/angular/inject-field.decorator';
 import { BcfApiService } from 'core-app/features/bim/bcf/api/bcf-api.service';
 import { WorkPackageResource } from 'core-app/features/hal/resources/work-package-resource';
@@ -42,6 +42,8 @@ import { HalResource } from 'core-app/features/hal/resources/hal-resource';
 
 @Injectable()
 export class ViewpointsService {
+  readonly injector = inject(Injector);
+
   topicUUID:string|number|null = null;
 
   @InjectField() bcfApi:BcfApiService;
@@ -49,8 +51,6 @@ export class ViewpointsService {
   @InjectField() viewerBridge:ViewerBridgeService;
 
   @InjectField() apiV3Service:ApiV3Service;
-
-  constructor(readonly injector:Injector) { }
 
   public getViewPointResource(workPackage:WorkPackageResource, index:number):BcfViewpointPaths {
     const viewpointHref = (workPackage.bcfViewpoints as HalResource[])[index].href!;

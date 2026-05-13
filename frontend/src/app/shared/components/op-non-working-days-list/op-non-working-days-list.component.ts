@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  HostBinding,
-  Injector,
-  Input,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Injector, Input, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { BannersService } from 'core-app/core/enterprise/banners.service';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { OpModalService } from '../modal/modal.service';
@@ -47,6 +35,18 @@ export interface INonWorkingDay {
   standalone: false,
 })
 export class OpNonWorkingDaysListComponent implements OnInit, AfterViewInit {
+  readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected I18n = inject(I18nService);
+  readonly bannersService = inject(BannersService);
+  readonly opModalService = inject(OpModalService);
+  readonly injector = inject(Injector);
+  readonly pathHelper = inject(PathHelperService);
+  readonly apiV3Service = inject(ApiV3Service);
+  readonly dayService = inject(DayResourceService);
+  readonly confirmDialogService = inject(ConfirmDialogService);
+  readonly toast = inject(ToastService);
+  readonly cdRef = inject(ChangeDetectorRef);
+
   @ViewChild(FullCalendarComponent) ucCalendar:FullCalendarComponent;
 
   @HostBinding('class.op-non-working-days-list') className = true;
@@ -119,19 +119,7 @@ export class OpNonWorkingDaysListComponent implements OnInit, AfterViewInit {
 
   };
 
-  constructor(
-    readonly elementRef:ElementRef<HTMLElement>,
-    protected I18n:I18nService,
-    readonly bannersService:BannersService,
-    readonly opModalService:OpModalService,
-    readonly injector:Injector,
-    readonly pathHelper:PathHelperService,
-    readonly apiV3Service:ApiV3Service,
-    readonly dayService:DayResourceService,
-    readonly confirmDialogService:ConfirmDialogService,
-    readonly toast:ToastService,
-    readonly cdRef:ChangeDetectorRef,
-  ) {
+  constructor() {
     populateInputsFromDataset(this);
     this.listenToFormSubmit();
   }

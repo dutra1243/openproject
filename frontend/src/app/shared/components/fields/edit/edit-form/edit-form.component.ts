@@ -26,20 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  ApplicationRef,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Injector,
-  Input,
-  OnDestroy,
-  OnInit,
-  Optional,
-  Output,
-} from '@angular/core';
+import { ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Injector, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { StateService, Transition, TransitionService } from '@uirouter/core';
 import { ConfigurationService } from 'core-app/core/config/configuration.service';
 import { EditableAttributeFieldComponent } from 'core-app/shared/components/fields/edit/field/editable-attribute-field.component';
@@ -70,6 +57,18 @@ import { firstValueFrom } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class EditFormComponent extends EditForm<HalResource> implements OnInit, OnDestroy {
+  readonly injector:Injector;
+  protected readonly elementRef = inject(ElementRef);
+  private appRef = inject(ApplicationRef);
+  private readonly cdRef = inject(ChangeDetectorRef);
+  protected readonly $transitions = inject(TransitionService);
+  protected readonly configurationService = inject(ConfigurationService);
+  protected readonly editingPortalService = inject(EditingPortalService);
+  protected readonly $state = inject(StateService);
+  protected readonly I18n = inject(I18nService);
+  protected readonly editFormRouting = inject(EditFormRoutingService, { optional: true });
+  private globalEditFormChangesTrackerService = inject(GlobalEditFormChangesTrackerService);
+
   @Input() resource:HalResource;
 
   @Input('inEditMode') initializeEditMode = false;
@@ -84,20 +83,16 @@ export class EditFormComponent extends EditForm<HalResource> implements OnInit, 
 
   private unregisterListener:Function;
 
-  constructor(public readonly injector:Injector,
-    protected readonly elementRef:ElementRef,
-    private appRef:ApplicationRef,
-    private readonly cdRef:ChangeDetectorRef,
-    protected readonly $transitions:TransitionService,
-    protected readonly ConfigurationService:ConfigurationService,
-    protected readonly editingPortalService:EditingPortalService,
-    protected readonly $state:StateService,
-    protected readonly I18n:I18nService,
-    @Optional() protected readonly editFormRouting:EditFormRoutingService,
-    private globalEditFormChangesTrackerService:GlobalEditFormChangesTrackerService) {
+  constructor() {
+    const injector = inject(Injector);
+
     super(injector);
+    this.injector = injector;
+    const $transitions = this.$transitions;
+    const I18n = this.I18n;
+
     const confirmText = I18n.t('js.work_packages.confirm_edit_cancel');
-    const requiresConfirmation = ConfigurationService.warnOnLeavingUnsaved();
+    const requiresConfirmation = this.configurationService.warnOnLeavingUnsaved();
 
     this.unregisterListener = $transitions.onBefore({}, (transition:Transition) => {
       if (!this.editing) {

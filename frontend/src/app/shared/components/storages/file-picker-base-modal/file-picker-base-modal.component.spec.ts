@@ -26,9 +26,10 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { ChangeDetectorRef, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { Observable, config, throwError } from 'rxjs';
-import { OpModalLocalsMap } from 'core-app/shared/components/modal/modal.types';
+import { OpModalLocalsToken } from 'core-app/shared/components/modal/modal.service';
 import { SortFilesPipe } from 'core-app/shared/components/storages/pipes/sort-files.pipe';
 import { StorageFilesResourceService } from 'core-app/core/state/storage-files/storage-files.service';
 import { IStorageFile } from 'core-app/core/state/storage-files/storage-file.model';
@@ -36,11 +37,9 @@ import { FilePickerBaseModalComponent, } from 'core-app/shared/components/storag
 import { StorageFileListItem } from 'core-app/shared/components/storages/storage-file-list-item/storage-file-list-item';
 import type { Mock } from 'vitest';
 
+// eslint-disable-next-line @angular-eslint/prefer-on-push-component-change-detection,@angular-eslint/component-selector
+@Component({ selector: 'test-file-picker', template: '', standalone: false })
 class TestFilePickerBaseModalComponent extends FilePickerBaseModalComponent {
-  constructor(locals:OpModalLocalsMap, elementRef:ElementRef, cdRef:ChangeDetectorRef, sortFilesPipe:SortFilesPipe, storageFilesResourceService:StorageFilesResourceService) {
-    super(locals, elementRef, cdRef, sortFilesPipe, storageFilesResourceService);
-  }
-
   public loadDirectory(directory:IStorageFile):void {
     this.changeLevel(directory);
   }
@@ -59,8 +58,6 @@ describe('FilePickerBaseModalComponent', () => {
   }
 
   function buildComponent(spies:Spies) {
-    const cdRef = { detectChanges: spies.detectChanges } as unknown as ChangeDetectorRef;
-    const elementRef = { nativeElement: document.createElement('div') } as ElementRef;
     const locals = {
       service: { close: spies.close },
       storage: {
@@ -71,18 +68,26 @@ describe('FilePickerBaseModalComponent', () => {
         },
       },
       projectFolderMode: 'inactive',
-    } as unknown as OpModalLocalsMap;
-    const sortFilesPipe = { transform: (files:IStorageFile[]) => files } as SortFilesPipe;
-    const storageFilesResourceService = {
-      files: spies.files,
-      reset: spies.reset,
-    } as unknown as StorageFilesResourceService;
-    const component = new TestFilePickerBaseModalComponent(locals, elementRef, cdRef, sortFilesPipe, storageFilesResourceService);
+    };
 
+    TestBed.configureTestingModule({
+      declarations: [TestFilePickerBaseModalComponent],
+      providers: [
+        { provide: OpModalLocalsToken, useValue: locals },
+        { provide: ChangeDetectorRef, useValue: { detectChanges: spies.detectChanges } },
+        { provide: ElementRef, useValue: { nativeElement: document.createElement('div') } },
+        { provide: SortFilesPipe, useValue: { transform: (files:IStorageFile[]) => files } },
+        { provide: StorageFilesResourceService, useValue: { files: spies.files, reset: spies.reset } },
+      ],
+    });
+
+    const component = TestBed.runInInjectionContext(() => new TestFilePickerBaseModalComponent());
     component.ngOnInit();
 
-    return { component, cdRef, storageFilesResourceService };
+    return { component };
   }
+
+  afterEach(() => TestBed.resetTestingModule());
 
   it('cancels pending directory loading on destroy', () => {
     const teardown = vi.fn();

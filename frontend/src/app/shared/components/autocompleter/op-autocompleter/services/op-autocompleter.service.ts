@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiV3FilterBuilder } from 'core-app/shared/helpers/api-v3/api-v3-filter-builder';
 import { map } from 'rxjs/operators';
 import { ApiV3ResourceCollection } from 'core-app/core/apiv3/paths/apiv3-resource';
@@ -20,15 +20,11 @@ import { addFiltersToPath } from 'core-app/core/apiv3/helpers/add-filters-to-pat
 import { HalResourceService } from 'core-app/features/hal/services/hal-resource.service';
 import { CollectionResource } from 'core-app/features/hal/resources/collection-resource';
 
-@Injectable()
-
+@Injectable({ providedIn: 'root' })
 export class OpAutocompleterService extends UntilDestroyedMixin {
-  constructor(
-    private apiV3Service:ApiV3Service,
-    private halResourceService:HalResourceService,
-  ) {
-    super();
-  }
+  private apiV3Service = inject(ApiV3Service);
+  private halResourceService = inject(HalResourceService);
+
 
   // A method for fetching data with different resource type and different filter
   public loadAvailable(matching:string, resource:TOpAutocompleterResource, filters?:IAPIFilter[], searchKey?:string):Observable<HalResource[]> {
@@ -98,7 +94,7 @@ export class OpAutocompleterService extends UntilDestroyedMixin {
     switch (resource) {
       // in this case we can add more functions for fetching usual resources
       default: {
-        return this.loadAvailable(matching || '', resource, filters, searchKey);
+        return this.loadAvailable(matching ?? '', resource, filters, searchKey);
       }
     }
   }
@@ -111,7 +107,7 @@ export class OpAutocompleterService extends UntilDestroyedMixin {
       return of([]);
     }
 
-    const finalFilters:ApiV3FilterBuilder = this.createFilters(filters ?? [], matching || '', searchKey);
+    const finalFilters:ApiV3FilterBuilder = this.createFilters(filters ?? [], matching ?? '', searchKey);
     const params = this.createParams(resource);
 
     const stringifiedBuiltOutUrl = addFiltersToPath(url, finalFilters, params).toString();

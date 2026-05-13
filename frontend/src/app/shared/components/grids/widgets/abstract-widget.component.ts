@@ -49,9 +49,6 @@ export abstract class AbstractWidgetComponent extends UntilDestroyedMixin {
     return true;
   }
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args:unknown[]);
-
   constructor() {
     super();
   }

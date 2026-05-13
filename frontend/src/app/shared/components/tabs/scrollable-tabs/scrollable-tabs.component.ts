@@ -1,17 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Injector,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Injector, OnChanges, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { TabDefinition } from 'core-app/shared/components/tabs/tab.interface';
 import {
   RawParams,
@@ -31,6 +18,10 @@ import { InjectField } from 'core-app/shared/helpers/angular/inject-field.decora
   standalone: false,
 })
 export class ScrollableTabsComponent extends UntilDestroyedMixin implements AfterViewInit, OnChanges {
+  protected readonly $state = inject(StateService);
+  private cdRef = inject(ChangeDetectorRef);
+  injector = inject(Injector);
+
   @ViewChild('scrollContainer', { static: true }) scrollContainer:ElementRef;
 
   @ViewChild('scrollPane', { static: true }) scrollPane:ElementRef;
@@ -64,14 +55,6 @@ export class ScrollableTabsComponent extends UntilDestroyedMixin implements Afte
   private debouncedTabActivationTimeout:ReturnType<typeof setTimeout>|null;
 
   private dragTargetStack = 0;
-
-  constructor(
-    protected readonly $state:StateService,
-    private cdRef:ChangeDetectorRef,
-    public injector:Injector,
-  ) {
-    super();
-  }
 
   ngAfterViewInit():void {
     this.container = this.scrollContainer.nativeElement as HTMLElement;

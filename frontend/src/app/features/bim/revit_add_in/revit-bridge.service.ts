@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import {
   distinctUntilChanged, filter, first, map,
@@ -66,8 +66,8 @@ export class RevitBridgeService extends ViewerBridgeService {
 
   revitMessageReceived$ = this.revitMessageReceivedSource.asObservable();
 
-  constructor(readonly injector:Injector) {
-    super(injector);
+  constructor() {
+    super();
 
     if (window.RevitBridge) {
       this.hookUpRevitListener();

@@ -26,15 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  Injector,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { CurrentUserService } from 'core-app/core/current-user/current-user.service';
 import { TabDefinition } from 'core-app/shared/components/tabs/tab.interface';
@@ -61,6 +53,12 @@ import { Observable, of } from 'rxjs';
   standalone: false,
 })
 export class WorkPackagesFullViewComponent extends WorkPackageSingleViewBase implements OnInit {
+  wpTableSelection = inject(WorkPackageViewSelectionService);
+  recentItemsService = inject(RecentItemsService);
+  readonly $state = inject(StateService);
+  readonly currentUserService = inject(CurrentUserService);
+  readonly cdRef = inject(ChangeDetectorRef);
+
   // Watcher properties
   public isWatched:boolean;
 
@@ -79,17 +77,6 @@ export class WorkPackagesFullViewComponent extends WorkPackageSingleViewBase imp
       buttonMore: this.i18n.t('js.button_more'),
     },
   };
-
-  constructor(
-    public injector:Injector,
-    public wpTableSelection:WorkPackageViewSelectionService,
-    public recentItemsService:RecentItemsService,
-    readonly $state:StateService,
-    readonly currentUserService:CurrentUserService,
-    readonly cdRef:ChangeDetectorRef,
-  ) {
-    super(injector);
-  }
 
   public onTabSelected(tab:TabDefinition):void {
     if (!this.routedFromAngular) {

@@ -1,17 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Injector,
-  Input,
-  OnDestroy,
-  Output,
-  SecurityContext,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, OnDestroy, Output, SecurityContext, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import { States } from 'core-app/core/states/states.service';
 import moment, { Moment } from 'moment';
@@ -115,6 +102,25 @@ const ADD_ENTRY_PROHIBITED_CLASS_NAME = '-prohibited';
   standalone: false,
 })
 export class TimeEntryCalendarComponent implements AfterViewInit, OnDestroy {
+  readonly states = inject(States);
+  readonly apiV3Service = inject(ApiV3Service);
+  readonly $state = inject(StateService);
+  private element = inject(ElementRef);
+  readonly i18n = inject(I18nService);
+  readonly injector = inject(Injector);
+  readonly notifications = inject(HalResourceNotificationService);
+  private sanitizer = inject(DomSanitizer);
+  private configuration = inject(ConfigurationService);
+  private timezone = inject(TimezoneService);
+  private schemaCache = inject(SchemaCacheService);
+  private colors = inject(ColorsService);
+  private browserDetector = inject(BrowserDetector);
+  private calendar = inject(OpCalendarService);
+  readonly weekdayService = inject(WeekdayService);
+  readonly dayService = inject(DayResourceService);
+  readonly turboRequests = inject(TurboRequestsService);
+  readonly pathHelper = inject(PathHelperService);
+
   @ViewChild(FullCalendarComponent) ucCalendar:FullCalendarComponent;
 
   @Input() projectIdentifier:string;
@@ -201,27 +207,6 @@ export class TimeEntryCalendarComponent implements AfterViewInit, OnDestroy {
         this.calendarOptions$.next(this.additionalOptions);
       });
   }
-
-  constructor(
-    readonly states:States,
-    readonly apiV3Service:ApiV3Service,
-    readonly $state:StateService,
-    private element:ElementRef,
-    readonly i18n:I18nService,
-    readonly injector:Injector,
-    readonly notifications:HalResourceNotificationService,
-    private sanitizer:DomSanitizer,
-    private configuration:ConfigurationService,
-    private timezone:TimezoneService,
-    private schemaCache:SchemaCacheService,
-    private colors:ColorsService,
-    private browserDetector:BrowserDetector,
-    private calendar:OpCalendarService,
-    readonly weekdayService:WeekdayService,
-    readonly dayService:DayResourceService,
-    readonly turboRequests:TurboRequestsService,
-    readonly pathHelper:PathHelperService,
-  ) { }
 
   ngAfterViewInit():void {
     document.addEventListener('dialog:close', this.closeDialogHandler);

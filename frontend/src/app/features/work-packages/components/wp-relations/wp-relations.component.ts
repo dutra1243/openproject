@@ -26,16 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { WorkPackageResource } from 'core-app/features/hal/resources/work-package-resource';
 import { filter, throttleTime } from 'rxjs/operators';
 import { UntilDestroyedMixin } from 'core-app/shared/helpers/angular/until-destroyed.mixin';
@@ -53,6 +44,12 @@ import { HalEventsService } from 'core-app/features/hal/services/hal-events.serv
   standalone: false,
 })
 export class WorkPackageRelationsComponent extends UntilDestroyedMixin implements OnInit, AfterViewInit, OnDestroy {
+  private wpRelations = inject(WorkPackageRelationsService);
+  private apiV3Service = inject(ApiV3Service);
+  private halEvents = inject(HalEventsService);
+  private PathHelper = inject(PathHelperService);
+  private turboRequests = inject(TurboRequestsService);
+
   @Input() public workPackage:WorkPackageResource;
 
   @ViewChild('frameElement') readonly relationTurboFrame:ElementRef<HTMLIFrameElement>;
@@ -60,16 +57,6 @@ export class WorkPackageRelationsComponent extends UntilDestroyedMixin implement
   turboFrameSrc:string;
 
   private turboFrameListener:EventListener = this.updateFrontendData.bind(this);
-
-  constructor(
-    private wpRelations:WorkPackageRelationsService,
-    private apiV3Service:ApiV3Service,
-    private halEvents:HalEventsService,
-    private PathHelper:PathHelperService,
-    private turboRequests:TurboRequestsService,
-) {
-    super();
-  }
 
   ngOnInit() {
     this.turboFrameSrc = `${this.PathHelper.staticBase}/work_packages/${this.workPackage.id}/relations_tab`;

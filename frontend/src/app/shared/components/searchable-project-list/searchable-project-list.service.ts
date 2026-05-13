@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   ApiV3ListFilter,
   ApiV3ListParameters,
@@ -20,6 +20,11 @@ const UNDISCLOSED_ANCESTOR = 'urn:openproject-org:api:v3:undisclosed';
 
 @Injectable()
 export class SearchableProjectListService {
+  readonly http = inject(HttpClient);
+  readonly apiV3Service = inject(ApiV3Service);
+  readonly currentProjectService = inject(CurrentProjectService);
+  readonly configurationService = inject(ConfigurationService);
+
   private _searchText = '';
   private searchText$ = new BehaviorSubject<string>('');
   private loadingEnabled$ = new BehaviorSubject<boolean>(false);
@@ -122,13 +127,6 @@ export class SearchableProjectListService {
       return this.pipeConcatProjects(projects, this.extractAncestors(projects), extraFetches);
     })
   );
-
-  constructor(
-    readonly http:HttpClient,
-    readonly apiV3Service:ApiV3Service,
-    readonly currentProjectService:CurrentProjectService,
-    readonly configurationService:ConfigurationService,
-  ) { }
 
   /** Causes fetching of a new project list and enables reloads of the project list, when the searchText changes. */
   public enableLoading():void {

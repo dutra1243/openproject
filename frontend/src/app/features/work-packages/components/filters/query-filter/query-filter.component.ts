@@ -26,16 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  Input,
-  OnInit,
-  Output,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, OnInit, Output, ViewEncapsulation, inject } from '@angular/core';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import {
   compareByHref,
@@ -61,6 +52,12 @@ import { WorkPackageViewBaselineService } from 'core-app/features/work-packages/
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class QueryFilterComponent implements OnInit {
+  readonly wpTableFilters = inject(WorkPackageViewFiltersService);
+  readonly wpTableBaseline = inject(WorkPackageViewBaselineService);
+  readonly schemaCache = inject(SchemaCacheService);
+  readonly I18n = inject(I18nService);
+  readonly currentProject = inject(CurrentProjectService);
+
   @HostBinding('class.op-query-filter') className = true;
 
   @Input() public shouldFocus = false;
@@ -90,15 +87,6 @@ export class QueryFilterComponent implements OnInit {
     button_delete: this.I18n.t('js.button_delete'),
     incompatible_filter: this.I18n.t('js.work_packages.filters.baseline_incompatible'),
   };
-
-  constructor(
-    readonly wpTableFilters:WorkPackageViewFiltersService,
-    readonly wpTableBaseline:WorkPackageViewBaselineService,
-    readonly schemaCache:SchemaCacheService,
-    readonly I18n:I18nService,
-    readonly currentProject:CurrentProjectService,
-  ) {
-  }
 
   public onFilterUpdated(filter:QueryFilterInstanceResource) {
     this.filter = filter;

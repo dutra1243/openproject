@@ -31,7 +31,7 @@ import { States } from 'core-app/core/states/states.service';
 import { AuthorisationService } from 'core-app/core/model-auth/model-auth.service';
 import { StateService } from '@uirouter/core';
 import { IsolatedQuerySpace } from 'core-app/features/work-packages/directives/query-space/isolated-query-space';
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { InjectField } from 'core-app/shared/helpers/angular/inject-field.decorator';
 import isPersistedResource from 'core-app/features/hal/helpers/is-persisted-resource';
 import { UrlParamsHelperService } from 'core-app/features/work-packages/components/wp-query/url-params-helper';
@@ -63,6 +63,23 @@ export interface QueryDefinition {
 
 @Injectable()
 export class WorkPackagesListService {
+  readonly injector = inject(Injector);
+  protected toastService = inject(ToastService);
+  readonly I18n = inject(I18nService);
+  protected UrlParamsHelper = inject(UrlParamsHelperService);
+  protected authorisationService = inject(AuthorisationService);
+  protected $state = inject(StateService);
+  protected apiV3Service = inject(ApiV3Service);
+  protected states = inject(States);
+  protected querySpace = inject(IsolatedQuerySpace);
+  protected pagination = inject(PaginationService);
+  protected configuration = inject(ConfigurationService);
+  protected wpTablePagination = inject(WorkPackageViewPaginationService);
+  protected wpStatesInitialization = inject(WorkPackageStatesInitializationService);
+  protected wpListInvalidQueryService = inject(WorkPackagesListInvalidQueryService);
+  protected wpQueryView = inject(WorkPackagesQueryViewService);
+  protected submenuService = inject(SubmenuService);
+
   @InjectField() protected readonly currentUser:CurrentUserService;
 
   // We remember the query requests coming in so we can ensure only the latest request is being tended to
@@ -87,25 +104,6 @@ export class WorkPackagesListService {
       // diverting observables to the LATEST emitted.
       share(),
     );
-
-  constructor(
-    readonly injector:Injector,
-    protected toastService:ToastService,
-    readonly I18n:I18nService,
-    protected UrlParamsHelper:UrlParamsHelperService,
-    protected authorisationService:AuthorisationService,
-    protected $state:StateService,
-    protected apiV3Service:ApiV3Service,
-    protected states:States,
-    protected querySpace:IsolatedQuerySpace,
-    protected pagination:PaginationService,
-    protected configuration:ConfigurationService,
-    protected wpTablePagination:WorkPackageViewPaginationService,
-    protected wpStatesInitialization:WorkPackageStatesInitializationService,
-    protected wpListInvalidQueryService:WorkPackagesListInvalidQueryService,
-    protected wpQueryView:WorkPackagesQueryViewService,
-    protected submenuService:SubmenuService,
-  ) { }
 
   /**
    * Stream a query request as a HTTP observable. Each request to this method will

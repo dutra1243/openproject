@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Injector, inject } from '@angular/core';
 import { InjectField } from 'core-app/shared/helpers/angular/inject-field.decorator';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { ToastService } from 'core-app/shared/components/toaster/toast.service';
@@ -34,6 +34,8 @@ import { TurboRequestsService } from 'core-app/core/turbo/turbo-requests.service
   standalone: false,
 })
 export class TriggerActionsEntryComponent {
+  readonly injector = inject(Injector);
+
   @InjectField() readonly apiv3Service:ApiV3Service;
 
   @InjectField() readonly toastService:ToastService;
@@ -54,9 +56,6 @@ export class TriggerActionsEntryComponent {
     error: this.i18n.t('js.error.internal'),
     areYouSure: this.i18n.t('js.text_are_you_sure'),
   };
-
-  constructor(readonly injector:Injector) {
-  }
 
   editTimeEntry() {
     void this.loadEntry().subscribe((entry:TimeEntryResource) => {

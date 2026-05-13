@@ -27,7 +27,7 @@
 //++
 
 import { QueryResource } from 'core-app/features/hal/resources/query-resource';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HalResourceService } from 'core-app/features/hal/services/hal-resource.service';
 import { QueryFilterInstanceSchemaResource } from 'core-app/features/hal/resources/query-filter-instance-schema-resource';
 import { QueryFormResource } from 'core-app/features/hal/resources/query-form-resource';
@@ -39,8 +39,8 @@ import { QueryColumn } from '../wp-query/query-column';
 
 @Injectable()
 export class WorkPackagesListInvalidQueryService {
-  constructor(protected halResourceService:HalResourceService) {
-  }
+  protected halResourceService = inject(HalResourceService);
+
 
   public restoreQuery(query:QueryResource, form:QueryFormResource) {
     this.restoreFilters(query, form.payload, form.schema);

@@ -26,22 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  forwardRef,
-  Injector,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Injector, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { onDayCreate, validDate } from 'core-app/shared/components/datepicker/helpers/date-modal.helpers';
@@ -67,6 +52,13 @@ import { DeviceService } from 'core-app/core/browser/device.service';
   standalone: false,
 })
 export class OpBasicSingleDatePickerComponent implements ControlValueAccessor, OnInit, AfterViewInit, OnDestroy {
+  readonly I18n = inject(I18nService);
+  readonly timezoneService = inject(TimezoneService);
+  readonly injector = inject(Injector);
+  readonly cdRef = inject(ChangeDetectorRef);
+  readonly elementRef = inject(ElementRef);
+  readonly deviceService = inject(DeviceService);
+
   @Output() valueChange = new EventEmitter();
 
   @Output() picked = new EventEmitter();
@@ -112,14 +104,7 @@ export class OpBasicSingleDatePickerComponent implements ControlValueAccessor, O
 
   public datePickerInstance:DatePicker;
 
-  constructor(
-    readonly I18n:I18nService,
-    readonly timezoneService:TimezoneService,
-    readonly injector:Injector,
-    readonly cdRef:ChangeDetectorRef,
-    readonly elementRef:ElementRef,
-    readonly deviceService:DeviceService,
-  ) {
+  constructor() {
     populateInputsFromDataset(this);
   }
 

@@ -26,22 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  forwardRef,
-  HostBinding,
-  Injector,
-  Input,
-  OnInit,
-  Output,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, HostBinding, Injector, Input, OnInit, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import {
   ControlValueAccessor,
@@ -81,6 +66,13 @@ export const opBasicRangeDatePickerSelector = 'op-basic-range-date-picker';
   standalone: false,
 })
 export class OpBasicRangeDatePickerComponent implements OnInit, ControlValueAccessor, AfterViewInit {
+  readonly I18n = inject(I18nService);
+  readonly timezoneService = inject(TimezoneService);
+  readonly injector = inject(Injector);
+  readonly cdRef = inject(ChangeDetectorRef);
+  readonly elementRef = inject(ElementRef);
+  readonly deviceService = inject(DeviceService);
+
   @HostBinding('class.op-basic-range-datepicker') className = true;
 
   @HostBinding('class.op-basic-range-datepicker_mobile') mobile = false;
@@ -133,14 +125,7 @@ export class OpBasicRangeDatePickerComponent implements OnInit, ControlValueAcce
     spacer: this.I18n.t('js.filter.value_spacer'),
   };
 
-  constructor(
-    readonly I18n:I18nService,
-    readonly timezoneService:TimezoneService,
-    readonly injector:Injector,
-    readonly cdRef:ChangeDetectorRef,
-    readonly elementRef:ElementRef,
-    readonly deviceService:DeviceService,
-  ) {
+  constructor() {
     populateInputsFromDataset(this);
   }
 

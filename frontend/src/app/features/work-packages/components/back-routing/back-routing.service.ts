@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { StateService, Transition } from '@uirouter/core';
 import { KeepTabService } from 'core-app/features/work-packages/components/wp-single-view-tabs/keep-tab/keep-tab.service';
 import { InjectField } from 'core-app/shared/helpers/angular/inject-field.decorator';
@@ -40,14 +40,13 @@ export interface BackRouteOptions {
 
 @Injectable({ providedIn: 'root' })
 export class BackRoutingService {
+  readonly injector = inject(Injector);
+
   @InjectField() private $state:StateService;
 
   @InjectField() private keepTab:KeepTabService;
 
   private _backRoute:BackRouteOptions;
-
-  constructor(readonly injector:Injector) {
-  }
 
   private goToOtherState(route:string, params:Record<string, unknown>):Promise<unknown> {
     return this.$state.go(route, params);

@@ -28,7 +28,7 @@
 
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
-import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { CurrentProjectService } from 'core-app/core/current-project/current-project.service';
 import { BehaviorSubject, Observable, ReplaySubject, Subscription } from 'rxjs';
 import { map, shareReplay, take, tap } from 'rxjs/operators';
@@ -56,6 +56,14 @@ import { ConfigurationService } from 'core-app/core/config/configuration.service
   standalone: false,
 })
 export class OpHeaderProjectSelectComponent extends UntilDestroyedMixin implements OnInit, OnDestroy, AfterViewInit {
+  readonly pathHelper = inject(PathHelperService);
+  readonly configuration = inject(ConfigurationService);
+  readonly I18n = inject(I18nService);
+  readonly currentProject = inject(CurrentProjectService);
+  readonly searchableProjectListService = inject(SearchableProjectListService);
+  readonly currentUserService = inject(CurrentUserService);
+  readonly apiV3Service = inject(ApiV3Service);
+
   @HostBinding('class.op-project-select') className = true;
 
   @ViewChild('projectSearchField', { read: ElementRef })
@@ -161,15 +169,7 @@ export class OpHeaderProjectSelectComponent extends UntilDestroyedMixin implemen
 
   private displayModeLocalStorageKey = 'openProject-project-select-display-mode';
 
-  constructor(
-    readonly pathHelper:PathHelperService,
-    readonly configuration:ConfigurationService,
-    readonly I18n:I18nService,
-    readonly currentProject:CurrentProjectService,
-    readonly searchableProjectListService:SearchableProjectListService,
-    readonly currentUserService:CurrentUserService,
-    readonly apiV3Service:ApiV3Service,
-  ) {
+  constructor() {
     super();
 
     if(this.currentProject.id) {

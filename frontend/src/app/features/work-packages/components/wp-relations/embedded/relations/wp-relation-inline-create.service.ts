@@ -26,7 +26,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, Injector, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { WorkPackageResource } from 'core-app/features/hal/resources/work-package-resource';
 import { WorkPackageInlineCreateService } from 'core-app/features/work-packages/components/wp-inline-create/wp-inline-create.service';
 import { WpRelationInlineAddExistingComponent } from 'core-app/features/work-packages/components/wp-relations/embedded/inline/add-existing/wp-relation-inline-add-existing.component';
@@ -45,10 +45,6 @@ export class WpRelationInlineCreateService extends WorkPackageInlineCreateServic
   @InjectField() wpRelations:WorkPackageRelationsService;
 
   @InjectField() halEvents:HalEventsService;
-
-  constructor(public injector:Injector) {
-    super(injector);
-  }
 
   /**
    * A separate reference pane for the inline create component

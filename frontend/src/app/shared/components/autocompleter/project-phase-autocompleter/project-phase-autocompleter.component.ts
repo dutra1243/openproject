@@ -28,7 +28,7 @@
  * ++
  */
 
-import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CreateAutocompleterComponent } from '../create-autocompleter/create-autocompleter.component';
 import { opPhaseIconData, toDOMString } from '@openproject/octicons-angular';
 import { ProjectPhaseResource } from 'core-app/features/hal/resources/project-phase-resource';
@@ -49,8 +49,8 @@ export class ProjectPhaseAutocompleterComponent extends CreateAutocompleterCompo
 
   public phaseIcon:SafeHtml;
 
-  constructor(readonly injector:Injector) {
-    super(injector);
+  constructor() {
+    super();
 
     this.phaseIcon = this.sanitizer.bypassSecurityTrustHtml(toDOMString(opPhaseIconData, 'small', { 'aria-hidden': 'true', class: 'octicon' }));
   }

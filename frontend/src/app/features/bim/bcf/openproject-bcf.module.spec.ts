@@ -26,40 +26,15 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, shareReplay, startWith } from 'rxjs/operators';
-import { NavigationService } from 'core-app/core/navigation/navigation.service';
+import { Injector } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { IFCViewerService } from 'core-app/features/bim/ifc_models/ifc-viewer/ifc-viewer.service';
+import { viewerBridgeServiceFactory } from 'core-app/features/bim/bcf/openproject-bcf.module';
 
-@Injectable({ providedIn: 'root' })
-export class UrlParamsService {
-  private navigation = inject(NavigationService);
+describe('viewerBridgeServiceFactory', () => {
+  it('falls back to an IFC viewer service when none is registered', () => {
+    const injector = TestBed.inject(Injector);
 
-
-  public get(key:string):string|null {
-    return this.searchParams.get(key);
-  }
-
-  public pathMatching(key:RegExp, url = window.location.pathname):string|null {
-    return url.match(key)?.[1] || null;
-  }
-
-  public pathMatching$(key:RegExp):Observable<string|null> {
-    return this
-      .navigation
-      .urlChanged$
-      .pipe(
-        startWith(document.location.href),
-        map((url) => this.pathMatching(key, url)),
-        shareReplay(1),
-      );
-  }
-
-  public has(key:string):boolean {
-    return this.searchParams.has(key);
-  }
-
-  private get searchParams():URLSearchParams {
-    return new URLSearchParams(window.location.search);
-  }
-}
+    expect(viewerBridgeServiceFactory(injector)).toBeInstanceOf(IFCViewerService);
+  });
+});
