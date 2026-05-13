@@ -175,8 +175,7 @@ RSpec.describe Backlogs::WorkPackagesController do
       it "moves the inbox item to the first place" do
         subject
 
-        expect(reordered_story.reload)
-          .to have_attributes(position: 1, backlog_bucket_id: nil, sprint_id: nil)
+        expect(reordered_story.reload).to have_attributes(backlog_bucket_id: nil, sprint_id: nil, position: 1)
       end
 
       it "replaces the inbox without a show-more row in the stream" do
@@ -203,8 +202,7 @@ RSpec.describe Backlogs::WorkPackagesController do
       it "moves the story to the first position within the bucket" do
         subject
 
-        expect(reordered_story.reload)
-          .to have_attributes(position: 1, backlog_bucket_id: bucket.id, sprint_id: nil)
+        expect(reordered_story.reload).to have_attributes(backlog_bucket_id: bucket.id, sprint_id: nil, position: 1)
       end
 
       include_examples "respecting the all param for inbox pagination"
@@ -264,7 +262,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story to the target sprint" do
           subject
 
-          expect(story_in_sprint.reload).to have_attributes(sprint: other_sprint, position: 1)
+          expect(story_in_sprint.reload).to have_attributes(sprint: other_sprint, backlog_bucket_id: nil, position: 1)
         end
       end
 
@@ -289,7 +287,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story to the inbox at the given position" do
           subject
 
-          expect(story_in_sprint.reload).to have_attributes(sprint: nil, position: 2)
+          expect(story_in_sprint.reload).to have_attributes(sprint_id: nil, backlog_bucket_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -315,7 +313,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story into the bucket at the given position" do
           subject
 
-          expect(story_in_sprint.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+          expect(story_in_sprint.reload).to have_attributes(backlog_bucket: bucket, sprint_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -343,7 +341,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story to the sprint" do
           subject
 
-          expect(inbox_story.reload).to have_attributes(sprint: target_sprint, position: 1)
+          expect(inbox_story.reload).to have_attributes(sprint: target_sprint, backlog_bucket_id: nil, position: 1)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -364,7 +362,7 @@ RSpec.describe Backlogs::WorkPackagesController do
 
         it "moves the work package to position 2" do
           subject
-          expect(inbox_story.reload).to have_attributes(position: 2, sprint: nil, backlog_bucket: nil)
+          expect(inbox_story.reload).to have_attributes(sprint: nil, backlog_bucket: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -386,7 +384,7 @@ RSpec.describe Backlogs::WorkPackagesController do
 
         it "moves the work package into the bucket to position 2" do
           subject
-          expect(inbox_story.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+          expect(inbox_story.reload).to have_attributes(backlog_bucket: bucket, sprint_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -416,7 +414,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story into the sprint" do
           subject
 
-          expect(bucket_story.reload).to have_attributes(sprint: target_sprint, backlog_bucket: nil)
+          expect(bucket_story.reload).to have_attributes(sprint: target_sprint, backlog_bucket: nil, position: 1)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -438,7 +436,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story to the inbox at the given position" do
           subject
 
-          expect(bucket_story.reload).to have_attributes(backlog_bucket: nil, sprint: nil, position: 2)
+          expect(bucket_story.reload).to have_attributes(backlog_bucket_id: nil, sprint_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -459,7 +457,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "reorders the story within the bucket" do
           subject
 
-          expect(bucket_story.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+          expect(bucket_story.reload).to have_attributes(backlog_bucket: bucket, sprint_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"
@@ -482,7 +480,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         it "moves the story into the other bucket at the given position" do
           subject
 
-          expect(bucket_story.reload).to have_attributes(backlog_bucket: other_bucket, position: 2)
+          expect(bucket_story.reload).to have_attributes(backlog_bucket: other_bucket, sprint_id: nil, position: 2)
         end
 
         include_examples "respecting the all param for inbox pagination"

@@ -115,7 +115,7 @@ module Backlogs
       component = if container
                     sprint_component(sprint: container)
                   else
-                    inbox_component
+                    backlog_component
                   end
 
       replace_via_turbo_stream(component:, method: :morph)
@@ -125,7 +125,7 @@ module Backlogs
       Backlogs::SprintComponent.new(sprint:, project: @project)
     end
 
-    def inbox_component
+    def backlog_component
       inbox_work_packages = WorkPackage.backlogs_inbox_for(project: @project)
       buckets = BacklogBucket.for_project(@project)
 
