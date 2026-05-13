@@ -31,8 +31,8 @@
 module OpenProject::Backlogs::Patches::CopyServicePatch
   extend ActiveSupport::Concern
 
-  def self.included(base)
-    base.prepend(InstanceMethods)
+  included do
+    prepend InstanceMethods
   end
 
   module InstanceMethods
