@@ -32,7 +32,7 @@ module WorkPackages::Scopes::BacklogsInboxFor
   extend ActiveSupport::Concern
 
   class_methods do
-    def backlogs_inbox_for(project:)
+    def backlogs_inbox_for(project:) # rubocop:disable Metrics/AbcSize
       WorkPackage
         .visible
         .with_status_open
