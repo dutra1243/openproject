@@ -69,13 +69,9 @@ module Backlogs
     def move
       # Capture the source before the call; the service reloads @story internally via #move_after.
       source = @story.sprint
-      service_params = if move_params[:direction]
-                         { attributes: { move_to: move_params[:direction] } }
-                       else
-                         { attributes: move_attributes_from_target, **position_attributes }
-                       end
 
-      call = Stories::UpdateService.new(user: current_user, story: @story).call(**service_params)
+      call = Stories::UpdateService.new(user: current_user, story: @story)
+                                   .call(**move_params.to_h.symbolize_keys)
 
       if call.success?
         move_story_to_target_component_via_turbo_stream(source:, target: call.result.sprint)
@@ -126,31 +122,6 @@ module Backlogs
 
     def move_params
       params.permit(:position, :prev_id, :target_id, :direction)
-    end
-
-    def position_attributes
-      if move_params.has_key?(:prev_id)
-        { prev_id: move_params[:prev_id].to_i }
-      elsif move_params.has_key?(:position)
-        { position: move_params[:position].to_i }
-      else
-        {}
-      end
-    end
-
-    def move_attributes_from_target
-      target_type, target_id = move_params[:target_id].split(":", 2)
-
-      case target_type
-      when "sprint"
-        { backlog_bucket_id: nil, sprint_id: target_id }
-      when "backlog_bucket"
-        { backlog_bucket_id: target_id, sprint_id: nil }
-      when "inbox"
-        { backlog_bucket_id: nil, sprint_id: nil }
-      else
-        raise ArgumentError, "target_type must be one of: backlog_bucket, sprint, inbox."
-      end
     end
   end
 end
