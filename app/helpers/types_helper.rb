@@ -150,7 +150,19 @@ module ::TypesHelper
       key:,
       is_cf: CustomField.custom_field_attribute?(key),
       is_required: represented[:required] && !represented[:has_default],
-      translation: Type.translated_attribute_name(key, represented)
+      translation: Type.translated_attribute_name(key, represented),
+      field_type: field_type_label(key, represented)
     }
+  end
+
+  def field_type_label(_key, represented)
+    if represented[:is_cf]
+      format = OpenProject::CustomFieldFormat.find_by(name: represented[:field_format])
+      return "" if format.nil?
+
+      format.label.is_a?(Proc) ? format.label.call : I18n.t(format.label)
+    else
+      I18n.t("types.edit.form_configuration.builtin_field")
+    end
   end
 end

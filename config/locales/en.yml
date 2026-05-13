@@ -1435,6 +1435,7 @@ en:
         untitled_group: "Untitled group"
         reset_title: "Reset form configuration"
         confirm_reset: "Are you sure you want to reset the form configuration?"
+        builtin_field: "Builtin field"
         reset_description: >
           This will reset the attributes to their default group and disable ALL custom fields.
       projects:

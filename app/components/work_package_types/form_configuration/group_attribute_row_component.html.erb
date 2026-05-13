@@ -10,8 +10,13 @@
           )
         )
       end
-      left.with_column(flex: 1) do
+      left.with_column do
         render(Primer::Beta::Text.new) { @attribute[:translation] }
+      end
+      if @attribute[:field_type].present?
+        left.with_column(ml: 2) do
+          render(Primer::Beta::Text.new(color: :muted, font_size: :small)) { @attribute[:field_type] }
+        end
       end
     end
 
