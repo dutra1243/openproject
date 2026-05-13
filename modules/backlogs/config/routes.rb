@@ -95,7 +95,6 @@ Rails.application.routes.draw do
         member do
           get :menu
           put :move
-          post :reorder
           get :move_to_sprint_dialog
         end
       end

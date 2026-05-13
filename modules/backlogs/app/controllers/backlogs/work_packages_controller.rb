@@ -69,29 +69,16 @@ module Backlogs
     def move
       # Capture the source before the call; the service reloads @story internally via #move_after.
       source = @story.sprint
+      service_params = if move_params[:direction]
+                         { attributes: { move_to: move_params[:direction] } }
+                       else
+                         { attributes: move_attributes_from_target, **position_attributes }
+                       end
 
-      call = Stories::UpdateService.new(user: current_user, story: @story)
-                                   .call(attributes: move_attributes_from_target, **position_attributes)
-
-      if call.success?
-        target = call.result.sprint
-        move_story_to_target_component_via_turbo_stream(source:, target:)
-      else
-        render_error_flash_message_via_turbo_stream(
-          message: I18n.t(:notice_unsuccessful_update_with_reason, reason: call.message)
-        )
-      end
-
-      respond_with_turbo_streams(status: call.success? ? :ok : :unprocessable_entity)
-    end
-
-    def reorder
-      call = Stories::UpdateService
-        .new(user: current_user, story: @story)
-        .call(attributes: { move_to: reorder_param })
+      call = Stories::UpdateService.new(user: current_user, story: @story).call(**service_params)
 
       if call.success?
-        replace_component_via_turbo_stream(call.result.sprint)
+        move_story_to_target_component_via_turbo_stream(source:, target: call.result.sprint)
       else
         render_error_flash_message_via_turbo_stream(
           message: I18n.t(:notice_unsuccessful_update_with_reason, reason: call.message)
@@ -138,8 +125,7 @@ module Backlogs
     end
 
     def move_params
-      params.require(:target_id)
-      params.permit(:position, :prev_id, :target_id)
+      params.permit(:position, :prev_id, :target_id, :direction)
     end
 
     def position_attributes
@@ -150,10 +136,6 @@ module Backlogs
       else
         {}
       end
-    end
-
-    def reorder_param
-      params.expect(:direction)
     end
 
     def move_attributes_from_target
