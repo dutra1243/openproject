@@ -155,6 +155,9 @@ module ::TypesHelper
     }
   end
 
+  # Resolves the format label directly via OpenProject::CustomFieldFormat rather than
+  # using CustomFieldsHelper#label_for_custom_field_format, because the helper is not
+  # available in the controller context during Turbo Stream re-renders.
   def field_type_label(_key, represented)
     if represented[:is_cf]
       format = OpenProject::CustomFieldFormat.find_by(name: represented[:field_format])
