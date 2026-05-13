@@ -367,6 +367,47 @@ RSpec.describe Meeting do
     end
   end
 
+  describe "participant change details" do
+    shared_let(:participant_505) { create(:user, firstname: "Participant", lastname: "505") }
+    shared_let(:participant_401) { create(:user, firstname: "Oliver", lastname: "Captchatest") }
+    shared_let(:participant_502) { create(:user, firstname: "Test", lastname: "Calculated Values") }
+    shared_let(:participant_328) { create(:user, firstname: "Participant", lastname: "328") }
+    shared_let(:participant_329) { create(:user, firstname: "Test", lastname: "User 329") }
+
+    let(:details_meeting) do
+      User.execute_as current_user do
+        create(:meeting, author: user)
+      end
+    end
+
+    it "computes added and removed participants from previous snapshot in journal order",
+       with_settings: { journal_aggregation_time_minutes: 0 } do
+      details_meeting.participants << MeetingParticipant.new(user: participant_505, invited: true, attended: false)
+      details_meeting.touch_and_save_journals
+
+      details_meeting.participants << MeetingParticipant.new(user: participant_401, invited: true, attended: false)
+      details_meeting.participants << MeetingParticipant.new(user: participant_502, invited: true, attended: false)
+      details_meeting.touch_and_save_journals
+
+      details_meeting.participants.find_by(user: participant_502).destroy!
+      details_meeting.participants << MeetingParticipant.new(user: participant_328, invited: true, attended: false)
+      details_meeting.participants << MeetingParticipant.new(user: participant_329, invited: true, attended: false)
+      details_meeting.touch_and_save_journals
+
+      details_meeting.participants.find_by(user: participant_401).destroy!
+      details_meeting.participants.find_by(user: participant_329).destroy!
+      details_meeting.touch_and_save_journals
+
+      journal = details_meeting.journals.last
+      allow(journal).to receive(:predecessor).and_return(details_meeting.journals.first)
+
+      expect(journal.details).to include(
+        participants_removed: [nil, "Oliver Captchatest, Test User 329"]
+      )
+      expect(journal.details[:participants_added]).to be_nil
+    end
+  end
+
   describe "#destroy" do
     let(:meeting_agenda_item) { create(:meeting_agenda_item, meeting:) }
 

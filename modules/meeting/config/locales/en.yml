@@ -50,6 +50,8 @@ en:
           other: "%{count} Participants"
         participants_attended: "Attendees"
         participants_invited: "Invitees"
+        participants_added: "Participants added:"
+        participants_removed: "Participants removed:"
         project: "Project"
         start_date: "Date"
         start_time: "Start time"

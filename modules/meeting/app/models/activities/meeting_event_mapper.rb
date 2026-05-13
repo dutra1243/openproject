@@ -171,14 +171,14 @@ class Activities::MeetingEventMapper < Activities::EventMapper
         {
           event_title: journal.initial? ? I18n.t(:label_initial_meeting_details) : I18n.t(:label_meeting_details),
           data: {
-            details: filtered_meeting_details(journal.details)
+            details: filtered_meeting_details(journal, journal.details)
           }
         }
       )
   end
 
-  def filtered_meeting_details(details)
-    details
+  def filtered_meeting_details(journal, details)
+    filtered = details
       .reject { |key, _| key.start_with?("agenda_items_") && !key.end_with?("_position") }
       .reject { |key, value| key.end_with?("_position") && value.first.nil? }
       .each_with_object({}) do |(key, value), hash|
@@ -189,6 +189,8 @@ class Activities::MeetingEventMapper < Activities::EventMapper
         hash[key.to_sym] = value
       end
     end
+
+    filtered
   end
 
   def start_time(journal_time)
@@ -212,7 +214,7 @@ class Activities::MeetingEventMapper < Activities::EventMapper
   end
 
   def journals_includes
-    super + %i[agenda_item_journals participant_journals]
+    super + [{ participant_journals: :user }, :agenda_item_journals]
   end
 
   def url_helpers

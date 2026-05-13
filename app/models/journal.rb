@@ -59,6 +59,7 @@ class Journal < ApplicationRecord
   register_journal_formatter OpenProject::JournalFormatter::MeetingStartTime
   register_journal_formatter OpenProject::JournalFormatter::MeetingState
   register_journal_formatter OpenProject::JournalFormatter::MeetingWorkPackageId
+  register_journal_formatter OpenProject::JournalFormatter::ParticipantChange
   register_journal_formatter OpenProject::JournalFormatter::ProjectPhaseActive
   register_journal_formatter OpenProject::JournalFormatter::ProjectPhaseDates
   register_journal_formatter OpenProject::JournalFormatter::ProjectPhaseDefinition
