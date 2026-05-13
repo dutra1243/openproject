@@ -57,7 +57,7 @@ module Projects
         return
       end
 
-      # Statuses define as "closed" are mandatory and must always be included
+      # Statuses defined as "closed" are mandatory and must always be included
       mandatory_ids = Status.where(is_closed: true).ids
       model.done_status_ids = (submitted_ids + mandatory_ids).uniq
     end
