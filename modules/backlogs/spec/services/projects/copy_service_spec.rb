@@ -69,9 +69,27 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
       expect(result.result.excluded_work_package_types).to contain_exactly(type_task)
     end
 
-    it "does not share the association records with the source project" do
-      expect(result.result.done_statuses).not_to be(source.done_statuses)
-      expect(result.result.excluded_work_package_types).not_to be(source.excluded_work_package_types)
+    it "does not couple copied associations to the source project" do
+      copied = result.result
+
+      source_done_status_ids_before = source.done_status_ids.uniq
+      source_excluded_type_ids_before = source.excluded_work_package_type_ids.uniq
+
+      expect(copied.done_status_ids.uniq).to match_array(source_done_status_ids_before)
+      expect(copied.excluded_work_package_type_ids.uniq).to match_array(source_excluded_type_ids_before)
+
+      copied.done_statuses = [closed_status]
+      copied.excluded_work_package_types = [type_story]
+      copied.save!
+
+      source.reload
+      copied.reload
+
+      expect(source.done_status_ids.uniq).to match_array(source_done_status_ids_before)
+      expect(source.excluded_work_package_type_ids.uniq).to match_array(source_excluded_type_ids_before)
+
+      expect(copied.done_status_ids.uniq).to contain_exactly(closed_status.id)
+      expect(copied.excluded_work_package_type_ids.uniq).to contain_exactly(type_story.id)
     end
   end
 
