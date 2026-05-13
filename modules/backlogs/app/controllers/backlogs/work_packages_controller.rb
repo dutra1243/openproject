@@ -58,6 +58,14 @@ module Backlogs
              layout: false)
     end
 
+    def move_to_sprint_dialog
+      respond_with_dialog Backlogs::MoveToSprintDialogComponent.new(
+        work_package: @story,
+        project: @project,
+        move_action: move_project_backlogs_work_package_path(@project, @story, helpers.all_backlogs_params)
+      )
+    end
+
     def move
       # Capture the source before the call; the service reloads @story internally via #move_after.
       source = @story.sprint || :inbox
@@ -75,14 +83,6 @@ module Backlogs
       end
 
       respond_with_turbo_streams(status: call.success? ? :ok : :unprocessable_entity)
-    end
-
-    def move_to_sprint_dialog
-      respond_with_dialog Backlogs::MoveToSprintDialogComponent.new(
-        work_package: @story,
-        project: @project,
-        move_action: move_project_backlogs_work_package_path(@project, @story, helpers.all_backlogs_params)
-      )
     end
 
     def reorder
