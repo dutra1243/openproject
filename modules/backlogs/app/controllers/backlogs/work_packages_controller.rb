@@ -68,13 +68,13 @@ module Backlogs
 
     def move
       # Capture the source before the call; the service reloads @story internally via #move_after.
-      source = @story.sprint || :inbox
+      source = @story.sprint
 
       call = Stories::UpdateService.new(user: current_user, story: @story)
                                    .call(attributes: move_attributes_from_target, **position_attributes)
 
       if call.success?
-        target = call.result.sprint || :inbox
+        target = call.result.sprint
         move_story_to_target_component_via_turbo_stream(source:, target:)
       else
         render_error_flash_message_via_turbo_stream(
@@ -91,7 +91,7 @@ module Backlogs
         .call(attributes: { move_to: reorder_param })
 
       if call.success?
-        replace_component_via_turbo_stream(call.result.sprint || :inbox)
+        replace_component_via_turbo_stream(call.result.sprint)
       else
         render_error_flash_message_via_turbo_stream(
           message: I18n.t(:notice_unsuccessful_update_with_reason, reason: call.message)
@@ -112,10 +112,10 @@ module Backlogs
     end
 
     def replace_component_via_turbo_stream(container)
-      component = if container == :inbox
-                    inbox_component
-                  else
+      component = if container
                     sprint_component(sprint: container)
+                  else
+                    inbox_component
                   end
 
       replace_via_turbo_stream(component:, method: :morph)
