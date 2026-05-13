@@ -116,19 +116,23 @@ module OpenProject
       end
 
       def enabled_for_class_name(class_name)
-        enabled
-          .select { |format| format.for_class_name?(class_name) }
-          .sort_by(&:order)
+        filter_for_class_name(enabled, class_name)
       end
 
       def available_for_class_name(class_name)
-        available
-          .select { |format| format.for_class_name?(class_name) }
-          .sort_by(&:order)
+        filter_for_class_name(available, class_name)
       end
 
       def disabled_formats
         registered.select(&:disabled?).map(&:name)
+      end
+
+      private
+
+      def filter_for_class_name(list, class_name)
+        list
+          .select { |format| format.for_class_name?(class_name) }
+          .sort_by(&:order)
       end
     end
   end

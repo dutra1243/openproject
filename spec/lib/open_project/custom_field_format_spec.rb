@@ -94,6 +94,52 @@ RSpec.describe OpenProject::CustomFieldFormat do
     end
   end
 
+  describe ".enabled_for_class_name" do
+    shared_examples_for "custom field formats" do |class_name, expected_formats|
+      it "returns all custom field formats for the '#{class_name}' class", :aggregate_failures do
+        formats = described_class.enabled_for_class_name(class_name)
+        expect(formats).to all(be_a described_class)
+        expect(formats.map(&:name)).to match_array(expected_formats)
+      end
+    end
+
+    context "for a 'Project' class" do
+      it_behaves_like "custom field formats",
+                      "Project",
+                      %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
+    end
+
+    context "for a 'WorkPackage' class" do
+      it_behaves_like "custom field formats",
+                      "WorkPackage",
+                      %w[bool date float hierarchy int link list weighted_item_list string text user version]
+    end
+
+    context "for a 'Version' class" do
+      it_behaves_like "custom field formats",
+                      "Version",
+                      %w[bool date float int list string text user version]
+    end
+
+    context "for a 'TimeEntry' class" do
+      it_behaves_like "custom field formats",
+                      "TimeEntry",
+                      %w[bool date float int list string text user version]
+    end
+
+    context "for a 'User' class" do
+      it_behaves_like "custom field formats",
+                      "User",
+                      %w[bool date float int list string text]
+    end
+
+    context "for a 'Group' class" do
+      it_behaves_like "custom field formats",
+                      "Group",
+                      %w[bool date float int list string text]
+    end
+  end
+
   describe ".available_formats" do
     shared_examples_for "available custom field formats" do |suffix, expected_formats|
       it "returns all custom field formats #{suffix}", :aggregate_failures do
@@ -124,22 +170,6 @@ RSpec.describe OpenProject::CustomFieldFormat do
                         "including calculated values",
                         %w[bool calculated_value date float int link list string text user version empty]
       end
-    end
-  end
-
-  describe ".enabled_for_class_name" do
-    shared_examples_for "custom field formats" do |class_name, expected_formats|
-      it "returns all custom field formats for the '#{class_name}' class", :aggregate_failures do
-        formats = described_class.enabled_for_class_name(class_name)
-        expect(formats).to all(be_a described_class)
-        expect(formats.map(&:name)).to match_array(expected_formats)
-      end
-    end
-
-    context "for a 'Project' class" do
-      it_behaves_like "custom field formats",
-                      "Project",
-                      %w[bool calculated_value date float hierarchy int link list string text user version weighted_item_list]
     end
   end
 
