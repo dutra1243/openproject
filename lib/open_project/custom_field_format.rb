@@ -86,7 +86,9 @@ module OpenProject
     end
 
     class << self
-      def registered = registered_by_name.values
+      def registered
+        @registered ||= registered_by_name.values.sort_by(&:order)
+      end
 
       def map(&)
         yield self
@@ -97,6 +99,7 @@ module OpenProject
         return if registered_by_name.has_key?(custom_field_format.name)
 
         registered_by_name[custom_field_format.name] = custom_field_format
+        @registered = nil
       end
 
       def available
@@ -130,9 +133,7 @@ module OpenProject
       private
 
       def filter_for_class_name(list, class_name)
-        list
-          .select { |format| format.for_class_name?(class_name) }
-          .sort_by(&:order)
+        list.select { |format| format.for_class_name?(class_name) }
       end
     end
   end
