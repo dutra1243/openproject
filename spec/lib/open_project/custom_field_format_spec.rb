@@ -140,6 +140,13 @@ RSpec.describe OpenProject::CustomFieldFormat do
     end
   end
 
+  describe ".registered_formats" do
+    it "returns all formats" do
+      expect(described_class.registered_formats)
+        .to eq(%w[string text link int float list date bool user version empty hierarchy weighted_item_list calculated_value])
+    end
+  end
+
   describe ".available_formats" do
     shared_examples_for "available custom field formats" do |suffix, expected_formats|
       it "returns all custom field formats #{suffix}", :aggregate_failures do
@@ -176,6 +183,13 @@ RSpec.describe OpenProject::CustomFieldFormat do
                       "including hierarchy",
                       %w[string text link int float list date bool user version empty hierarchy weighted_item_list
                          calculated_value]
+    end
+  end
+
+  describe ".enabled_formats" do
+    it "returns all formats" do
+      expect(described_class.enabled_formats)
+        .to eq(%w[string text link int float list date bool user version empty hierarchy weighted_item_list calculated_value])
     end
   end
 
