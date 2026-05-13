@@ -37,8 +37,10 @@ module WorkPackages::Scopes::WithoutStatusConsideredClosed
       # the work package belongs to. The correlated subquery ensures each work package
       # is always checked against its own project's status configuration.
       status_subquery = <<~SQL.squish
-        status_id NOT IN (SELECT status_id FROM done_statuses_for_project
-                            WHERE project_id = work_packages.project_id)
+        status_id NOT IN (SELECT status_id
+                          FROM done_statuses_for_project
+                          WHERE project_id = work_packages.project_id
+                            AND status_id IS NOT NULL)
       SQL
 
       where(status_subquery)
