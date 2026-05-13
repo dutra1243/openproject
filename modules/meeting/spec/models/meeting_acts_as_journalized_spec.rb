@@ -321,9 +321,11 @@ RSpec.describe Meeting do
       end
 
       it "keeps the participant journal in the previous journal" do
-        previous_participant_journals = participant_journals.to_a
         remove_participant
-        expect(previous_participant_journals.count).to eq(1)
+
+        previous_journal = meeting.journals.order(:id).second_to_last
+        expect(previous_journal.participant_journals.count).to eq(1)
+        expect(previous_journal.participant_journals.first.user_id).to eq(participant_user.id)
       end
     end
 
