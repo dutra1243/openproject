@@ -82,7 +82,7 @@ module OpenProject
     end
 
     def for_class_name?(class_name)
-      @class_names.nil? || @class_names.include?(class_name)
+      (@class_names.nil? || @class_names.include?(class_name)) && !label.nil?
     end
 
     class << self
@@ -117,13 +117,13 @@ module OpenProject
 
       def enabled_for_class_name(class_name)
         enabled
-          .select { |format| format.for_class_name?(class_name) && !format.label.nil? }
+          .select { |format| format.for_class_name?(class_name) }
           .sort_by(&:order)
       end
 
       def available_for_class_name(class_name)
         available
-          .select { |format| format.for_class_name?(class_name) && !format.label.nil? }
+          .select { |format| format.for_class_name?(class_name) }
           .sort_by(&:order)
       end
 
