@@ -90,15 +90,10 @@ module OpenProject
         @registered ||= registered_by_name.values.sort_by(&:order)
       end
 
-      def map(&)
-        yield self
-      end
+      def register(name, **)
+        return if registered_by_name.has_key?(name)
 
-      # Registers a custom field format
-      def register(custom_field_format, _options = {})
-        return if registered_by_name.has_key?(custom_field_format.name)
-
-        registered_by_name[custom_field_format.name] = custom_field_format
+        registered_by_name[name] = new(name, **)
         @registered = nil
       end
 
