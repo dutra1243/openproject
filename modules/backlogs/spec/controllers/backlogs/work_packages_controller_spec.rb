@@ -36,11 +36,44 @@ RSpec.describe Backlogs::WorkPackagesController do
 
   current_user { user }
 
-  let(:user) { create(:admin) }
-  let(:project) { create(:project) }
-  let(:status) { create(:status, name: "status 1", is_default: true) }
+  shared_let(:user) { create(:admin) }
+  shared_let(:project) { create(:project) }
+  shared_let(:status) { create(:status, name: "status 1", is_default: true) }
+
   let(:sprint) { create(:sprint, name: "Agile Sprint 1", project:) }
   let(:story) { create(:work_package, status:, sprint:, project:) }
+
+  shared_examples "respecting the all param for inbox pagination" do
+    context "with an inbox over the pagination threshold" do
+      shared_let(:wps) { create_list(:work_package, 5, project:, status:) }
+
+      before do
+        stub_const("Backlogs::InboxComponent::TRUNCATE_MIDDLE", 2)
+      end
+
+      context "when all param is not present" do
+        let(:all) { nil }
+
+        it "replaces the inbox with a show-more row in the stream" do
+          subject
+
+          expect(response).to be_successful
+          expect(response.body).to include("inbox_project_#{project.id}_show_more")
+        end
+      end
+
+      context "when all=1" do
+        let(:all) { "1" }
+
+        it "replaces the inbox without a show-more row in the stream" do
+          subject
+
+          expect(response).to be_successful
+          expect(response.body).not_to include("inbox_project_#{project.id}_show_more")
+        end
+      end
+    end
+  end
 
   describe "load_story" do
     let(:params) { { project_id: project.id, id: story.id } }
@@ -153,31 +186,7 @@ RSpec.describe Backlogs::WorkPackagesController do
         expect(response.body).not_to include("inbox_project_#{project.id}_show_more")
       end
 
-      context "with an inbox over the pagination threshold" do
-        before { stub_const("Backlogs::InboxComponent::TRUNCATE_MIDDLE", 2) }
-
-        context "when all param is not present" do
-          let(:all) { nil }
-
-          it "replaces the inbox with including a show-more row in the stream" do
-            subject
-
-            expect(response).to be_successful
-            expect(response.body).to include("inbox_project_#{project.id}_show_more")
-          end
-        end
-
-        context "when all=1" do
-          let(:all) { "1" }
-
-          it "replaces the inbox without a show-more row in the stream" do
-            subject
-
-            expect(response).to be_successful
-            expect(response.body).not_to include("inbox_project_#{project.id}_show_more")
-          end
-        end
-      end
+      include_examples "respecting the all param for inbox pagination"
     end
 
     context "with backlog bucket source" do
@@ -197,6 +206,8 @@ RSpec.describe Backlogs::WorkPackagesController do
         expect(reordered_story.reload)
           .to have_attributes(position: 1, backlog_bucket_id: bucket.id, sprint_id: nil)
       end
+
+      include_examples "respecting the all param for inbox pagination"
     end
   end
 
@@ -212,69 +223,102 @@ RSpec.describe Backlogs::WorkPackagesController do
       put :move, params: { project_id:, id:, target_id:, prev_id:, all: }, format: :turbo_stream
     end
 
-    context "with the same Sprint as target" do
-      let(:target_id) { "sprint:#{sprint.id}" }
+    context "with a Sprint as source" do
+      context "with the same Sprint as target" do
+        let(:target_id) { "sprint:#{sprint.id}" }
 
-      it "replaces the sprint component once and emits no flash", :aggregate_failures do
-        subject
-
-        expect(response).to be_successful
-        expect(response).to have_turbo_stream action: "replace",
-                                              target: "backlogs-sprint-component-#{sprint.id}",
-                                              method: "morph"
-      end
-    end
-
-    context "with another Sprint as target" do
-      let(:other_sprint) { create(:sprint, name: "Agile Sprint 2", project:) }
-      let(:target_id) { "sprint:#{other_sprint.id}" }
-
-      it "responds with success and moves story to another Sprint", :aggregate_failures do
-        subject
-
-        expect(response).to be_successful
-        expect(response).to have_http_status :ok
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
-        expect(response)
-          .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{other_sprint.id}", method: "morph"
-        expect(assigns(:project)).to eq(project)
-        expect(assigns(:story)).to eq(story_in_sprint)
-      end
-    end
-
-    context "with Inbox as target" do
-      let!(:existing_inbox_item) { create(:work_package, project:, status:, position: 1) }
-      let(:target_id) { "inbox" }
-      let(:prev_id) { existing_inbox_item.id }
-
-      it "responds with success and moves story to Inbox at the given position", :aggregate_failures do
-        subject
-
-        expect(response).to be_successful
-        expect(response).to have_http_status :ok
-        expect(response).to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
-        expect(response)
-          .to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}", method: "morph"
-        expect(assigns(:project)).to eq(project)
-        expect(assigns(:story)).to eq(story_in_sprint)
-        expect(story_in_sprint.reload.sprint).to be_nil
-        expect(story_in_sprint.reload.position).to eq(2)
-      end
-
-      context "when all=1 with an inbox over the pagination threshold" do
-        let(:all) { "1" }
-
-        before do
-          stub_const("Backlogs::InboxComponent::TRUNCATE_MIDDLE", 2)
-          create_list(:work_package, 4, project:, status:)
-        end
-
-        it "replaces the inbox without a show-more row in the stream" do
+        it "replaces the sprint component once and emits no flash", :aggregate_failures do
           subject
 
           expect(response).to be_successful
-          expect(response.body).not_to include("inbox_project_#{project.id}_show_more")
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-sprint-component-#{sprint.id}",
+                                                method: "morph"
         end
+
+        it "does not change the story's sprint and position" do
+          expect do
+            subject
+            sprint.reload
+          end.not_to change(sprint, :attributes)
+        end
+      end
+
+      context "with another Sprint as target" do
+        let(:other_sprint) { create(:sprint, name: "Agile Sprint 2", project:) }
+        let(:target_id) { "sprint:#{other_sprint.id}" }
+
+        it "responds with success and moves story to another Sprint", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_http_status :ok
+          expect(response)
+            .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
+          expect(response)
+            .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{other_sprint.id}", method: "morph"
+          expect(assigns(:project)).to eq(project)
+          expect(assigns(:story)).to eq(story_in_sprint)
+        end
+
+        it "moves the story to the target sprint" do
+          subject
+
+          expect(story_in_sprint.reload).to have_attributes(sprint: other_sprint, position: 1)
+        end
+      end
+
+      context "with Inbox as target" do
+        let!(:existing_inbox_item) { create(:work_package, project:, status:, position: 1) }
+        let(:target_id) { "inbox" }
+        let(:prev_id) { existing_inbox_item.id }
+
+        it "replaces the sprint and backlog components without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_http_status :ok
+          expect(response)
+            .to have_turbo_stream action: "replace", target: "backlogs-sprint-component-#{sprint.id}", method: "morph"
+          expect(response)
+            .to have_turbo_stream action: "replace", target: "backlogs-backlog-component-#{project.id}", method: "morph"
+          expect(assigns(:project)).to eq(project)
+          expect(assigns(:story)).to eq(story_in_sprint)
+        end
+
+        it "moves the story to the inbox at the given position" do
+          subject
+
+          expect(story_in_sprint.reload).to have_attributes(sprint: nil, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+
+      context "with a Backlog Bucket as target" do
+        let(:bucket) { create(:backlog_bucket, project:) }
+        let!(:bucket_items) { create_list(:work_package, 2, project:, status:, backlog_bucket: bucket) }
+        let(:target_id) { "backlog_bucket:#{bucket.id}" }
+        let(:prev_id) { bucket_items.first.id }
+
+        it "replaces the sprint and backlog components without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-sprint-component-#{sprint.id}",
+                                                method: "morph"
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+        end
+
+        it "moves the story into the bucket at the given position" do
+          subject
+
+          expect(story_in_sprint.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
       end
     end
 
@@ -282,7 +326,7 @@ RSpec.describe Backlogs::WorkPackagesController do
       let(:inbox_story) { create(:work_package, status:, project:) }
       let(:id) { inbox_story.id }
 
-      context "when moving to a Sprint" do
+      context "with a Sprint as target" do
         let(:target_sprint) { create(:sprint, name: "Target Sprint", project:) }
         let(:target_id) { "sprint:#{target_sprint.id}" }
 
@@ -294,11 +338,18 @@ RSpec.describe Backlogs::WorkPackagesController do
                                                 target: "backlogs-backlog-component-#{project.id}"
           expect(response).to have_turbo_stream action: "replace",
                                                 target: "backlogs-sprint-component-#{target_sprint.id}"
-          expect(inbox_story.reload.sprint).to eq(target_sprint)
         end
+
+        it "moves the story to the sprint" do
+          subject
+
+          expect(inbox_story.reload).to have_attributes(sprint: target_sprint, position: 1)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
       end
 
-      context "when reordering within the Inbox" do
+      context "with the same Inbox as target" do
         let!(:inbox_items) { create_list(:work_package, 5, project:, status:) }
         let(:target_id) { "inbox" }
         let(:prev_id) { inbox_items.first.id }
@@ -312,8 +363,129 @@ RSpec.describe Backlogs::WorkPackagesController do
         end
 
         it "moves the work package to position 2" do
-          expect { subject }.to change { inbox_story.reload.position }.to(2)
+          subject
+          expect(inbox_story.reload).to have_attributes(position: 2, sprint: nil, backlog_bucket: nil)
         end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+
+      context "with a Backlog Bucket as target" do
+        let(:bucket) { create(:backlog_bucket, project:) }
+        let!(:bucket_items) { create_list(:work_package, 2, project:, status:, backlog_bucket: bucket) }
+        let(:target_id) { "backlog_bucket:#{bucket.id}" }
+        let(:prev_id) { bucket_items.first.id }
+
+        it "replaces only the backlog component without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+        end
+
+        it "moves the work package into the bucket to position 2" do
+          subject
+          expect(inbox_story.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+    end
+
+    context "with a Backlog bucket as source" do
+      let(:bucket) { create(:backlog_bucket, project:) }
+      let!(:bucket_items) { create_list(:work_package, 2, project:, status:, backlog_bucket: bucket) }
+      let(:bucket_story) { bucket_items.last }
+      let(:id) { bucket_story.id }
+
+      context "with a Sprint as target" do
+        let(:target_sprint) { create(:sprint, name: "Target Sprint", project:) }
+        let(:target_id) { "sprint:#{target_sprint.id}" }
+
+        it "replaces the backlog and sprint components without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-sprint-component-#{target_sprint.id}"
+        end
+
+        it "moves the story into the sprint" do
+          subject
+
+          expect(bucket_story.reload).to have_attributes(sprint: target_sprint, backlog_bucket: nil)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+
+      context "with the Inbox as target" do
+        let!(:existing_inbox_item) { create(:work_package, project:, status:, position: 1) }
+        let(:target_id) { "inbox" }
+        let(:prev_id) { existing_inbox_item.id }
+
+        it "replaces only the backlog component without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+        end
+
+        it "moves the story to the inbox at the given position" do
+          subject
+
+          expect(bucket_story.reload).to have_attributes(backlog_bucket: nil, sprint: nil, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+
+      context "with the same Backlog Bucket as target" do
+        let(:target_id) { "backlog_bucket:#{bucket.id}" }
+        let(:prev_id) { bucket_items.first.id }
+
+        it "replaces only the backlog component without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+        end
+
+        it "reorders the story within the bucket" do
+          subject
+
+          expect(bucket_story.reload).to have_attributes(backlog_bucket: bucket, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
+      end
+
+      context "with another Backlog Bucket as target" do
+        let(:other_bucket) { create(:backlog_bucket, project:) }
+        let!(:other_bucket_items) { create_list(:work_package, 2, project:, status:, backlog_bucket: other_bucket) }
+        let(:target_id) { "backlog_bucket:#{other_bucket.id}" }
+        let(:prev_id) { other_bucket_items.first.id }
+
+        it "replaces only the backlog component without a flash", :aggregate_failures do
+          subject
+
+          expect(response).to be_successful
+          expect(response).to have_turbo_stream action: "replace",
+                                                target: "backlogs-backlog-component-#{project.id}"
+        end
+
+        it "moves the story into the other bucket at the given position" do
+          subject
+
+          expect(bucket_story.reload).to have_attributes(backlog_bucket: other_bucket, position: 2)
+        end
+
+        include_examples "respecting the all param for inbox pagination"
       end
     end
 
@@ -428,7 +600,7 @@ RSpec.describe Backlogs::WorkPackagesController do
       it "includes the existing sprints in the target_id" do
         subject
 
-        existing_sprints.each do |sprint|
+        displayed_sprints.each do |sprint|
           expect(response.body).to include("sprint:#{sprint.id}")
         end
       end
@@ -460,12 +632,39 @@ RSpec.describe Backlogs::WorkPackagesController do
       it "includes the existing sprints in the target_id" do
         subject
 
-        existing_sprints.each do |sprint|
+        displayed_sprints.each do |sprint|
           expect(response.body).to include("sprint:#{sprint.id}")
         end
       end
 
       it "does not include the other sprint" do
+        subject
+
+        expect(response.body).not_to include("sprint:#{other_sprint.id}")
+      end
+    end
+
+    context "with a Backlog bucket source" do
+      let(:bucket) { create(:backlog_bucket, project:) }
+      let(:bucket_story) { create(:work_package, status:, project:, backlog_bucket: bucket) }
+      let(:params) { { project_id: project.id, id: bucket_story.id } }
+
+      it "responds with a dialog turbo stream", :aggregate_failures do
+        subject
+
+        expect(response).to be_successful
+        expect(response).to have_turbo_stream action: "dialog"
+      end
+
+      it "includes the available sprints in the dialog" do
+        subject
+
+        displayed_sprints.each do |sprint|
+          expect(response.body).to include("sprint:#{sprint.id}")
+        end
+      end
+
+      it "does not include sprints from other projects" do
         subject
 
         expect(response.body).not_to include("sprint:#{other_sprint.id}")
