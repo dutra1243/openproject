@@ -45,6 +45,12 @@ module Backlogs
     before_action :authorize_start!, only: :start
     before_action :authorize_finish!, only: :finish
 
+    current_menu_item %i[index] do
+      :all_sprints
+    end
+
+    def index; end
+
     def new_dialog
       call = ::Sprints::SetAttributesService.new(
         user: current_user,

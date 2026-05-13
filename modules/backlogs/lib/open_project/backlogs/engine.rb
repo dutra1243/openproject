@@ -57,6 +57,7 @@ module OpenProject::Backlogs
                      "backlogs/work_packages": %i[index show menu],
                      "backlogs/inbox": :menu,
                      "backlogs/burndown_chart": :show,
+                     "backlogs/sprints": :index,
                      "backlogs/taskboard": :show },
                    permissible_on: :project,
                    dependencies: %i[view_work_packages show_board_views]
@@ -116,6 +117,13 @@ module OpenProject::Backlogs
            { controller: "/backlogs/backlog", action: :show },
            if: Proc.new { |project| project.module_enabled?(:backlogs) },
            caption: :label_backlog_and_sprints,
+           parent: :backlogs
+
+      menu :project_menu,
+           :all_sprints,
+           { controller: "/backlogs/sprints", action: :index },
+           if: Proc.new { |project| project.module_enabled?(:backlogs) },
+           caption: :label_all_sprints,
            parent: :backlogs
 
       # Menu items that are always present

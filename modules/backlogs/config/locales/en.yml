@@ -206,6 +206,7 @@ en:
     story_points: "Story points"
     story_points_ideal: "Story points (ideal)"
 
+  label_all_sprints: "All sprints"
   label_backlog: "Backlog"
   label_backlog_bucket_edit: "Edit backlog bucket"
   label_backlog_bucket_new: "New backlog bucket"
