@@ -23,26 +23,36 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+require_relative "../spec_helper"
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+RSpec.describe Project, "#cost_types_available?" do
+  let(:project) { create(:project) }
 
-    redirect_to project_settings_time_entry_activities_path(@project)
+  before { CostType.destroy_all }
+
+  it "is true when at least one cost type is for all projects" do
+    create(:cost_type, is_for_all: true)
+    expect(project.cost_types_available?).to be true
   end
 
-  private
+  it "is true when a cost type is explicitly enabled in the project" do
+    cost_type = create(:cost_type, is_for_all: false)
+    CostTypesProject.create!(project:, cost_type:)
+    expect(project.cost_types_available?).to be true
+  end
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
-    end
+  it "is false when there are no cost types enabled in the project" do
+    create(:cost_type, is_for_all: false)
+    expect(project.cost_types_available?).to be false
+  end
+
+  it "ignores soft-deleted cost types" do
+    create(:cost_type, :deleted, is_for_all: true)
+    expect(project.cost_types_available?).to be false
   end
 end

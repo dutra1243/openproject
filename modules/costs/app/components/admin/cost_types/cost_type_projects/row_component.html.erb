@@ -21,30 +21,21 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 See COPYRIGHT and LICENSE files for more details.
-
 ++#%>
 
-<%=
-  render(
-    Projects::Settings::TimeAndCosts::PageHeaderComponent.new(
-      project: @project,
-      selected: :time_entry_activities
-    )
-  )
-%>
-
-<% if TimeEntryActivity.any? %>
-  <%= labelled_tabular_form_for @project,
-                                url: project_settings_time_entry_activities_path(@project) do %>
-
-    <%= render partial: "/projects/settings/time_entry_activities/activities",
-               locals: { project: @project } %>
+<%= component_wrapper(tag: "tr", class: row_css_class, data: { turbo: true }) do %>
+  <% columns.each do |column| %>
+    <td class="<%= column_css_class(column) %>">
+      <%= column_value(column) %>
+    </td>
   <% end %>
 
-  <br>
-<% else %>
-  <%= no_results_box custom_title: t("projects.settings.activities.no_results_title_text") %>
+  <td class="buttons">
+    <% button_links.each do |link| %>
+      <%= link %>
+    <% end %>
+  </td>
 <% end %>

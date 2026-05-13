@@ -36,17 +36,12 @@ See COPYRIGHT and LICENSE files for more details.
 <% end %>
 
 <%=
-  render(Primer::OpenProject::PageHeader.new) do |header|
-    header.with_title { title }
-    header.with_breadcrumbs(
-      [
-        { href: admin_index_path, text: t("label_administration") },
-        { href: admin_time_settings_path, text: t(:project_module_costs) },
-        { href: admin_cost_types_path, text: t(:label_cost_type_plural) },
-        title
-      ]
+  render(
+    Admin::CostTypes::EditFormHeaderComponent.new(
+      cost_type: @cost_type,
+      selected: :edit
     )
-  end
+  )
 %>
 
 <%= labelled_tabular_form_for @cost_type,
@@ -66,6 +61,9 @@ See COPYRIGHT and LICENSE files for more details.
   </div>
   <div class="form--field">
     <%= f.check_box :default %>
+  </div>
+  <div class="form--field">
+    <%= f.check_box :is_for_all %>
   </div>
 
   <h3><%= t :caption_rate_history %></h3>

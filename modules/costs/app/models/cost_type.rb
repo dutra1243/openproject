@@ -30,6 +30,8 @@ class CostType < ApplicationRecord
   has_many :material_budget_items
   has_many :cost_entries, dependent: :destroy
   has_many :rates, class_name: "CostRate", dependent: :destroy
+  has_many :cost_types_projects, dependent: :destroy
+  has_many :projects, through: :cost_types_projects
 
   validates :unit, :unit_plural, presence: true
   validates :name, presence: true, uniqueness: { case_sensitive: false }
@@ -39,10 +41,23 @@ class CostType < ApplicationRecord
   include ActiveModel::ForbiddenAttributesProtection
 
   scope :active, -> { where(deleted_at: nil) }
+  scope :for_all, -> { where(is_for_all: true) }
+  scope :available_for_project, ->(project) {
+    project_id = project.is_a?(Project) ? project.id : project
+    where(is_for_all: true)
+      .or(where(id: CostTypesProject.where(project_id:).select(:cost_type_id)))
+  }
 
   # finds the default CostType
   def self.default
     CostType.find_by(default: true) || CostType.first
+  end
+
+  # Returns the default cost type for the given project, falling back to the first
+  # cost type available in that project when the global default is not available there.
+  def self.default_for_project(project)
+    available = available_for_project(project).active
+    available.find_by(default: true) || available.first
   end
 
   def is_default?

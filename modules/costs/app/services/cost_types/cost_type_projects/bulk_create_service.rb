@@ -23,26 +23,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module CostTypes
+  module CostTypeProjects
+    class BulkCreateService < ::BulkServices::ProjectMappings::BaseCreateService
+      def initialize(user:, projects:, model:, include_sub_projects: false)
+        mapping_context = ::BulkServices::ProjectMappings::MappingContext.new(
+          mapping_model_class: CostTypesProject,
+          model:,
+          projects:,
+          model_foreign_key_id:,
+          include_sub_projects:
+        )
+        super(user:, mapping_context:)
+      end
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
-
-    redirect_to project_settings_time_entry_activities_path(@project)
-  end
-
-  private
-
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
+      def permission = :manage_project_activities
+      def model_foreign_key_id = :cost_type_id
     end
   end
 end

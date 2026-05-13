@@ -23,26 +23,45 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    module CostTypeProjects
+      class RowComponent < ::Projects::RowComponent
+        include OpTurbo::Streamable
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+        def wrapper_uniq_by
+          "project-#{project.id}"
+        end
 
-    redirect_to project_settings_time_entry_activities_path(@project)
-  end
+        def more_menu_items
+          @more_menu_items ||= [more_menu_detach_project].compact
+        end
 
-  private
+        private
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
+        def more_menu_detach_project
+          {
+            scheme: :default,
+            icon: nil,
+            label: I18n.t("projects.settings.project_custom_fields.actions.remove_from_project"),
+            href: detach_from_project_url,
+            data: { turbo_method: :delete }
+          }
+        end
+
+        def detach_from_project_url
+          url_helpers.admin_cost_type_project_path(
+            cost_type_id: @table.params[:cost_type].id,
+            cost_types_project: { project_id: project.id },
+            page: current_page
+          )
+        end
+      end
     end
   end
 end

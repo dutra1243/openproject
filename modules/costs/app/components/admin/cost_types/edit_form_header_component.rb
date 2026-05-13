@@ -23,26 +23,53 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    class EditFormHeaderComponent < ApplicationComponent
+      def initialize(cost_type:, selected:, **)
+        @cost_type = cost_type
+        @selected = selected
+        super(cost_type, **)
+      end
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+      def tabs
+        tabs = [
+          {
+            name: "edit",
+            path: edit_admin_cost_type_path(@cost_type),
+            label: t(:label_details)
+          }
+        ]
 
-    redirect_to project_settings_time_entry_activities_path(@project)
-  end
+        if @cost_type.persisted?
+          tabs << {
+            name: "cost_type_projects",
+            path: admin_cost_type_projects_path(@cost_type),
+            label: t(:label_project_plural)
+          }
+        end
 
-  private
+        tabs
+      end
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
+      private
+
+      def page_title
+        @cost_type.persisted? ? @cost_type.name : "#{t(:label_new)} #{::CostType.model_name.human}"
+      end
+
+      def breadcrumbs_items
+        [
+          { href: admin_index_path, text: t(:label_administration) },
+          { href: admin_cost_types_path, text: t(:label_cost_type_plural) },
+          page_title
+        ]
+      end
     end
   end
 end

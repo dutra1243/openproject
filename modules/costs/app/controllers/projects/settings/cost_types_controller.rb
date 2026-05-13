@@ -23,26 +23,46 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
+class Projects::Settings::CostTypesController < Projects::SettingsController
   menu_item :settings_time_and_costs
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+  before_action :find_cost_type, only: :toggle
 
-    redirect_to project_settings_time_entry_activities_path(@project)
+  def index
+    @cost_types = CostType.active.order(:name)
+  end
+
+  def toggle
+    if @cost_type.is_for_all?
+      respond_redirect(error: I18n.t("activerecord.errors.messages.is_for_all_cannot_modify"))
+      return
+    end
+
+    mapping = CostTypesProject.find_or_initialize_by(project_id: @project.id, cost_type_id: @cost_type.id)
+
+    if mapping.persisted?
+      mapping.destroy!
+    else
+      mapping.save!
+    end
+
+    respond_redirect
   end
 
   private
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
-    end
+  def find_cost_type
+    @cost_type = CostType.active.find(params[:id])
+  end
+
+  def respond_redirect(error: nil)
+    flash[:error] = error if error
+    flash[:notice] = I18n.t(:notice_successful_update) unless error
+    redirect_to project_settings_cost_types_path(@project)
   end
 end

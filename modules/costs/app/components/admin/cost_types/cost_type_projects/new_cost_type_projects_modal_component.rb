@@ -23,26 +23,44 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+module Admin
+  module CostTypes
+    module CostTypeProjects
+      class NewCostTypeProjectsModalComponent < ApplicationComponent
+        include OpTurbo::Streamable
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+        def initialize(cost_type_project_mapping:, cost_type:, **)
+          @cost_type_project_mapping = cost_type_project_mapping
+          @cost_type = cost_type
+          super(@cost_type_project_mapping, **)
+        end
 
-    redirect_to project_settings_time_entry_activities_path(@project)
-  end
+        def render?
+          !cost_type.is_for_all?
+        end
 
-  private
+        private
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
+        attr_reader :cost_type_project_mapping, :cost_type
+
+        def dialog_id = NewCostTypeProjectsFormModalComponent::DIALOG_ID
+        def dialog_body_id = NewCostTypeProjectsFormModalComponent::DIALOG_BODY_ID
+
+        def title
+          I18n.t(:label_add_projects)
+        end
+
+        def form_modal_component
+          Admin::CostTypes::CostTypeProjects::NewCostTypeProjectsFormModalComponent.new(
+            cost_type_project_mapping:, cost_type:
+          )
+        end
+      end
     end
   end
 end

@@ -784,15 +784,21 @@ Redmine::MenuManager.map :project_menu do |menu|
     },
     versions: { caption: :label_version_plural },
     repository: { caption: :label_repository },
-    time_entry_activities: { caption: :enumeration_activities },
+    time_and_costs: {
+      caption: :"cost_types.settings.time_and_costs",
+      controller: "/projects/settings/time_entry_activities"
+    },
     storage: { caption: :label_required_disk_storage }
   }
 
   project_menu_items.each do |key, options|
     menu.push :"settings_#{key}",
-              { controller: "/projects/settings/#{key}", action: "show" }.merge(options.slice(:action)),
+              {
+                controller: options[:controller] || "/projects/settings/#{key}",
+                action: options[:action] || "show"
+              },
               parent: :settings,
-              **options.except(:action)
+              **options.except(:action, :controller)
   end
 end
 

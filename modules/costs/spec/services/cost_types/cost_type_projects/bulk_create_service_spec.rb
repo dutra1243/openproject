@@ -23,26 +23,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+require_relative "../../../spec_helper"
+require Rails.root.join("spec/services/bulk_services/project_mappings/behaves_like_bulk_project_mapping_create_service")
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+RSpec.describe CostTypes::CostTypeProjects::BulkCreateService do
+  shared_let(:cost_type) { create(:cost_type, is_for_all: false) }
 
-    redirect_to project_settings_time_entry_activities_path(@project)
-  end
-
-  private
-
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
-    end
+  it_behaves_like "BulkServices project mappings create service" do
+    let(:model) { cost_type }
+    let(:model_mapping_class) { CostTypesProject }
+    let(:model_foreign_key_id) { :cost_type_id }
+    let(:required_permission) { :manage_project_activities }
   end
 end

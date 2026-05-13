@@ -21,30 +21,36 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 See COPYRIGHT and LICENSE files for more details.
-
 ++#%>
 
 <%=
-  render(
-    Projects::Settings::TimeAndCosts::PageHeaderComponent.new(
-      project: @project,
-      selected: :time_entry_activities
-    )
-  )
+  component_wrapper do
+    primer_form_with(
+      model: @cost_type_project_mapping,
+      url:,
+      data: { turbo: true },
+      method: :post
+    ) do |form|
+      concat(
+        render(
+          Primer::Alpha::Dialog::Body.new(
+            id: dialog_body_id, test_selector: dialog_body_id, aria: { label: title },
+            classes: "Overlay-body_autocomplete_height"
+          )
+        ) do
+          render(::CostTypes::CostTypeProjects::CostTypeMappingForm.new(form, project_mapping: @cost_type_project_mapping))
+        end
+      )
+
+      concat(
+        render(Primer::Alpha::Dialog::Footer.new(show_divider: false)) do
+          concat(render(Primer::Beta::Button.new(data: { "close-dialog-id": dialog_id })) { cancel_button_text })
+          concat(render(Primer::Beta::Button.new(scheme: :primary, type: :submit)) { submit_button_text })
+        end
+      )
+    end
+  end
 %>
-
-<% if TimeEntryActivity.any? %>
-  <%= labelled_tabular_form_for @project,
-                                url: project_settings_time_entry_activities_path(@project) do %>
-
-    <%= render partial: "/projects/settings/time_entry_activities/activities",
-               locals: { project: @project } %>
-  <% end %>
-
-  <br>
-<% else %>
-  <%= no_results_box custom_title: t("projects.settings.activities.no_results_title_text") %>
-<% end %>

@@ -38,6 +38,7 @@ module Admin
 
     helper :sort
     include SortHelper
+
     helper :cost_types
     include CostTypesHelper
 
@@ -65,29 +66,15 @@ module Admin
       render action: "index", layout: !request.xhr?
     end
 
-    def edit
-      render action: :edit, layout: !request.xhr?
-    end
-
-    def update
-      @cost_type.attributes = permitted_params.cost_type
-
-      if @cost_type.save
-        flash[:notice] = t(:notice_successful_update)
-        redirect_back_or_default({ action: "index" })
-      else
-        render action: :edit, status: :unprocessable_entity, layout: !request.xhr?
-      end
-    rescue ActiveRecord::StaleObjectError
-      # Optimistic locking exception
-      flash.now[:error] = t(:notice_locking_conflict)
-    end
-
     def new
       @cost_type = CostType.new
 
       @cost_type.rates.build(valid_from: Time.zone.today) if @cost_type.rates.empty?
 
+      render action: :edit, layout: !request.xhr?
+    end
+
+    def edit
       render action: :edit, layout: !request.xhr?
     end
 
@@ -99,6 +86,20 @@ module Admin
         redirect_back_or_default({ action: "index" })
       else
         @cost_type.rates.build(valid_from: Time.zone.today) if @cost_type.rates.empty?
+        render action: :edit, status: :unprocessable_entity, layout: !request.xhr?
+      end
+    rescue ActiveRecord::StaleObjectError
+      # Optimistic locking exception
+      flash.now[:error] = t(:notice_locking_conflict)
+    end
+
+    def update # rubocop:disable Metrics/AbcSize
+      @cost_type.attributes = permitted_params.cost_type
+
+      if @cost_type.save
+        flash[:notice] = t(:notice_successful_update)
+        redirect_to edit_admin_cost_type_path(@cost_type)
+      else
         render action: :edit, status: :unprocessable_entity, layout: !request.xhr?
       end
     rescue ActiveRecord::StaleObjectError

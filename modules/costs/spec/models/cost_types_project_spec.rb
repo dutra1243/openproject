@@ -23,26 +23,36 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class Projects::Settings::TimeEntryActivitiesController < Projects::SettingsController
-  menu_item :settings_time_and_costs
+require_relative "../spec_helper"
 
-  def update
-    TimeEntryActivitiesProject.upsert_all(update_params, unique_by: %i[project_id activity_id])
-    flash[:notice] = t(:notice_successful_update)
+RSpec.describe CostTypesProject do
+  let(:project) { create(:project) }
+  let(:cost_type) { create(:cost_type, is_for_all: false) }
 
-    redirect_to project_settings_time_entry_activities_path(@project)
+  it "creates a mapping with both belongs_to associations" do
+    mapping = described_class.create!(project:, cost_type:)
+    expect(mapping.project).to eq(project)
+    expect(mapping.cost_type).to eq(cost_type)
   end
 
-  private
+  it "is destroyed when the cost type is destroyed" do
+    described_class.create!(project:, cost_type:)
+    expect { cost_type.destroy }.to change(described_class, :count).by(-1)
+  end
 
-  def update_params
-    permitted_params.time_entry_activities_project.map do |attributes|
-      { project_id: @project.id, active: false }.with_indifferent_access.merge(attributes.to_h)
-    end
+  it "is deleted when the project is destroyed" do
+    described_class.create!(project:, cost_type:)
+    expect { project.destroy }.to change(described_class, :count).by(-1)
+  end
+
+  it "enforces uniqueness of (project_id, cost_type_id) at the DB level" do
+    described_class.create!(project:, cost_type:)
+    expect { described_class.create!(project:, cost_type:) }
+      .to raise_error(ActiveRecord::RecordNotUnique)
   end
 end
