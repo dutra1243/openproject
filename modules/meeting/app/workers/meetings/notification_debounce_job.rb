@@ -63,7 +63,7 @@ module Meetings
       args = preserved_job_args(existing, meeting, since_journal_id, since_invited_ids, since_attributes)
 
       GoodJob::Job.where(finished_at: nil, concurrency_key:).delete_all
-      set(wait: 1.minute).perform_later(meeting.id, *args)
+      set(wait: Meeting.journal_aggregation_time_minutes.minute).perform_later(meeting.id, *args)
     end
 
     def perform(meeting_id, since_journal_id, since_invited_ids = nil, since_attributes = nil)
