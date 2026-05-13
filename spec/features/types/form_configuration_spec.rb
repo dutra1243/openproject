@@ -250,6 +250,16 @@ RSpec.describe "form configuration", :js, :selenium do
         loading_indicator_saveguard
       end
 
+      it "shows field type labels beside attributes" do
+        # Built-in attributes show "Builtin field"
+        builtin_label = I18n.t("types.edit.form_configuration.builtin_field")
+        assignee_row = page.find('li[data-attr-key="assignee"]')
+        expect(assignee_row).to have_text(builtin_label)
+
+        date_row = page.find('li[data-attr-key="date"]')
+        expect(date_row).to have_text(builtin_label)
+      end
+
       it "removes a newly added unsaved custom group when canceling edit" do
         initial_order = form.group_order
 
@@ -259,6 +269,7 @@ RSpec.describe "form configuration", :js, :selenium do
         expect(page.find_test_selector("type-form-configuration-group-name-input", wait: 10).value).to eq("")
 
         page.find_test_selector("type-form-configuration-group-cancel", wait: 10).click
+        expect(page).to have_no_test_selector("type-form-configuration-group-name-input")
 
         expect(form.group_order).to eq(initial_order)
       end
