@@ -36,13 +36,17 @@ See COPYRIGHT and LICENSE files for more details.
           <% end %>
         <% end %>
       <% else %>
-        <%= render(Primer::Beta::Truncate.new(tag: title_tag, classes: "Box-title")) { title } %>
-        <% if render_count? %>
-          <%= render(Primer::Beta::Counter.new(**counter_arguments)) %>
-        <% end %>
-        <% if description? %>
-          <%= render(Primer::Beta::Text.new(color: :subtle, trim: true)) do %>
-            <%= description %>
+        <%= render(Primer::BaseComponent.new(tag: :div, classes: "CollapsibleHeader CollapsibleHeader--multi-line")) do %>
+          <%= render(Primer::BaseComponent.new(tag: :div, classes: "CollapsibleHeader-title-line")) do %>
+            <%= render(Primer::Beta::Truncate.new(tag: title_tag, classes: "CollapsibleHeader-title Box-title")) { title } %>
+            <% if render_count? %>
+              <%= render(Primer::Beta::Counter.new(**counter_arguments, classes: class_names(counter_arguments[:classes], "CollapsibleHeader-count"))) %>
+            <% end %>
+          <% end %>
+          <% if description? %>
+            <%= render(Primer::Beta::Text.new(color: :subtle, trim: true, classes: "CollapsibleHeader-description")) do %>
+              <%= description %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
