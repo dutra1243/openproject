@@ -32,10 +32,27 @@ module OpTurbo
   module ComponentStream
     extend ActiveSupport::Concern
 
-    def respond_to_with_turbo_streams(status: turbo_status, &format_block)
+    # Builds a turbo stream response block, supports different ways of building response statuses.
+    # It can take a `result` object that will serve as a base for a status, or a `status` symbol
+    # directly.
+    #
+    # @param result [ServiceResult, Dry::Monads[:result]] the result of a service call or monad
+    # @param status [Symbol] the html response status, defaults to `:ok`
+    # @yield [format] Optional block to handle additional response formats
+    # @yieldparam format [ActionController::MimeResponds::Collector]
+    #
+    def respond_to_with_turbo_streams(result: nil, status: nil, &format_block)
+      resolved_status = if status
+                          status
+                        elsif result.respond_to?(:success?)
+                          result.success? ? :ok : :unprocessable_entity
+                        else
+                          turbo_status
+                        end
+
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_streams, status:
+          render turbo_stream: turbo_streams, status: resolved_status
         end
 
         yield(format) if format_block

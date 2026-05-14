@@ -81,7 +81,7 @@ module Backlogs
         )
       end
 
-      respond_with_turbo_streams(status: call.success? ? :ok : :unprocessable_entity)
+      respond_with_turbo_streams(result: call)
     end
 
     private
