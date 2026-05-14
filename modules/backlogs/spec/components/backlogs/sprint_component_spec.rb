@@ -166,6 +166,44 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
       end
     end
 
+    describe "sprint status badge in header description" do
+      context "when the sprint is in planning" do
+        let(:sprint) do
+          create(:sprint, project:, name: "Sprint 1",
+                          start_date: Date.tomorrow, finish_date: Date.tomorrow + 7,
+                          status: "in_planning")
+        end
+
+        it "renders the status badge" do
+          expect(rendered_component).to have_css(".Label", text: "In planning")
+        end
+      end
+
+      context "when the sprint is active" do
+        let(:sprint) do
+          create(:sprint, project:, name: "Sprint 1",
+                          start_date: Date.yesterday, finish_date: Date.tomorrow,
+                          status: "active")
+        end
+
+        it "renders the status badge" do
+          expect(rendered_component).to have_css(".Label", text: "Active")
+        end
+      end
+
+      context "when the sprint is completed" do
+        let(:sprint) do
+          create(:sprint, project:, name: "Sprint 1",
+                          start_date: 2.weeks.ago, finish_date: 1.week.ago,
+                          status: "completed")
+        end
+
+        it "renders the status badge" do
+          expect(rendered_component).to have_css(".Label", text: "Completed")
+        end
+      end
+    end
+
     describe "sprint actions in header" do
       context "when the sprint is in planning with date range set" do
         let(:sprint) do

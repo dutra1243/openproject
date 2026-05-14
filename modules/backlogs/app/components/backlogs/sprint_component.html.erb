@@ -44,6 +44,8 @@ See COPYRIGHT and LICENSE files for more details.
       ) do |list| %>
     <% list.with_header(title: sprint.name) do |header| %>
       <% header.with_description do %>
+        <%= render(Backlogs::SprintStatusBadgeComponent.new(sprint:, mr: 3)) %>
+
         <%= render(
               Primer::Beta::Text.new(
                 color: :subtle, mr: 3, classes: "velocity",
