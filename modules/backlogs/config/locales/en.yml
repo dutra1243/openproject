@@ -151,6 +151,7 @@ en:
         add_work_package: "Add work package"
 
     inbox_component:
+      title: "Inbox"
       blankslate_title: "Backlog inbox is empty"
       blankslate_description: "All open work packages in this project will automatically appear here."
       show_more:
