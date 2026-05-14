@@ -64,8 +64,11 @@ class Projects::Settings::CostTypesController < Projects::SettingsController
     respond_to do |format|
       format.json { render json: {}, status: }
       format.html do
-        flash[:notice] = I18n.t(:notice_successful_update) if status == :ok
-        flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify") if status != :ok
+        if status == :ok
+          flash[:notice] = I18n.t(:notice_successful_update)
+        else
+          flash[:error] = I18n.t("activerecord.errors.messages.is_for_all_cannot_modify")
+        end
         redirect_to project_settings_cost_types_path(@project)
       end
     end

@@ -143,7 +143,6 @@ en:
   label_current_default_rate: "Current default rate"
   label_date_on: "on"
   label_deleted_cost_types: "Deleted cost types"
-  label_locked_cost_types: "Locked cost types"
   label_display_cost_entries: "Display unit costs"
   label_display_time_entries: "Display reported hours"
   label_display_types: "Display types"
@@ -258,6 +257,8 @@ en:
     errors:
       no_cost_types_available: "No cost types are available in this project. Please contact an administrator."
     admin:
+      columns:
+        active_projects: "Active projects"
       cost_type_projects:
         is_for_all_blank_slate:
           heading: "This cost type is enabled in all projects"

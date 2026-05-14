@@ -31,6 +31,8 @@
 module Admin
   module CostTypes
     class RowComponent < ::RowComponent
+      delegate :unit, :unit_plural, to: :cost_type
+
       def cost_type
         model
       end
@@ -39,20 +41,27 @@ module Admin
         helpers.link_to(cost_type.name, helpers.edit_admin_cost_type_path(cost_type))
       end
 
-      def unit
-        cost_type.unit
-      end
-
-      def unit_plural
-        cost_type.unit_plural
-      end
-
       def current_rate
-        helpers.to_currency_with_empty(cost_type.rate_at(table.fixed_date))
+        helpers.to_currency_with_empty(cost_type.rate_at(Date.current))
       end
 
       def default
-        checkmark(cost_type.is_default?)
+        checkmark(cost_type.is_default?, primerized: true)
+      end
+
+      def active_projects
+        if cost_type.is_for_all?
+          I18n.t("settings.project_attributes.label_for_all_projects")
+        else
+          count = Project.active.joins(:cost_types_projects)
+                         .where(cost_types_projects: { cost_type_id: cost_type.id })
+                         .count
+          count.zero? ? I18n.t(:label_none) : count
+        end
+      end
+
+      def deleted_at
+        helpers.format_date(cost_type.deleted_at) if cost_type.deleted_at
       end
 
       def column_css_class(column)
@@ -64,7 +73,7 @@ module Admin
       end
 
       def button_links
-        [lock_link]
+        table.locked? ? [restore_link] : [lock_link]
       end
 
       def lock_link
@@ -81,6 +90,21 @@ module Admin
               turbo_method: :delete,
               turbo_confirm: t(:text_are_you_sure)
             }
+          )
+        )
+      end
+
+      def restore_link
+        render(
+          Primer::Beta::IconButton.new(
+            icon: :unlock,
+            scheme: :invisible,
+            tag: :a,
+            href: helpers.restore_admin_cost_type_path(cost_type),
+            "aria-label": t(:button_unlock),
+            tooltip_direction: :w,
+            test_selector: "op-admin-cost-type-#{cost_type.id}-restore",
+            data: { turbo_method: :patch }
           )
         )
       end

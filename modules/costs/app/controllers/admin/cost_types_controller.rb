@@ -49,20 +49,9 @@ module Admin
                        "unit_plural" => "#{CostType.table_name}.unit_plural" }
       sort_update sort_columns
 
-      @active_cost_types = CostType.active
-      @cost_types = CostType.order(sort_clause)
-
-      if params[:clear_filter]
-        @fixed_date = Time.zone.today
-        @include_deleted = nil
-      else
-        @fixed_date = begin
-          Date.parse(params[:fixed_date])
-        rescue StandardError
-          Time.zone.today
-        end
-        @include_deleted = params[:include_deleted]
-      end
+      @status = params[:status] == "locked" ? "locked" : "active"
+      @cost_types = (@status == "locked" ? CostType.where.not(deleted_at: nil) : CostType.active)
+                      .order(sort_clause)
 
       render action: "index", layout: !request.xhr?
     end
@@ -119,7 +108,7 @@ module Admin
       if @cost_type.save
         flash[:notice] = t(:notice_successful_lock)
 
-        redirect_back_or_default({ action: "index" })
+        redirect_back_or_default({ action: "index" }, status: :see_other)
       end
     end
 
@@ -130,7 +119,7 @@ module Admin
       if @cost_type.save
         flash[:notice] = t(:notice_successful_restore)
 
-        redirect_back_or_default({ action: "index" })
+        redirect_back_or_default({ action: "index" }, status: :see_other)
       end
     end
 

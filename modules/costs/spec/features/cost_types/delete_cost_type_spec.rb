@@ -47,20 +47,17 @@ RSpec.describe "deleting a cost type", :js do
       scroll_to_and_click(find("[data-test-selector='op-admin-cost-type-#{cost_type.id}-lock']"))
     end
 
-    # Expect no results if not locked
+    # Active list becomes empty
     expect_angular_frontend_initialized
     expect(page).to have_css ".generic-table--empty-row", wait: 10
 
-    # Show locked
-    find_by_id("include_deleted").set true
-    click_on "Apply"
+    # Switch to the locked tab via the segmented control
+    click_on I18n.t(:label_locked)
 
     wait_for_network_idle
 
-    # Expect locked list to render with the cost type
-    expect(page).to have_text I18n.t(:label_locked_cost_types)
-
-    expect(page).to have_css(".restore_cost_type")
-    expect(page).to have_css(".cost-types--list-deleted td", text: "Translations")
+    # The locked cost type appears with a restore action
+    expect(page).to have_css("[data-test-selector='op-admin-cost-type-#{cost_type.id}-restore']")
+    expect(page).to have_css("td", text: "Translations")
   end
 end

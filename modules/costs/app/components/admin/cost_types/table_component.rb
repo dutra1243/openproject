@@ -31,30 +31,48 @@
 module Admin
   module CostTypes
     class TableComponent < ::TableComponent
-      columns :name, :unit, :unit_plural, :current_rate, :default
-      sortable_columns :name, :unit, :unit_plural
-      options :fixed_date
+      options status: "active"
+
+      def columns
+        if status == "locked"
+          %i[name unit unit_plural current_rate deleted_at]
+        else
+          %i[name unit unit_plural current_rate active_projects default]
+        end
+      end
+
+      def sortable_columns
+        %i[name unit unit_plural]
+      end
 
       def initial_sort
         %i[name asc]
       end
 
       def headers
-        [
-          ["name", { caption: CostType.model_name.human }],
-          ["unit", { caption: CostType.human_attribute_name(:unit) }],
-          ["unit_plural", { caption: CostType.human_attribute_name(:unit_plural) }],
-          ["current_rate", { caption: CostType.human_attribute_name(:current_rate) }],
-          ["default", { caption: I18n.t(:caption_default) }]
-        ]
+        columns.map { |column| [column.to_s, { caption: header_caption(column) }] }
       end
 
       def sortable?
         true
       end
 
-      def fixed_date
-        options.fetch(:fixed_date) { Date.current }
+      def locked?
+        status == "locked"
+      end
+
+      private
+
+      def header_caption(column)
+        case column
+        when :name then CostType.model_name.human
+        when :unit then CostType.human_attribute_name(:unit)
+        when :unit_plural then CostType.human_attribute_name(:unit_plural)
+        when :current_rate then CostType.human_attribute_name(:current_rate)
+        when :active_projects then I18n.t("cost_types.admin.columns.active_projects")
+        when :default then I18n.t(:caption_default)
+        when :deleted_at then I18n.t(:caption_locked_on)
+        end
       end
     end
   end
