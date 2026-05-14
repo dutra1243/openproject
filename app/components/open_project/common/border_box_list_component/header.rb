@@ -80,7 +80,8 @@ module OpenProject
                     :count_arguments,
                     :title_tag,
                     :list_id,
-                    :collapsed
+                    :collapsed,
+                    :collapsible
 
         attr_writer :collapsible_id
 
@@ -96,6 +97,9 @@ module OpenProject
         # @param title_tag [Symbol] tag used for the title heading.
         # @param list_id [String, nil] id of the collapsible list body.
         # @param collapsed [Boolean] whether the collapsible header starts closed.
+        # @param collapsible [Boolean] whether the header renders a collapsible
+        #   toggle. Defaults to `true`. Pass `false` to render a plain title
+        #   without a toggle button.
         # @param system_arguments [Hash] forwarded to `Primer::Beta::BorderBox#with_header`.
         def initialize(
           title:,
@@ -105,6 +109,7 @@ module OpenProject
           title_tag: :h4,
           list_id: nil,
           collapsed: false,
+          collapsible: true,
           **system_arguments
         )
           super()
@@ -117,7 +122,13 @@ module OpenProject
           @list_id = list_id
           @collapsible_id = list_id
           @collapsed = collapsed
+          @collapsible = collapsible
           @system_arguments = system_arguments
+        end
+
+        # @return [Boolean] whether a collapsible toggle should be rendered.
+        def collapsible?
+          collapsible
         end
 
         # Resolves inferred counts after the list slots have been captured.

@@ -358,7 +358,7 @@ RSpec.describe OpenProject::Common::BorderBoxListComponent, type: :component do
   describe "header collapsible behavior" do
     it "sets collapsible_id from list and footer ids" do
       rendered = render_inline(
-        described_class.new(container: "collapse-test")
+        described_class.new(container: "collapse-test", collapsible: true)
       ) do |list|
         list.with_header(title: "Collapsible")
         list.with_item { "row" }
@@ -375,7 +375,7 @@ RSpec.describe OpenProject::Common::BorderBoxListComponent, type: :component do
 
     it "sets collapsible_id from list id only when no footer" do
       rendered = render_inline(
-        described_class.new(container: "collapse-no-footer")
+        described_class.new(container: "collapse-no-footer", collapsible: true)
       ) do |list|
         list.with_header(title: "No footer")
         list.with_item { "row" }
@@ -620,7 +620,7 @@ RSpec.describe OpenProject::Common::BorderBoxListComponent, type: :component do
 
     it "derives the footer id from the explicit box id" do
       rendered = render_inline(
-        described_class.new(container: "ignored", id: "explicit-box")
+        described_class.new(container: "ignored", id: "explicit-box", collapsible: true)
       ) do |list|
         list.with_header(title: "Header")
         list.with_item { "row" }
@@ -658,6 +658,36 @@ RSpec.describe OpenProject::Common::BorderBoxListComponent, type: :component do
   describe "constructor requires container:" do
     it "raises ArgumentError when container: is missing" do
       expect { described_class.new }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe "collapsible" do
+    it "renders a non-collapsible header by default" do
+      rendered = render_inline(
+        described_class.new(container: "no-collapse")
+      ) do |list|
+        list.with_header(title: "Non-collapsible header", count: 3) do |header|
+          header.with_description { "Description text" }
+        end
+        list.with_item { "row" }
+      end
+
+      expect(rendered).to have_heading("Non-collapsible header", level: 4)
+      expect(rendered).to have_css(".Counter", text: "3")
+      expect(rendered).to have_text("Description text")
+      expect(rendered).to have_no_css("collapsible-header")
+      expect(rendered).to have_no_css("[aria-controls]")
+    end
+
+    it "renders a collapsible header when collapsible is true" do
+      rendered = render_inline(
+        described_class.new(container: "explicit-collapse", collapsible: true)
+      ) do |list|
+        list.with_header(title: "Collapsible header")
+        list.with_item { "row" }
+      end
+
+      expect(rendered).to have_css("collapsible-header")
     end
   end
 end

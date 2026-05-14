@@ -143,32 +143,6 @@ RSpec.describe Backlogs::WorkPackageCardListComponent, type: :component do
       expect(rendered_component).to have_heading "Sprint 1", level: 4
     end
 
-    context "when the user prefers closed folds" do
-      before do
-        user.pref[:backlogs_versions_default_fold_state] = "closed"
-      end
-
-      it "renders the header as collapsed" do
-        expect(rendered_component).to have_css(
-          ".CollapsibleHeader-triggerArea",
-          aria: { expanded: "false" }
-        )
-      end
-    end
-
-    context "when the user prefers open folds" do
-      before do
-        user.pref[:backlogs_versions_default_fold_state] = "open"
-      end
-
-      it "renders the header as expanded" do
-        expect(rendered_component).to have_css(
-          ".CollapsibleHeader-triggerArea",
-          aria: { expanded: "true" }
-        )
-      end
-    end
-
     context "with work packages" do
       let(:header_arguments) { { title: "Sprint 1" } }
       let(:work_packages) do

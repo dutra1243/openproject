@@ -33,9 +33,11 @@ module OpenProject
     # @logical_path OpenProject/Common
     class BorderBoxListComponentPreview < ViewComponent::Preview
       # @label Default
-      def default
+      # @param collapsible [Boolean] toggle
+      def default(collapsible: false)
         render OpenProject::Common::BorderBoxListComponent.new(
-          container: "border-box-list-preview"
+          container: "border-box-list-preview",
+          collapsible:
         ) do |list|
           list.with_header(title: "Things we're building", count: true) do |header|
             header.with_description { "There's lots to look forward to" }
@@ -58,12 +60,14 @@ module OpenProject
       end
 
       # @label With work package items
-      def with_work_package_items
+      # @param collapsible [Boolean] toggle
+      def with_work_package_items(collapsible: false)
         work_packages = WorkPackage.includes(:project).limit(2).to_a
         return preview_message("No work packages in the database.") if work_packages.empty?
 
         render OpenProject::Common::BorderBoxListComponent.new(
-          container: "border-box-list-work-package-preview"
+          container: "border-box-list-work-package-preview",
+          collapsible:
         ) do |list|
           list.with_header(title: "Work packages", count: true)
 
@@ -80,18 +84,21 @@ module OpenProject
       end
 
       # @label Playground
+      # @param collapsible [Boolean] toggle
       # @param title_tag [Symbol] select [h2, h3, h4, h5]
       # @param count [Symbol] select [inferred, hidden, explicit, zero]
       # @param count_scheme [Symbol] select [primary, secondary]
       # @param hide_zero_count toggle
       def playground(
+        collapsible: false,
         title_tag: :h4,
         count: :inferred,
         count_scheme: :primary,
         hide_zero_count: true
       )
         render OpenProject::Common::BorderBoxListComponent.new(
-          container: "border-box-list-playground-preview"
+          container: "border-box-list-playground-preview",
+          collapsible:
         ) do |list|
           list.with_header(
             title: "Playground list",
@@ -114,9 +121,11 @@ module OpenProject
 
       # @label Empty state
       # List with a header and an empty state (Blankslate), no items.
-      def empty_state
+      # @param collapsible [Boolean] toggle
+      def empty_state(collapsible: false)
         render OpenProject::Common::BorderBoxListComponent.new(
-          container: "border-box-list-empty-preview"
+          container: "border-box-list-empty-preview",
+          collapsible:
         ) do |list|
           list.with_header(title: "Empty list", count: 0)
           list.with_empty_state(

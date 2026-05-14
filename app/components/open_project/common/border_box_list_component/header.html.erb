@@ -15,21 +15,33 @@ See COPYRIGHT and LICENSE files for more details.
 
 <%= grid_layout("op-border-box-list-header", tag: :div) do |grid| %>
     <% grid.with_area(:collapsible) do %>
-      <%=
-        render(
-          Primer::OpenProject::BorderBox::CollapsibleHeader.new(
-            collapsible_id:,
-            collapsed:,
-            multi_line: true
-          )
-        ) do |collapsible|
-      %>
-        <% collapsible.with_title(tag: title_tag) { title } %>
+      <% if collapsible? %>
+        <%=
+          render(
+            Primer::OpenProject::BorderBox::CollapsibleHeader.new(
+              collapsible_id:,
+              collapsed:,
+              multi_line: true
+            )
+          ) do |collapsible|
+        %>
+          <% collapsible.with_title(tag: title_tag) { title } %>
+          <% if render_count? %>
+            <% collapsible.with_count(**counter_arguments) %>
+          <% end %>
+          <% if description? %>
+            <% collapsible.with_description do %>
+              <%= description %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= render(Primer::Beta::Truncate.new(tag: title_tag, classes: "Box-title")) { title } %>
         <% if render_count? %>
-          <% collapsible.with_count(**counter_arguments) %>
+          <%= render(Primer::Beta::Counter.new(**counter_arguments)) %>
         <% end %>
         <% if description? %>
-          <% collapsible.with_description do %>
+          <%= render(Primer::Beta::Text.new(color: :subtle, trim: true)) do %>
             <%= description %>
           <% end %>
         <% end %>

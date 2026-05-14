@@ -78,7 +78,6 @@ module Backlogs
         title:,
         count:,
         count_label: I18n.t(:label_x_work_packages, count:),
-        collapsed: folded?,
         **system_arguments,
         &
       )
@@ -112,10 +111,6 @@ module Backlogs
         target_id: drag_and_drop.fetch(:target_id),
         target_allowed_drag_type: drag_and_drop.fetch(:allowed_drag_type)
       }
-    end
-
-    def folded?
-      current_user.pref[:backlogs_versions_default_fold_state] == "closed"
     end
 
     def populate_list!

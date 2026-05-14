@@ -38,7 +38,9 @@ module OpenProject
     class BorderBoxListComponent < ApplicationComponent
       include OpPrimer::ComponentHelpers
 
-      attr_reader :container, :current_user, :header_id, :footer_id
+      attr_reader :container, :collapsible, :current_user, :header_id, :footer_id
+
+      alias_method :collapsible?, :collapsible
 
       # Optional header row.
       #
@@ -53,6 +55,7 @@ module OpenProject
       renders_one :header, ->(**system_arguments) {
         system_arguments[:id] = header_id
         system_arguments[:list_id] = list_id
+        system_arguments[:collapsible] = collapsible?
 
         Header.new(**system_arguments)
       }
@@ -152,13 +155,16 @@ module OpenProject
 
       # @param container [String, Symbol, Class, Object] value passed to
       #   `dom_target` to derive DOM ids for the list and related controls.
+      # @param collapsible [Boolean] whether the header renders a collapsible
+      #   toggle. Defaults to `false`.
       # @param current_user [User] user context passed to work-package items.
       # @param system_arguments [Hash] forwarded to `Primer::Beta::BorderBox`.
       #   Pass `id:` to set the box id; related ids are derived from it.
-      def initialize(container:, current_user: User.current, **system_arguments)
+      def initialize(container:, collapsible: false, current_user: User.current, **system_arguments)
         super()
 
         @container = container
+        @collapsible = collapsible
         @current_user = current_user
         @system_arguments = system_arguments
 
@@ -183,7 +189,7 @@ module OpenProject
         return unless header?
 
         header.resolve_count!(items.size)
-        return unless footer?
+        return unless collapsible? && footer?
 
         header.collapsible_id = [list_id, footer_id].compact.join(" ")
       end
