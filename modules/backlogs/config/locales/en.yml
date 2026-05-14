@@ -142,8 +142,8 @@ en:
       blankslate_title: "%{name} is empty"
       blankslate_description: "No items planned yet. Drag items here to add them."
       label_actions: "Sprint actions"
-      label_start_sprint: "Start"
-      label_complete_sprint: "Complete"
+      label_start_sprint: "Start sprint"
+      label_complete_sprint: "Complete sprint"
       start_sprint_disabled_reason_active_sprint: "Another sprint is already active."
       start_sprint_disabled_reason_missing_dates: "Start and finish dates are required in order to start the sprint."
       action_menu:

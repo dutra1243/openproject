@@ -63,7 +63,7 @@ See COPYRIGHT and LICENSE files for more details.
 
       <% if show_start_sprint_action? %>
         <% header.with_action_button(**start_sprint_button_arguments) do |button| %>
-          <% button.with_leading_visual_icon(icon: :play) %>
+          <% button.with_leading_visual_icon(icon: :rocket) %>
           <% if start_sprint_disabled_reason.present? %>
             <% button.with_tooltip(
                  text: start_sprint_disabled_reason,
@@ -75,7 +75,7 @@ See COPYRIGHT and LICENSE files for more details.
         <% end %>
       <% elsif show_finish_sprint_action? %>
         <% header.with_action_button(**finish_sprint_button_arguments) do |button| %>
-          <% button.with_leading_visual_icon(icon: :check) %>
+          <% button.with_leading_visual_icon(icon: :"op-flag") %>
           <%= t(".label_complete_sprint") %>
         <% end %>
       <% end %>

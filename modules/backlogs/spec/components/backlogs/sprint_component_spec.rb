@@ -175,7 +175,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
         end
 
         it "renders the start-sprint link enabled" do
-          expect(rendered_component).to have_link("Start")
+          expect(rendered_component).to have_link("Start sprint")
         end
       end
 
@@ -187,7 +187,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
         end
 
         it "renders the start-sprint button as disabled" do
-          expect(rendered_component).to have_selector(:link_or_button, "Start", aria: { disabled: true })
+          expect(rendered_component).to have_selector(:link_or_button, "Start sprint", aria: { disabled: true })
         end
       end
 
@@ -200,7 +200,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
         let!(:task_board) { create(:board_grid_with_query, project:, linked: sprint) }
 
         it "renders the complete-sprint link" do
-          expect(rendered_component).to have_link("Complete")
+          expect(rendered_component).to have_link("Complete sprint")
         end
 
         context "when params[:all] is true" do
@@ -210,7 +210,7 @@ RSpec.describe Backlogs::SprintComponent, type: :component do
 
           it "preserves ?all=1 on the complete-sprint link" do
             expect(rendered_component).to have_link(
-              "Complete",
+              "Complete sprint",
               href: finish_project_backlogs_sprint_path(project, sprint, all: 1)
             )
           end
