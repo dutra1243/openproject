@@ -37,8 +37,12 @@ module OpenProject
     # header actions, collapsible behavior, and row rendering.
     class BorderBoxListComponent < ApplicationComponent
       include OpPrimer::ComponentHelpers
+      include Primer::FetchOrFallbackHelper
 
-      attr_reader :container, :collapsible, :current_user, :header_id, :footer_id
+      SCHEME_DEFAULT = :default
+      SCHEME_OPTIONS = [SCHEME_DEFAULT, :flat].freeze
+
+      attr_reader :container, :scheme, :collapsible, :current_user, :header_id, :footer_id
 
       alias_method :collapsible?, :collapsible
 
@@ -155,21 +159,37 @@ module OpenProject
 
       # @param container [String, Symbol, Class, Object] value passed to
       #   `dom_target` to derive DOM ids for the list and related controls.
+      # @param scheme [Symbol] visual scheme. `:default` renders the standard
+      #   BorderBox header. `:flat` renders a transparent header with no
+      #   separator line.
       # @param collapsible [Boolean] whether the header renders a collapsible
       #   toggle. Defaults to `false`.
       # @param current_user [User] user context passed to work-package items.
       # @param system_arguments [Hash] forwarded to `Primer::Beta::BorderBox`.
       #   Pass `id:` to set the box id; related ids are derived from it.
-      def initialize(container:, collapsible: false, current_user: User.current, **system_arguments)
+      def initialize( # rubocop:disable Metrics/AbcSize
+        container:,
+        scheme: SCHEME_DEFAULT,
+        collapsible: false,
+        current_user: User.current,
+        **system_arguments
+      )
         super()
 
         @container = container
+        @scheme = ActiveSupport::StringInquirer.new(fetch_or_fallback(SCHEME_OPTIONS, scheme, SCHEME_DEFAULT).to_s)
         @collapsible = collapsible
         @current_user = current_user
         @system_arguments = system_arguments
 
         @system_arguments[:id] ||= dom_target(container)
         @system_arguments[:list_id] = dom_target(@system_arguments[:id], :list)
+        @system_arguments[:classes] = class_names(
+          @system_arguments[:classes],
+          "BorderBoxList",
+          "BorderBoxList--flat" => @scheme.flat?
+        )
+
         @header_id = dom_target(@system_arguments[:id], :header)
         @footer_id = dom_target(@system_arguments[:id], :footer)
       end

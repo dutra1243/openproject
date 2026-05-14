@@ -59,6 +59,33 @@ module OpenProject
         end
       end
 
+      # @label Flat scheme
+      # @param collapsible [Boolean] toggle
+      def flat(collapsible: false)
+        render OpenProject::Common::BorderBoxListComponent.new(
+          container: "border-box-list-flat-preview",
+          scheme: :flat,
+          collapsible:
+        ) do |list|
+          list.with_header(title: "Sprint backlog", count: true) do |header|
+            header.with_description { "3 points remaining" }
+            header.with_action_button do |button|
+              button.with_leading_visual_icon(icon: :rocket)
+              "Start sprint"
+            end
+            header.with_menu(button_aria_label: "Sprint actions") do |menu|
+              menu.with_item(label: "Edit sprint") do |menu_item|
+                menu_item.with_leading_visual_icon(icon: :pencil)
+              end
+            end
+          end
+
+          list.with_item { "User authentication stories" }
+          list.with_item { "Dashboard improvements" }
+          list.with_item { "API documentation" }
+        end
+      end
+
       # @label With work package items
       # @param collapsible [Boolean] toggle
       def with_work_package_items(collapsible: false)

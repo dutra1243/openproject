@@ -690,4 +690,40 @@ RSpec.describe OpenProject::Common::BorderBoxListComponent, type: :component do
       expect(rendered).to have_css("collapsible-header")
     end
   end
+
+  describe "scheme" do
+    it "defaults to :default" do
+      rendered = render_inline(
+        described_class.new(container: "scheme-default")
+      ) do |list|
+        list.with_header(title: "Default")
+        list.with_item { "row" }
+      end
+
+      expect(rendered).to have_no_css(".BorderBoxList--flat")
+    end
+
+    it "applies the flat CSS class when scheme is :flat" do
+      rendered = render_inline(
+        described_class.new(container: "scheme-flat", scheme: :flat)
+      ) do |list|
+        list.with_header(title: "Flat")
+        list.with_item { "row" }
+      end
+
+      expect(rendered).to have_css(".Box.BorderBoxList--flat")
+    end
+
+    it "keeps collapsible independent of the flat scheme" do
+      rendered = render_inline(
+        described_class.new(container: "flat-collapse", scheme: :flat, collapsible: true)
+      ) do |list|
+        list.with_header(title: "Flat collapsible")
+        list.with_item { "row" }
+      end
+
+      expect(rendered).to have_css(".Box.BorderBoxList--flat")
+      expect(rendered).to have_css("collapsible-header")
+    end
+  end
 end
