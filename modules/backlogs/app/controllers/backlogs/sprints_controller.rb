@@ -34,6 +34,7 @@ module Backlogs
 
     NEW_SPRINT_ACTIONS = %i[new_dialog
                             edit_dialog
+                            index
                             create
                             refresh_form].freeze
     SPRINT_STATE_ACTIONS = %i[start finish].freeze
@@ -49,7 +50,12 @@ module Backlogs
       :all_sprints
     end
 
-    def index; end
+    def index
+      @sprints = Sprint.for_project(@project)
+                       .order_by_date
+                       # TODO order by date first, then by name
+                       .includes(:project) # TODO: remove?
+    end
 
     def new_dialog
       call = ::Sprints::SetAttributesService.new(

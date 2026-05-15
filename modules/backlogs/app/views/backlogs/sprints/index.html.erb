@@ -43,5 +43,5 @@ See COPYRIGHT and LICENSE files for more details.
 <% end %>
 
 <% content_for :content_body do %>
-  insert table here
+  <%= render Backlogs::Sprints::TableComponent.new(rows: @sprints, current_user:) %>
 <% end %>
