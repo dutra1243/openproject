@@ -28,42 +28,22 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module OpenProject::Backlogs::Patches::WorkPackagePatch
+module WorkPackages::Scopes::WithoutExcludedType
   extend ActiveSupport::Concern
 
-  included do
-    prepend InstanceMethods
-    extend ClassMethods
+  class_methods do
+    def without_excluded_type
+      type_subquery = <<~SQL.squish
+        work_packages.type_id NOT IN (
+          SELECT type_id
+          FROM excluded_work_package_types_for_project
+          WHERE project_id = work_packages.project_id
+          AND type_id IS NOT NULL
+        )
+      SQL
 
-    register_journal_formatted_fields "story_points", "position", formatter_key: :decimal
-
-    validates_numericality_of :story_points, only_integer: true,
-                                             allow_nil: true,
-                                             greater_than_or_equal_to: 0,
-                                             less_than: 10_000,
-                                             if: -> { backlogs_enabled? }
-
-    belongs_to :sprint, optional: true
-    belongs_to :backlog_bucket, optional: true
-
-    include OpenProject::Backlogs::List
-
-    scopes :backlogs_inbox_for
-    scopes :without_status_considered_closed
-    scopes :without_excluded_type
-  end
-
-  module ClassMethods
-    def order_by_position
-      order(arel_table[:position].asc.nulls_last)
-    end
-  end
-
-  module InstanceMethods
-    def backlogs_enabled?
-      project&.backlogs_enabled?
+      where(type_subquery)
+        .includes(:type)
     end
   end
 end
-
-WorkPackage.include OpenProject::Backlogs::Patches::WorkPackagePatch
