@@ -36,11 +36,20 @@ module WorkPackages::Scopes::WithoutStatusConsideredClosed
       # Excludes work packages whose status is configured as "closed" on the project
       # the work package belongs to. The correlated subquery ensures each work package
       # is always checked against its own project's status configuration.
+      # Additionally, (as a safeguard) all globally closed statuses are always included
+      # into the check to mitigate for an empty project configuration.
       status_subquery = <<~SQL.squish
-        status_id NOT IN (SELECT status_id
-                          FROM done_statuses_for_project
-                          WHERE project_id = work_packages.project_id
-                            AND status_id IS NOT NULL)
+        work_packages.status_id NOT IN (
+          SELECT status_id
+          FROM done_statuses_for_project
+          WHERE project_id = work_packages.project_id
+          AND status_id IS NOT NULL
+        )
+        AND work_packages.status_id NOT IN (
+          SELECT id
+          FROM statuses
+          WHERE is_closed = TRUE
+        )
       SQL
 
       where(status_subquery)
