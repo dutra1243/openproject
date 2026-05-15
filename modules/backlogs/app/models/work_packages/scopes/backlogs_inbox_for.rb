@@ -32,15 +32,12 @@ module WorkPackages::Scopes::BacklogsInboxFor
   extend ActiveSupport::Concern
 
   class_methods do
-    def backlogs_inbox_for(project:) # rubocop:disable Metrics/AbcSize
+    def backlogs_inbox_for(project:)
       WorkPackage
         .visible
-        .with_status_open
         .where(project:, sprint_id: nil, backlog_bucket_id: nil)
-        .where.not(status_id: project.done_statuses.select(:id))
-        .where.not(type_id: project.excluded_work_package_types.select(:id))
-        .includes(:status)
-        .includes(:type)
+        .without_excluded_type
+        .without_status_considered_closed
         .order_by_position
         .order(WorkPackage.arel_table[:id].asc)
     end

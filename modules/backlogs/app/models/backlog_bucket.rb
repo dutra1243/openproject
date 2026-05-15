@@ -37,6 +37,7 @@ class BacklogBucket < ApplicationRecord
            -> do
              visible(User.current)
                .without_status_considered_closed
+               .without_excluded_type
                .order_by_position
            end,
            class_name: "WorkPackage",
