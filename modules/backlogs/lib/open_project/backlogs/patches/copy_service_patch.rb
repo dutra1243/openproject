@@ -48,7 +48,7 @@ module OpenProject::Backlogs::Patches::CopyServicePatch
         next unless result_call.result&.persisted?
 
         result_call.result.done_statuses = source.done_statuses
-        result_call.result.excluded_work_package_types = source.excluded_work_package_types
+        result_call.result.backlog_excluded_types = source.backlog_excluded_types
       end
     end
   end

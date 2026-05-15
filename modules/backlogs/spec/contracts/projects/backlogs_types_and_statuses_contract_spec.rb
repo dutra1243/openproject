@@ -57,7 +57,7 @@ RSpec.describe Projects::BacklogsTypesAndStatusesContract, type: :model do
 
       before do
         project.done_status_ids = [open_status.id]
-        project.excluded_work_package_type_ids = [allowed_type.id]
+        project.backlog_excluded_type_ids = [allowed_type.id]
       end
 
       it_behaves_like "contract is valid"
@@ -98,12 +98,12 @@ RSpec.describe Projects::BacklogsTypesAndStatusesContract, type: :model do
       it_behaves_like "contract is invalid", done_status_ids: :invalid
     end
 
-    context "when excluded_work_package_type_ids contains a type that is not enabled in the project" do
+    context "when backlog_excluded_type_ids contains a type that is not enabled in the project" do
       before do
-        project.excluded_work_package_type_ids = [other_type.id]
+        project.backlog_excluded_type_ids = [other_type.id]
       end
 
-      it_behaves_like "contract is invalid", excluded_work_package_type_ids: :invalid
+      it_behaves_like "contract is invalid", backlog_excluded_type_ids: :invalid
     end
   end
 

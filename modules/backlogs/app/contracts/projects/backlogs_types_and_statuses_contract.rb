@@ -32,7 +32,7 @@ module Projects
   class BacklogsTypesAndStatusesContract < ::ModelContract
     validate :validate_permissions
     validate :validate_done_status_ids
-    validate :validate_excluded_work_package_type_ids
+    validate :validate_backlog_excluded_type_ids
 
     def validate_model? = false
 
@@ -62,15 +62,15 @@ module Projects
       model.done_status_ids = (submitted_ids + mandatory_ids).uniq
     end
 
-    def validate_excluded_work_package_type_ids
-      submitted_ids = model.excluded_work_package_type_ids
+    def validate_backlog_excluded_type_ids
+      submitted_ids = model.backlog_excluded_type_ids
       return if submitted_ids.empty?
 
       # Only types enabled on the project are allowed:
       project_type_ids = model.types.pluck(:id)
       invalid_ids = submitted_ids.map(&:to_i) - project_type_ids
 
-      errors.add :excluded_work_package_type_ids, :invalid if invalid_ids.any?
+      errors.add :backlog_excluded_type_ids, :invalid if invalid_ids.any?
     end
   end
 end

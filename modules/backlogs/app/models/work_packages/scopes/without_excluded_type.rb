@@ -36,7 +36,7 @@ module WorkPackages::Scopes::WithoutExcludedType
       type_subquery = <<~SQL.squish
         work_packages.type_id NOT IN (
           SELECT type_id
-          FROM excluded_work_package_types_for_project
+          FROM backlog_excluded_types
           WHERE project_id = work_packages.project_id
           AND type_id IS NOT NULL
         )

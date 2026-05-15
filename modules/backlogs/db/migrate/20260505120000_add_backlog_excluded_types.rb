@@ -28,16 +28,18 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class AddExcludedWorkPackageTypesForProject < ActiveRecord::Migration[8.1]
+class AddBacklogExcludedTypes < ActiveRecord::Migration[8.1]
   def change
-    create_table :excluded_work_package_types_for_project, id: false do |t|
-      t.bigint :project_id, null: false
-      t.bigint :type_id, null: false
-    end
-
-    add_index :excluded_work_package_types_for_project,
-              %i[project_id type_id],
+    create_join_table :projects,
+                      :types,
+                      table_name: :backlog_excluded_types,
+                      column_options: {
+                        null: false,
+                        foreign_key: { on_delete: :cascade, on_update: :cascade }
+                      } do |t|
+      t.index %i[project_id type_id],
               unique: true,
-              name: "idx_excluded_wp_types_for_project"
+              name: "idx_backlog_excluded_types"
+    end
   end
 end

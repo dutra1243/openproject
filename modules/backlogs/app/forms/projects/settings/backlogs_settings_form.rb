@@ -60,7 +60,7 @@ module Projects
         end
 
         f.autocompleter(
-          name: :excluded_work_package_type_ids,
+          name: :backlog_excluded_type_ids,
           label: I18n.t(:"backlogs.excluded_work_package_types"),
           caption: I18n.t(:"backlogs.excluded_work_package_types_caption"),
           autocomplete_options: {
@@ -69,12 +69,12 @@ module Projects
             clearable: false,
             decorated: true,
             data: {
-              test_selector: "excluded_work_package_type_ids_autocomplete"
+              test_selector: "backlog_excluded_type_ids_autocomplete"
             }
           }
         ) do |list|
           available_types.each do |label, value|
-            active = value.in?(model.excluded_work_package_type_ids)
+            active = value.in?(model.backlog_excluded_type_ids)
 
             list.option(
               label:,

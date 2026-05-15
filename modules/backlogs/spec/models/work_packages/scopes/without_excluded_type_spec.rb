@@ -38,7 +38,7 @@ RSpec.describe WorkPackages::Scopes::WithoutExcludedType do
     create(:project,
            enabled_module_names: %w[backlogs],
            types: [included_type, excluded_type]) do |p|
-      p.excluded_work_package_types = [excluded_type]
+      p.backlog_excluded_types = [excluded_type]
     end
   end
 

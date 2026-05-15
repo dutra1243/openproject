@@ -64,10 +64,10 @@ RSpec.describe "Backlogs settings effect on backlog and sprints", :js do
     )
   end
 
-  let(:excluded_work_package_type_ids_autocompleter) do
+  let(:backlog_excluded_type_ids_autocompleter) do
     FormFields::Primerized::AutocompleteField.new(
-      "excluded_work_package_type_ids",
-      selector: "[data-test-selector='excluded_work_package_type_ids_autocomplete']"
+      "backlog_excluded_type_ids",
+      selector: "[data-test-selector='backlog_excluded_type_ids_autocomplete']"
     )
   end
 
@@ -178,10 +178,10 @@ RSpec.describe "Backlogs settings effect on backlog and sprints", :js do
     wait_for_autocompleter_options_to_be_loaded
 
     done_status_ids_autocompleter.select_option(done_like_status.name)
-    excluded_work_package_type_ids_autocompleter.select_option(excluded_type.name)
+    backlog_excluded_type_ids_autocompleter.select_option(excluded_type.name)
 
     done_status_ids_autocompleter.close_autocompleter
-    excluded_work_package_type_ids_autocompleter.close_autocompleter
+    backlog_excluded_type_ids_autocompleter.close_autocompleter
 
     click_button "Save"
 

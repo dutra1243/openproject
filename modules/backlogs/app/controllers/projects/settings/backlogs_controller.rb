@@ -65,13 +65,13 @@ class Projects::Settings::BacklogsController < Projects::SettingsController
   private
 
   def backlogs_settings_params
-    permitted = params.expect(project: { done_status_ids: [], excluded_work_package_type_ids: [] })
+    permitted = params.expect(project: { done_status_ids: [], backlog_excluded_type_ids: [] })
     # Always return both keys as plain arrays so the service explicitly clears
     # HABTM associations when nothing is selected (browser omits the field
     # entirely for empty multi-selects; Array(nil) handles that gracefully).
     {
       done_status_ids: Array(permitted[:done_status_ids]).compact_blank,
-      excluded_work_package_type_ids: Array(permitted[:excluded_work_package_type_ids]).compact_blank
+      backlog_excluded_type_ids: Array(permitted[:backlog_excluded_type_ids]).compact_blank
     }
   end
 

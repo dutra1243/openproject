@@ -62,7 +62,7 @@ RSpec.describe WorkPackages::Scopes::BacklogsInboxFor do
       included_type = create(:type_feature)
       project.types << excluded_type
       project.types << included_type
-      project.excluded_work_package_types << excluded_type
+      project.backlog_excluded_types << excluded_type
 
       visible_wp = create(:work_package, project:, status: open_status, type: included_type)
       create(:work_package, project:, status: open_status, type: excluded_type)

@@ -53,7 +53,7 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
              enabled_module_names: %w[backlogs work_package_tracking],
              types: [type_story, type_task]) do |p|
         p.done_statuses = [open_status, closed_status]
-        p.excluded_work_package_types = [type_task]
+        p.backlog_excluded_types = [type_task]
       end
     end
 
@@ -65,37 +65,37 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
       expect(result.result.done_statuses).to contain_exactly(open_status, closed_status)
     end
 
-    it "copies the excluded_work_package_types to the new project" do
-      expect(result.result.excluded_work_package_types).to contain_exactly(type_task)
+    it "copies the backlog_excluded_types to the new project" do
+      expect(result.result.backlog_excluded_types).to contain_exactly(type_task)
     end
 
     it "does not couple copied associations to the source project" do
       copied = result.result
 
       source_done_status_ids_before = source.done_status_ids.uniq
-      source_excluded_type_ids_before = source.excluded_work_package_type_ids.uniq
+      source_excluded_type_ids_before = source.backlog_excluded_type_ids.uniq
 
       expect(copied.done_status_ids.uniq).to match_array(source_done_status_ids_before)
-      expect(copied.excluded_work_package_type_ids.uniq).to match_array(source_excluded_type_ids_before)
+      expect(copied.backlog_excluded_type_ids.uniq).to match_array(source_excluded_type_ids_before)
 
       copied.done_statuses = [closed_status]
-      copied.excluded_work_package_types = [type_story]
+      copied.backlog_excluded_types = [type_story]
       copied.save!
 
       source.reload
       copied.reload
 
       expect(source.done_status_ids.uniq).to match_array(source_done_status_ids_before)
-      expect(source.excluded_work_package_type_ids.uniq).to match_array(source_excluded_type_ids_before)
+      expect(source.backlog_excluded_type_ids.uniq).to match_array(source_excluded_type_ids_before)
 
       expect(copied.done_status_ids.uniq).to contain_exactly(closed_status.id)
-      expect(copied.excluded_work_package_type_ids.uniq).to contain_exactly(type_story.id)
+      expect(copied.backlog_excluded_type_ids.uniq).to contain_exactly(type_story.id)
     end
   end
 
   context "when the backlogs module is enabled on the source project but associations are empty" do
     let(:source) do
-      # done_statuses and excluded_work_package_types are intentionally left empty
+      # done_statuses and backlog_excluded_types are intentionally left empty
       create(:project,
              enabled_module_names: %w[backlogs work_package_tracking],
              types: [type_story, type_task])
@@ -114,8 +114,8 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
       expect(result.result.done_statuses).to be_empty
     end
 
-    it "results in empty excluded_work_package_types on the new project" do
-      expect(result.result.excluded_work_package_types).to be_empty
+    it "results in empty backlog_excluded_types on the new project" do
+      expect(result.result.backlog_excluded_types).to be_empty
     end
   end
 
@@ -134,8 +134,8 @@ RSpec.describe Projects::CopyService, "backlogs settings", type: :model do
       expect(result.result.done_statuses).to be_empty
     end
 
-    it "does not set any excluded_work_package_types on the new project" do
-      expect(result.result.excluded_work_package_types).to be_empty
+    it "does not set any backlog_excluded_types on the new project" do
+      expect(result.result.backlog_excluded_types).to be_empty
     end
   end
 end

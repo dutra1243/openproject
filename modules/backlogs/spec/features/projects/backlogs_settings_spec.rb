@@ -51,7 +51,7 @@ RSpec.describe "Backlogs Project Settings", :js do
   end
   let(:settings_page) { Pages::Projects::Settings::Backlogs.new(project) }
   let(:done_status_ids_autocompleter) { FormFields::Primerized::AutocompleteField.new("story_types", selector: "[data-test-selector='done_status_ids_autocomplete']") }
-  let(:excluded_type_ids_autocompleter) { FormFields::Primerized::AutocompleteField.new("excluded_types", selector: "[data-test-selector='excluded_work_package_type_ids_autocomplete']") }
+  let(:excluded_type_ids_autocompleter) { FormFields::Primerized::AutocompleteField.new("excluded_types", selector: "[data-test-selector='backlog_excluded_type_ids_autocomplete']") }
 
   before do
     login_as current_user
