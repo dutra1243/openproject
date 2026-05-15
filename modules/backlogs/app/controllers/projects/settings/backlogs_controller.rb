@@ -69,9 +69,10 @@ class Projects::Settings::BacklogsController < Projects::SettingsController
     # Always return both keys as plain arrays so the service explicitly clears
     # HABTM associations when nothing is selected (browser omits the field
     # entirely for empty multi-selects; Array(nil) handles that gracefully).
+    # Deduplicate to handle clients accidentally sending duplicate IDs.
     {
-      done_status_ids: Array(permitted[:done_status_ids]).compact_blank,
-      backlog_excluded_type_ids: Array(permitted[:backlog_excluded_type_ids]).compact_blank
+      done_status_ids: Array(permitted[:done_status_ids]).compact_blank.uniq,
+      backlog_excluded_type_ids: Array(permitted[:backlog_excluded_type_ids]).compact_blank.uniq
     }
   end
 

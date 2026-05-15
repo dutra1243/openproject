@@ -108,5 +108,24 @@ RSpec.describe Projects::Settings::BacklogsController do
         expect(flash[:notice]).to include I18n.t(:notice_successful_update)
       end
     end
+
+    context "when duplicate ids are sent" do
+      let(:project_params) do
+        {
+          done_status_ids: %w[2 2],
+          backlog_excluded_type_ids: %w[3 3]
+        }
+      end
+
+      it "deduplicates the ids before passing to the service", :aggregate_failures do
+        expect(update_service).to have_received(:call).with(
+          done_status_ids: ["2"],
+          backlog_excluded_type_ids: ["3"]
+        )
+
+        expect(response).to redirect_to(project_settings_backlogs_path(project))
+        expect(flash[:notice]).to include I18n.t(:notice_successful_update)
+      end
+    end
   end
 end
