@@ -94,7 +94,7 @@ module Projects
       end
 
       def mandatory_status_ids
-        Status.where(is_closed: true).pluck(:id)
+        @mandatory_status_ids ||= Status.where(is_closed: true).pluck(:id)
       end
 
       def available_types
