@@ -99,7 +99,7 @@ en:
     excluded_work_package_types_caption: >
       Choose which work package types to hide from the backlog. Items of the selected types will not appear in the backlog automatically,
       keeping it focused on the work that matters to your team.
-      For example types like Epics or Milestones that are managed at a higher level can be hidden to keep the backlog focused on actionable items.
+      For example, types like Epics or Milestones that are managed at a higher level can be hidden to keep the backlog focused on actionable items.
     statuses_considered_closed: "Statuses considered closed"
     statuses_considered_closed_caption: >
       Choose the statuses that represent a closed or finished state in your workflow.
@@ -238,7 +238,7 @@ en:
   permission_manage_sprint_items: "Manage sprint items"
   permission_select_backlog_types_and_statuses: "Select backlog types and statuses"
   permission_select_backlog_types_and_statuses_explanation: >
-    Allows choosing which work package types to hide from the backlog. Also allows to define
+    Allows choosing which work package types to hide from the backlog. Also allows defining
     which statuses represent a closed or finished state in the project's workflow.
   permission_share_sprint: "Share sprint"
   permission_start_complete_sprint: "Start/complete sprint"
