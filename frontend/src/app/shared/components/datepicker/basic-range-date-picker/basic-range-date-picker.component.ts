@@ -121,6 +121,13 @@ export class OpBasicRangeDatePickerComponent implements OnInit, ControlValueAcce
 
   @Input() dataAction = '';
 
+  @Input() set inputAttrs(attrs:Record<string, string>) {
+    this._inputAttrs = attrs;
+    this.applyInputAttrs();
+  }
+
+  private _inputAttrs:Record<string, string> = {};
+
   @ViewChild('input') input:ElementRef;
 
   stringValue = '';
@@ -151,6 +158,15 @@ export class OpBasicRangeDatePickerComponent implements OnInit, ControlValueAcce
   ngAfterViewInit():void {
     if (!this.mobile) {
       this.initializeDatePicker();
+    }
+    this.applyInputAttrs();
+  }
+
+  private applyInputAttrs():void {
+    const el = (this.input?.nativeElement as HTMLInputElement | null)
+      ?? (this.elementRef.nativeElement as HTMLElement).querySelector<HTMLInputElement>(`input[id="${this.id}"]`);
+    if (el) {
+      Object.entries(this._inputAttrs).forEach(([key, val]) => el.setAttribute(key, val));
     }
   }
 
