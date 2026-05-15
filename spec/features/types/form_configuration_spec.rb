@@ -263,6 +263,7 @@ RSpec.describe "form configuration", :js, :selenium do
         custom_field = create(:issue_custom_field, :integer, name: "MyNumber")
         visit edit_type_form_configuration_path(type)
 
+        form.move_to(custom_field.attribute_name, "Details")
         cf_row = page.find("li[data-attr-key='#{custom_field.attribute_name}']")
         expect(cf_row).to have_text(I18n.t(:label_integer))
       end
