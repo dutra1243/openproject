@@ -33,21 +33,20 @@
               action: "submit->filter--filters-form#sendForm:prevent"
             }
           ) do |f| %>
-        <%=
-          render(
-            Primer::Beta::IconButton.new(
-              icon: :x,
-              scheme: :invisible,
-              classes: "advanced-filters--close",
-              tooltip_direction: :se,
-              aria: { label: t("js.close_form_title") },
-              data: { action: "filter--filters-form#toggleDisplayFilters" }
-            )
-          )
-        %>
-        <%= render(Primer::Forms::FormList.new(*inputs(f))) %>
-        <% unless turbo_requests? %>
-          <%= render(Primer::Beta::Button.new(type: :submit, scheme: :primary)) { t("button_apply") } %>
+        <%= render(Primer::Beta::BorderBox.new) do |box| %>
+          <% box.with_body do %>
+            <%= render(Primer::Forms::FormList.new(*inputs(f))) %>
+            <% unless turbo_requests? %>
+              <div class="advanced-filters--actions">
+                <%= render(Primer::Beta::Button.new(
+                      scheme: :secondary,
+                      type: :button,
+                      data: { action: "filter--filters-form#toggleDisplayFilters" }
+                    )) { t("js.close_form_title") } %>
+                <%= render(Primer::Beta::Button.new(type: :submit, scheme: :primary)) { t("button_apply") } %>
+              </div>
+            <% end %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>

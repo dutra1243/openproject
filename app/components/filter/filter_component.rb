@@ -78,7 +78,12 @@ module Filter
     end
 
     def filter_classes
-      "op-filters-form op-filters-form_top-margin #{'-expanded' if initially_expanded?}"
+      [
+        "op-filters-form",
+        "op-filters-form_top-margin",
+        ("-expanded" if initially_expanded?),
+        ("op-filters-form--with-footer" unless turbo_requests?)
+      ].compact.join(" ")
     end
 
     def lazy_turbo_frame_src
