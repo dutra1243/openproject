@@ -34,7 +34,7 @@ module Projects
       form do |f|
         f.autocompleter(
           name: :done_status_ids,
-          label: I18n.t(:"backlogs.statuses_considered_closed"),
+          label: attribute_name(:statuses_considered_closed),
           caption: I18n.t(:"backlogs.statuses_considered_closed_caption"),
           autocomplete_options: {
             multiple: true,
@@ -61,7 +61,7 @@ module Projects
 
         f.autocompleter(
           name: :backlog_excluded_type_ids,
-          label: I18n.t(:"backlogs.excluded_work_package_types"),
+          label: attribute_name(:backlog_excluded_types),
           caption: I18n.t(:"backlogs.excluded_work_package_types_caption"),
           autocomplete_options: {
             multiple: true,
