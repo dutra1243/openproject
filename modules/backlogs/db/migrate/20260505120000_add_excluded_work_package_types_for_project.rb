@@ -28,7 +28,7 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-class AddExcludedWorkPackageTypesForProject < ActiveRecord::Migration[8.0]
+class AddExcludedWorkPackageTypesForProject < ActiveRecord::Migration[8.1]
   def change
     create_table :excluded_work_package_types_for_project, id: false do |t|
       t.bigint :project_id, null: false
